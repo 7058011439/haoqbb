@@ -1,0 +1,35 @@
+﻿syntax = "proto3";
+package protocol;
+
+message C2S_Test_RT {
+	int64          index = 1; // id
+}
+
+message S2C_Test_RT {
+	int64          index = 1; // id
+}
+
+//通过TOKEN登陆游戏服务器,machineId,token,srvid必须要
+message C2S_LoginWithToken {
+	string machineId     = 1; // 机器序列
+	string token         = 2; // 通过账号服获得的token (必须发)
+	string srvid         = 3; // 游戏服ID，比如1004
+	int32  channel       = 4; // 渠道号 1为官网
+	int32  gameId        = 5; // 登录游戏编号,qiumi为1
+	int32  mainVer       = 6; // 主版本号
+	int32  evaluationVer = 7; // 审核版本号
+	int32  hotfixVer     = 8; // 热更版本号
+	string phone         = 9; // 电话号码
+}
+
+// 登录成功
+message S2C_GameLoginResult{
+	bool   success       = 1; // 1成功，0失败
+	string err           = 3;
+	int32  code          = 4; // 错误原因 1，TOKEN失效  2,没有带token或者srvid 3,没有带machineId 4,该machineId或者ip被封禁，得稍候再试。5,网站通过验证，但是没有给游戏服返回openId
+	uint64 serverTimeNow = 5; // 服务器当前时间戳
+}
+
+message Message {
+	string msg = 1;
+}

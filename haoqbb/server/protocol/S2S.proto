@@ -1,0 +1,21 @@
+﻿syntax = "proto3";
+package protocol;
+
+// 节点到节点消息
+message N2NMsg {
+  int32  destServiceId = 1;
+  int32  srcServerId = 2;
+  int32  msgType = 3;
+  bytes  data = 4;
+}
+
+// 服务信息
+message ServiceInfo {
+  string serviceName = 1;
+  int32 serviceId = 2;
+}
+
+// 节点注册
+message N2NRegedit {
+  repeated ServiceInfo serviceList = 2;
+}

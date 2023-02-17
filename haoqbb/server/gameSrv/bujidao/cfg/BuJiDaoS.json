@@ -1,0 +1,22 @@
+{
+  "Remark":"建议id 10000 + nodeId",
+  "Id": 10000,
+  "Mongo": {
+    "Ip": "127.0.0.1",
+    "Port": 27017,
+    "DBName": "Test"
+  },
+  "Mysql":{
+    "Ip": "39.101.212.11",
+    "Port": 3310,
+    "DBName": "JiuMiLog",
+    "UserName": "root",
+    "PassWord": "root"
+  },
+  "Redis":{
+    "Ip": "39.101.212.11",
+    "Port": 6379,
+    "PassWord": "foobared",
+    "Index": 4
+  }
+}

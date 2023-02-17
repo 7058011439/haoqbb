@@ -1,0 +1,1694 @@
+﻿syntax = "proto3";
+package protocol;
+
+
+//S2F 游戏服发给社交服 C2F 客户端发给社交服
+message F2S_RegisterServer{
+    string code         = 1;  //连接秘钥
+}
+
+message _simpleUser{
+    int32          userId           = 1;  // 用户id
+    int32          gameId           = 2;  // 游戏id
+    string         nickName         = 3;  // 昵称
+    int32          level            = 4;  // 等级
+    int32          faceFrameId      = 6;  // 头像框
+    int32          wearingClothesId = 9;  // 玩家穿的衣服的itemId
+    string         token            = 15; // 游戏服生成的token，客户端用这个token来连接社交服
+    repeated int32 friends          = 16; // 好友id列表
+    repeated int32 blockList        = 17; // 屏蔽id列表
+    int32          banTalk          = 19; // 禁言时间戳
+    int64          sceneId          = 20; // 场景id
+}
+
+// 游戏服回复社交服注册
+message S2F_RegisterServer{
+    repeated _simpleUser users = 1; // 在线的玩家列表
+}
+
+// 游戏服通知玩家登录
+message S2F_UserLogin{
+    _simpleUser user = 1; // 登录的玩家信息
+}
+
+// 游戏服通知玩家登录，社交服回复结果
+message F2S_UserLogin{
+    int32 userId = 1;
+    bool  result = 2; // true 登录成功 false 登录失败
+}
+
+//
+message S2F_UserLogout{
+    int32 userId = 1; // 登出的玩家id
+}
+
+message S2F_UserAttrChange{
+    int32         userId       = 1;
+    Enum_UserAttr attr         = 2; // 属性枚举
+    int32         attrValueInt = 3; // 属性改变值int
+    string        attrValueStr = 4; // 属性改变值string
+}
+
+//添加好友
+message S2F_AddFriend{
+    int32 userId   = 1;
+    int32 friendId = 2;
+}
+
+//删除好友
+message S2F_DelFriend{
+    int32 userId   = 1;
+    int32 friendId = 2;
+}
+
+//和好友离线聊天
+message F2S_TalkToOfflineFriend{
+    string msg        = 1;
+    int32  userId     = 2; // 发送聊天消息的userId
+    int32  msgId      = 3;
+    int32  receiverId = 4; // 消息接收者Id
+}
+
+//客户端连接好友服
+message C2F_Login{
+    int32  userId = 1;
+    string token  = 2;
+}
+
+//社交服回复客户端连接
+message F2C_Login{
+
+}
+
+message S2F_SyncMyFriendList{
+    repeated int32 friends   = 1;
+    int32          userId    = 2;
+    repeated int32 blockList = 3;
+}
+
+// 添加到屏蔽列表
+message S2F_AddBlock{
+    int32 userId   = 1;
+    int32 targetId = 2;
+}
+
+// 从屏蔽列表删除
+message  S2F_DelBlock{
+    int32 userId   = 1;
+    int32 targetId = 2;
+}
+enum ESpeakChannel{
+    ESpeakChannel_None    = 0;
+    ESpeakChannel_Sys     = 1;   // 系统
+    ESpeakChannel_Global  = 2;   // 全服
+    ESpeakChannel_Near    = 3;   // 附近
+    ESpeakChannel_Private = 4;   // 私聊
+}
+// 聊天
+message S2F_ChannelSpeak{
+    int32         userId       = 1; // 发送消息的玩家id
+    string        nickName     = 2; // 发送消息的玩家昵称
+    string        msg          = 3; // 发送的消息
+    ESpeakChannel speakChannel = 4; // 频道 1 系统 2 全服 3 附近 4 私聊
+    int32         receiver     = 5; // 接收者id
+}
+
+// 服务器发送广播消息
+message F2C_ChannelSpeak{
+    int32          userId       = 1; // 说话的人
+    string         nickName     = 2; // 说话人的名字
+    string         msg          = 3; // 说的内容
+    int32          receiverId   = 4; // 接收者id
+    ESpeakChannel  speakChannel = 5; // 频道 1 系统 2 全服 3 附近 4 私聊
+    int32          faceId       = 6;
+    int32          frameId      = 7; // 头像框
+}
+
+// 聊天
+message C2F_ChannelSpeak{
+    string        msg          = 1; // 发送的消息
+    ESpeakChannel speakChannel = 2; // 频道 1 系统 2 全服 3 附近 4 私聊
+    int32         receiver     = 3; // 接收者id
+}
+
+message F2C_ChannelSpeakResult{
+    FailNotice result = 1; // 频道聊天的结果
+}
+
+//------------------------------------系统公告--------------------------------
+message A2S_SystemNotice{
+    int32   id          = 1;
+    int32   beginTime   = 2;
+    int32   endTime     = 3;
+    int32   repeatTimes = 4;
+    int32   interval    = 5;
+    string  msg         = 6;
+}
+
+
+//------------------------------------系统公告end-----------------------------
+
+
+//------------------------------------进出场景--------------------------------
+message S2F_EnterScene{
+    int32  userId  = 1; // 玩家ID
+    int64  sceneId = 2; // 场景ID
+
+}
+//------------------------------------进出场景end-----------------------------
+//服务端下发的包以S2C_开头  客户端上传的包以C2S_开头
+
+//-------------------------------------用户信息---------------------------
+message _user{
+    int32  userId                = 1;  // 用户ID
+    string openId                = 2;  // 渠道sdkID
+    string phoneNo               = 3;  // 电话
+    string nickName              = 4;  // 昵称
+    int32  level                 = 5;  // 用户等级
+    int32  exp                   = 6;  // 经验
+    int32  faceId                = 7;  // 头像ID
+    int32  faceFrameId           = 8;  // 头像框ID
+    int32  energy                = 9;  // 精力值
+    int32  charm                 = 10; // 魅力值
+    int32  shell                 = 11; // 贝壳
+    int32  pearl                 = 12; // 珍珠
+    int32  pearlBind             = 13; // 绑定珍珠
+    int32  gameId                = 14; // 游戏Id
+    string IDCard                = 15; // 身份证号
+    string realName              = 16; // 真实姓名
+    int32  activePointDaily      = 17; // 日活跃点
+    int32  activePointWeek       = 18; // 周活跃点
+    int32  banTalk               = 19; // 禁言时间戳
+    int32  LastChangeNameTime    = 20; // 上次改名时间
+    repeated int32 syntheticList = 21; // 已学会的合成技能列表
+    repeated int32 clothesList   = 22; // 玩家获得的衣服集合(该集合里面itemId不重复)
+    int32  wearingClothesId      = 23; // 玩家穿的衣服的itemId
+    int32  bulletinBoardId       = 24; // 看板娘的itemID
+    int32  PayTotal              = 25; // 充值总金额
+    bool   alreadyRegistered     = 26; // 玩家是否已经注册(选择服装和改名) false - 没有注册  true - 已经注册过(不能再选)
+    string  manorName            = 41; // 庭院名
+}
+
+enum Enum_Occupation{
+    None        = 0;
+    FisherMan   = 1;    // 渔夫
+    Cook        = 2;    // 厨师
+    Farmer      = 3;    // 农夫
+    StockMan    = 4;    // 畜牧主
+    Carpenter   = 5;    // 木匠
+    Miner       = 6;    // 矿工
+    Tailor      = 7;    // 裁缝
+    Max         = 8;    // 最大值
+}
+
+//---------------------------------------登录-------------------------------
+//游戏服务器登录申请,  客户端的方式是发openId，  然后是machineId ,  注意如果发送了machineId，那么openId会被忽略
+message C2S_GuestLogin{
+    string machineId     = 1;  // 机器序列
+    string openId        = 2;  // 渠道id
+    int32  userId        = 3;  // 用户 I D  ，作废了
+    string password      = 4;  // 登录密码(32md5)
+    string ipAddr        = 5;  // IP地址
+    int32  channel       = 6;  // 渠道号 1为官网
+    string deviceType    = 7;  // 设备的型号
+    int32  gameId        = 8;  // 登录游戏编号 , 必须发
+    int32  mainVer       = 9;  // 主版本号
+    int32  evaluationVer = 10; // 审核版本号
+    int32  hotfixVer     = 11; // 热更版本号
+}
+
+////通过TOKEN登陆游戏服务器,machineId,token,srvid必须要
+//message C2S_LoginWithToken {
+//    string machineId     = 1; // 机器序列
+//    string token         = 2; // 通过账号服获得的token (必须发)
+//    string srvid         = 3; // 游戏服ID，比如1004
+//    int32  channel       = 4; // 渠道号 1为官网
+//    int32  gameId        = 5; // 登录游戏编号,qiumi为1
+//    int32  mainVer       = 6; // 主版本号
+//    int32  evaluationVer = 7; // 审核版本号
+//    int32  hotfixVer     = 8; // 热更版本号
+//    string phone         = 9; // 电话号码
+//}
+//
+//// 登录成功
+//message S2C_GameLoginResult{
+//    bool   success       = 1; // 1成功，0失败
+//    _user  user          = 2; // 用户信息
+//    string err           = 3;
+//    int32  code          = 4; // 错误原因 1，TOKEN失效  2,没有带token或者srvid 3,没有带machineId 4,该machineId或者ip被封禁，得稍候再试。5,网站通过验证，但是没有给游戏服返回openId
+//    uint64 serverTimeNow = 5; // 服务器当前时间戳
+//    string socialServer  = 6; // 社交服的地址
+//}
+
+// 登出
+message C2S_GameLogout{
+    int32 userId = 1;
+}
+
+// 客户端请求注册
+message C2S_Register {
+    int32  clothesId = 1; // 选中的服装id
+    string nickName  = 2; // 注册的玩家名
+    string manorName = 3; // 注册的庭院名
+}
+
+// 服务端相应注册结果
+message S2C_Register {
+    OperationResult ret = 1; // 操作结果
+}
+
+message C2S_String {
+    string str = 1;   
+}
+
+message C2S_int32 {
+    int32 data = 1;   
+}
+
+// 空消息
+message C2S_Empty {
+}
+
+
+//错误文本提示
+message FailNotice{
+     int32           failCode = 1; // 错误码
+     repeated string param    = 2; // 错误参数
+     string          failMsg  = 3; // 错误消息(failCode == 0 && failMsg != ""，可直接显示failMsg)
+}
+
+//通用的错误返回码
+enum Enum_ErrorCode {
+    NoUse      = 0; // 占位 无用
+    NoMoney    = 1; // 钱不足
+    NoEnergy   = 2; // 精力不足
+    NoItem     = 3; // 道具不足
+    OtherError = 4; // 其它错误
+}
+
+//通用操作结果
+message OperationResult{
+    bool           isSuccess = 1; // 是否成功
+    Enum_ErrorCode errCode   = 2; // 返回码
+    FailNotice     msg       = 3; // 错误消息
+}
+
+
+// -------------------------------------------道具-----------------------------------------------
+message _item {
+    int32  uuid   = 1;
+    int32  itemId = 2;
+    int32  no     = 3;
+    string extra  = 4; //附加属性
+}
+
+message furnitureItem {
+    int32 itemId = 1;
+    int32 no     = 2;
+}
+
+//所有道具信息
+message S2C_AllItemInfo{
+    repeated int32         slotCellNo = 1; //背包插槽插的格子数量信息
+    repeated _item         items      = 2; 
+    repeated furnitureItem furniture  = 3; //衣帽间的已解锁可堆叠家具列表
+    repeated int32         floorList  = 4; //衣帽间不可堆叠的家具（地板，墙壁）列表
+}
+
+// 使用道具
+message C2S_UseItem{
+    _item  item  = 1;
+    string param = 2; // 参数，如果是喇叭道具，就是要发的广播信息
+}
+
+// 道具变动
+message S2C_UpdateItem{
+    int32 uuid          = 1;
+    int32 itemId        = 2;
+    int32 currentNumber = 3;  // 变动之后现在该道具的数量
+    int32 origNumber    = 4;  // 变动之前的道具数据，跟上面那个值差值数量为负就是减少
+}
+
+// 批量道具变动
+message S2C_BatchUpdateItem{
+    repeated S2C_UpdateItem items  = 1;
+    int32                   reason = 2; // 变动原因：参考Enum_OpReason
+}
+
+// 获取某一个道具信息
+message C2S_GetItemInfo{
+    int32 uuid    = 1;
+    int32 itemId  = 2;
+}
+
+//下发某个道具的具体信息
+message S2C_GetItemInfo{
+    _item item = 1;
+}
+
+//下发背包每个插槽的格子数量信息
+message S2C_SlotLevels{
+    repeated int32 slotCellNo = 1;
+}
+
+message S2C_BatchAddFurniture {
+     repeated furnitureItem furniture = 1; // 一堆新增的家具列表，包括地板和普通家具
+     int32                  reason    = 2; // 变动原因：参考Enum_OpReason
+ }
+
+//------------------------------种植系统 begin----------------------
+
+//种植地块信息
+message _puzzleInfo{
+    int32 puzzleId        = 1; // 地块ID
+    int32 beginTime       = 2; // 实际种植时间
+    int32 manureTimes     = 3; // 施肥次数
+    int32 grawRate        = 4; // 生长速率 万分比
+    int32 collectedTimes  = 5; // 采集次数
+    int32 seedId          = 6; // 种子物品id
+    int32 puzzleType      = 7; // 地块类型 1种植 2养殖
+    int32 nextStageTime   = 8; // 下阶段到期时间
+    int32 stage           = 9; // 当前阶段 
+}
+
+// PUZZLE_STAGE = {地块阶段
+//     NONE        = 0,
+//     PREPARE     = 1,     --准备阶段，需要浇水
+//     GROWSTAGE1  = 2,     --生长阶段1
+//     GROWSTAGE2  = 3,     --生长阶段2
+//     MATURE      = 4,     --成熟阶段
+// }
+
+//-- 客户端请求农场信息
+message C2S_Farm_GetFarmInfo{
+    
+}
+
+//-- 服务器下发农场信息
+message S2C_Farm_GetFarmInfo{
+    repeated _puzzleInfo  allPuzzle     = 1; // 所有地块信息
+    repeated int32        emptyPuzzleId = 2; // 空地块id
+}
+
+
+//-- 客户端请求种植
+message C2S_Farm_Plant{
+    int32 puzzleId = 1; // 地块ID
+    int32 seedId   = 2; // 种植物品id
+}
+
+//-- 服务器回复种植请求
+message S2C_Farm_Plant{
+    int32 result   = 1; // 1成功2失败
+    int32 puzzleId = 2; // 地块id
+    int32 itemId   = 3; // 种子id
+}
+
+//-- 客户端请求施肥
+message C2S_Farm_Manure{
+    int32 puzzleId     = 1; // 地块ID
+    int32 fertilizerId = 2; // 肥料物品id
+}
+
+//-- 服务器回复施肥请求
+message S2C_Farm_Manure{
+    int32 result     = 1; // 1成功2失败
+    int32 puzzleId   = 2; // 地块id
+    int32 itemId     = 3; // 肥料id
+}
+
+//-- 服务器下发单个地块信息
+message S2C_Farm_PuzzleInfo{
+    _puzzleInfo puzzle  = 1; // 地块信息
+}
+
+//-- 服务器下发地块状态变化
+message S2C_Farm_SyncStatus{
+    int32 puzzleId      = 1; // 地块id
+    int32 status        = 2; // 状态
+    int32 nextStageTime = 3; // 到达下阶段时间
+}
+
+//-- 客户端请求解锁种植地块 养殖地块不能解锁
+message C2S_Farm_UnlockPuzzle{
+    int32 puzzleType      = 1; // 地块类型 1种植 2养殖
+    int32 puzzleId        = 2; // 地块id
+}
+
+//-- 服务器回复解锁地块请求
+message S2C_Farm_UnlockPuzzle{
+    int32 result          = 1; // 解锁结果1成功 0失败
+    int32 puzzleId        = 2; // 地块id
+}
+
+//-- 客户端请求浇水
+message C2S_Farm_Water{
+    int32 puzzleId    = 1; // 要收割的地块id
+}
+
+//-- 服务器回复浇水请求 
+message S2C_Farm_Water{
+    int32 result      = 1; // 1成功2失败
+    int32 puzzleId    = 2; // 地块id
+}
+
+//-- 客户端请求收割
+message C2S_Farm_Reap{
+    int32 puzzleId    = 1; // 要收割的地块id
+}
+
+//-- 服务器回复收割请求 
+message S2C_Farm_Reap{
+    int32 result      = 1; // 1成功2失败
+    int32 puzzleId    = 2; // 地块id
+    int32 rewardId    = 3; // 收获的物品id
+    int32 rewardCount = 4; // 收获的物品数量
+}
+
+//------------------------------种植系统 end----------------------
+
+//------------------------------庄园农场 begin----------------------
+
+//种植地块信息
+message _plantPuzzleInfo{
+    int32 puzzleId        = 1; // 地块ID
+    int64 beginTime       = 2; // 实际种植时间
+    int32 collectedTimes  = 3; // 采集次数
+    int32 seedId          = 4; // 种子物品id
+    int64 nextStageTime   = 5; // 下阶段到期时间
+    int32 stage           = 6; // 当前阶段
+}
+
+//-- 服务器下发农场信息
+message S2C_PlantFarm_GetFarmInfo{
+    int32                      buildUId      = 1;
+    int32                      buildId       = 2;
+    repeated _plantPuzzleInfo  allPuzzle     = 3; // 所有种了植物的信息
+    repeated int32             emptyPuzzleId = 4; // 空地块id
+}
+
+
+//-- 客户端请求种植
+message C2S_PlantFarm_Plant{
+    int32 buildUId = 1;
+    int32 puzzleId = 2; // 地块ID
+    int32 seedId   = 3; // 种植物品id
+}
+
+//-- 服务器回复种植请求
+message S2C_PlantFarm_Plant{
+    int32           buildUId = 1;
+    OperationResult result   = 2; // 操作结果
+    int32           puzzleId = 3; // 地块id
+    int32           itemId   = 4; // 种子id
+}
+
+//-- 客户端请求操作单个地块信息
+message C2S_PlantFarm_PuzzleAction{
+    int32 buildUId = 1;
+    int32 puzzleId = 2; // 地块id
+    int32 action   = 3; // 1获取详情 2浇水 3收割
+}
+
+
+//-- 服务器下发单个地块信息
+message S2C_PlantFarm_PuzzleInfo{
+    int32            buildUId = 1;
+    _plantPuzzleInfo puzzle   = 2; // 地块信息
+}
+
+//-- 服务器回复浇水请求
+message S2C_PlantFarm_Water{
+    int32           buildUId = 1;
+    OperationResult result   = 2; // 操作结果
+    int32           puzzleId = 3; // 地块id
+
+}
+
+
+//-- 服务器回复收割请求
+message S2C_PlantFarm_Reap{
+    int32           buildUId    = 1;
+    OperationResult result      = 2; // 操作结果
+    int32           puzzleId    = 3; // 地块id
+    repeated int32 rewardIds    = 4; // 收获的物品id
+    repeated int32 rewardCounts = 5; // 收获的物品数量
+}
+
+//------------------------------庄园农场 end----------------------
+
+
+//------------------------------庄园养殖场 begin----------------------
+
+//种植地块信息
+message _animalPuzzleInfo{
+    int32 puzzleId         = 1; // 地块ID
+    int64 beginTime        = 2; // 实际种植时间
+    int32 collectedTimes   = 3; // 采集次数
+    int32 seedId           = 4; // 种子物品id
+    int32 currentSatiety   = 5; // 此时的饱食度进度 45(45/60)
+    int32 needTotalSatiety = 6; // 到下阶段总共需要的饱食度 60(45/60)
+    int32 stage            = 7; // 当前阶段
+}
+
+//-- 服务器下发养殖场信息
+message S2C_AnimalFarm_GetFarmInfo{
+    int32                      buildUId      = 1;
+    int32                      buildId       = 2;
+    repeated _animalPuzzleInfo allPuzzle     = 3; // 所有种了植物的信息
+    repeated int32             emptyPuzzleId = 4; // 空地块id
+    int32                      inventory     = 5; //该养殖场剩余的饲料值是多少
+}
+
+
+//-- 客户端请求养殖
+message C2S_AnimalFarm_Plant{
+    int32 buildUId = 1;
+    int32 puzzleId = 2; // 地块ID
+    int32 seedId   = 3; // 种植物品id
+}
+
+//-- 服务器回复养殖请求
+message S2C_AnimalFarm_Plant{
+    int32           buildUId   = 1;
+    OperationResult result     = 2; // 操作结果
+    int32           puzzleId   = 3; // 地块id
+    int32           itemId     = 4; // 种子id
+}
+
+//-- 客户端请求操作单个动物信息
+message C2S_AnimalFarm_PuzzleAction{
+    int32 buildUId = 1;
+    int32 puzzleId = 2; // 地块id
+    int32 action   = 3; // 1获取详情 2浇水 3收割
+}
+
+
+//-- 服务器下发单个动物信息
+message S2C_AnimalFarm_PuzzleInfo{
+    int32 buildUId    = 1;
+    _animalPuzzleInfo puzzle  = 2;              // 地块信息
+    int32 inventory = 3;        //该养殖场剩余的饲料值是多少
+}
+
+//-- 服务器发送当前剩余的饲料值
+message S2C_AnimalFarm_Inventory{
+    int32 buildUId    = 1;
+    int32 inventory   = 2;              // 该养殖场当前剩余的饲料值是多少
+}
+
+
+//-- 服务器回复收割请求
+message S2C_AnimalFarm_Reap{
+    int32 buildUId     = 1;
+    OperationResult result  = 2;              // 操作结果
+    int32 puzzleId    = 3;              // 地块id
+    repeated int32 rewardIds    = 4;              // 收获的物品id
+    repeated int32 rewardCounts = 5;              // 收获的物品数量
+}
+
+//------------------------------庄园养殖场 end----------------------
+
+
+//------------------------------Mission begin----------------------------------
+enum Enum_MissionStatus {
+    eReady    = 0; // 未领取任务(暂时没用)
+    eAccepted = 1; // 已领取任务，未完成
+    eComplete = 2; // 达成任务条件，未领取奖励
+    eEnd      = 3; // 已领取奖励，任务结束
+}
+
+message _mission {
+    int32              id                   = 1; // 任务ID(配置表中id)
+    Enum_MissionStatus status               = 2; // 任务状态
+    repeated int32     currProcess          = 3; // 任务进度(采集类任务所需采集数量，杀怪类任务杀怪数量等)
+    repeated int32     totalProcess         = 4; // 任务总进度
+    int32              completeTimes        = 5; // 已经完成次数
+}
+
+// 同步所有任务信息
+message C2S_AllMissionInfo {
+}
+
+// 下发所有任务信息
+message S2C_AllMissionInfo {
+    repeated _mission missions = 1;
+}
+
+// 同步单个任务信息(任务状态变更时生效)
+message C2S_OneMissionInfo {
+    int32        id       = 1; // 需要同步任务的任务ID(配置表中id)
+}
+
+// 下发单个任务信息(任务状态变更时生效)
+message S2C_OneMissionInfo {
+    _mission        mission  = 1;
+}
+
+// 接任务
+message C2S_AcceptMission {
+    int32        id       = 1; // 操作的任务ID(配置表中id)
+}
+
+// 接任务
+message S2C_AcceptMission {
+    int32           id  = 1; // 操作的任务ID(配置表中id)
+    OperationResult ret = 2; // 操作结果
+}
+
+// 报告任务
+message C2S_ReportMission {
+    int32           id  = 1; // 操作的任务ID(配置表中id)
+}
+
+// 报告任务
+message S2C_ReportMission {
+    int32           id  = 1; // 操作的任务ID(配置表中id)
+      OperationResult ret = 2; // 操作结果
+}
+
+// 领取任务奖励
+message C2S_GetMissionReward {
+    int32        id       = 1; // 操作的任务ID(配置表中id)
+}
+
+message S2C_GetMissionReward {
+    int32           id  = 1; // 操作的任务ID(配置表中id)
+      OperationResult ret = 2; // 操作结果
+}
+
+// 可以接受任务列表
+message S2C_MissionCanAcceptList {
+      repeated int32 missionId  = 1; // 可以接受任务列表
+}
+// -------------------------------Mission end----------------------------------
+
+//-------------------------------theme begin-----------------------------------
+// 家具信息
+message _furniture {
+    int32           id            = 1; // 物品Id
+    int32           pos           = 2; // 当前位置
+    int32           dir           = 3; // 物品朝向
+}
+
+// 主题信息
+message _theme {
+    int32               id            = 1; // 主题Id
+    string              name          = 2; // 主题名
+    bool                unlock        = 3; // 主题解锁状态
+    repeated _furniture furniturelist = 4; // 家具列表
+}
+
+// 房间信息
+message _homeInfo {
+    int32           level        = 1;
+    int32           currThemeId  = 2;
+}
+
+// 请求房间信息
+message C2S_GetHomeInfo {
+}
+
+// 下发房间信息
+message S2C_GetHomeInfo {
+    _homeInfo          home     = 1; 
+}
+
+// 请求所有主题信息
+message C2S_GetAllThemesInfo {
+}
+
+// 下发所有主题信息
+message S2C_GetAllThemesInfo {
+    repeated _theme themes   = 1;
+}
+
+// 请求单个主题信息
+message C2S_GetSingleThemeInfo {
+    int32      id        =  1; // 请求的主题Id
+}
+
+// 下发单个主题信息
+message S2C_GetSingleThemeInfo {
+    _theme         theme    = 1;
+}
+
+// 保存配置到主题
+message C2S_SaveThemeInfo {
+    _theme         theme    = 1;
+}
+
+// 请求家园升级(扩容)
+message C2S_HomeUp {
+}
+
+// 请求主题改名
+message C2S_ChangeThemeName {
+    int32           id      = 1;  // 需要变更主题的主题Id
+    string          name    = 2;  // 本次想要修改的主题名
+}
+
+// 请求解锁主题
+message C2S_UnlockTheme {
+    int32        id      = 1;  // 需要解锁的主题Id
+}
+//--------------------------------theme end------------------------------------
+
+//--------------------------------Collect Begin--------------------------------
+// 请求树木砍伐
+message C2S_Forest_CutTree {
+    int32        treeId   = 1;  // 本轮砍伐的树木Id
+}
+
+// 回复砍伐结果
+message S2C_Forest_CutTree {
+    int32               treeId     = 1;  // 本轮砍伐的树木Id
+    OperationResult     ret        = 2;  // 操作结果
+    repeated int32      itemId     = 3;  // 本轮获得材料Id列表
+    repeated int32      itemCount  = 4;  // 本轮获得材料数量列表
+}
+
+// 请求曾经进入矿场最大层数(通关记录)
+message C2S_Mine_GetMaxLayer {
+}
+
+// 回复进入矿场最大层数(通关记录)
+message S2C_Mine_GetMaxLayer {
+    int32            maxLayer   = 1;  // 获取到的最大层数
+}
+
+// 请求进入指定层数矿场
+message C2S_Mine_EnterLayer {
+    int32            layer      = 1;  // 想要进入的层数
+}
+
+enum Enum_Mine_EnterCode {
+    eMineEnterCode_NoUse        = 0;
+    eMineEnterCode_OK           = 1; // 成功
+    eMineEnterCode_LackEnergy   = 2; // 精力不足
+    eMineEnterCode_LayerError   = 3; // 层数错误
+}
+
+// 回复进入指定层数矿场
+message S2C_Mine_EnterLayer {
+    int32               layer      = 1;  // 成功进入的层数
+    Enum_Mine_EnterCode errCode    = 2;  // 进入结果
+    int32               startIndex = 3;  // 开始挖取格子序号(0-31)
+    int32               needEnergy = 4;  // 挖取格子需要精力
+} 
+
+// 请求挖取矿物
+message C2S_Mine_Dig {
+    int32            index      = 1;  // 本次挖取的格子序号(0-31)
+}
+
+enum Enum_Mine_DigCode {
+    eMineDigCode_NoUse        = 0;
+    eMineDigCode_OK           = 1;  // 成功
+    eMineDigCode_LackEnergy   = 2;  // 精力不足
+    eMineDigCode_UnableDig    = 3;  // 无法挖取
+    eMineDigCode_RepeatDig    = 4;  // 重复挖取
+    eMineDigCode_BagCapError  = 5;  // 背包剩余容量不足
+}
+
+enum Enum_Mine_RewardType {
+    eMineRewardType_none       = 0;    // 没有事件
+    eMineRewardType_GiveItem   = 1;    // 直接获得物品
+    eMineRewardType_GiveMoney  = 2;    // 直接获得货币
+    eMineRewardType_BoxItem    = 11;   // 宝箱开物品
+    eMineRewardType_BoxMoney   = 12;   // 宝箱开货币
+    eMineRewardType_CaveItem   = 21;   // 山洞获得物品
+    eMineRewardType_CaveMoney  = 22;   // 山洞获得货币
+    eMineRewardType_CavePet    = 23;   // 山洞获得宠物(属性)
+    
+    eMineRewardType_Wave       = 998;  // 传送阵(离开矿场)
+    eMineRewardType_Room       = 999;  // 传送门(进入下一层)
+}
+
+// 回复挖取矿物
+message S2C_Mine_Dig {
+    int32                index      = 1;  // 本次挖取的格子序号(0-31)
+    Enum_Mine_DigCode    errCode    = 2;  // 本次挖取结果
+    int32                itemId     = 3;  // 本次挖取获得物品Id
+    int32                itemCount  = 4;  // 本次挖取获得物品数量
+    Enum_Mine_RewardType rewardType = 5;  // 额外奖励类型
+    int32                rewardid   = 6;  // 额外奖励(物品/货币/等)id
+}
+
+// 领取额外奖励
+message C2S_Mine_GetReward {
+    int32            index      = 1;  // 本次领取奖励的格子序号(0-31)
+}
+
+enum Enum_Mine_GetRewardCode {
+    eMineGetRewardCode_NoUse       = 0;  // 随机物品
+    eMineGetRewardCode_OK          = 1;  // 领取成功
+    eMineGetRewardCode_UnableGet   = 2;  // 无法领奖
+    eMineGetRewardCode_RepeatGet   = 3;  // 重复领奖
+    eMineGetRewardCode_BagCapError = 4;  // 背包剩余容量不足
+}
+
+// 回复领取奖励
+message S2C_Mine_GetReward {
+    int32                   index      = 1;  // 本次领奖的格子序号(0-31)
+    Enum_Mine_GetRewardCode errCode    = 2;  // 本次领奖结果
+    int32                   itemId     = 3;  // 本次领奖获得物品Id
+    int32                   itemCount  = 4;  // 本次领奖获得物品数量
+}
+//---------------------------------Collect End---------------------------------
+
+//------------------------------UserValue Begin--------------------------------
+// 请求同步玩家所有基础属性
+message C2S_GetUserAllValue {
+}
+
+// 下发玩家所有基础属性
+message S2C_GetUserAllValue {
+    _user userValue       = 1;
+}
+
+ //具体的属性类型，最好都是INT，比如level,pearl
+enum Enum_UserAttr {
+    unused            = 0;   //占位，无用
+    // int
+    shell             = 1;   // 贝壳
+    pearlBind         = 2;   // 绑定珍珠
+    pearl             = 3;   // 珍珠
+    energy            = 4;   // 精力值
+    charm             = 5;   // 魅力值
+    exp               = 6;   // 经验
+    level             = 7;   // 用户等级
+    homeLevel         = 8;   // 家园等级
+    rmb               = 9;   // 人民币
+    farmField         = 10;  // 农场田块数量
+    farmFence         = 11;  // 牧场围栏数量
+    homeProsperity    = 12;  // 家园繁盛值
+    faceId            = 13;  // 头像ID
+    faceFrameId       = 14;  // 头像框ID    
+    wearingClothesId  = 15;  // 玩家穿的衣服的itemId
+    bulletinBoardId   = 16;  // 看板娘的itemId
+    activePointDaily  = 17;  // 日活跃点
+    activePointWeek   = 18;  // 周活跃点
+    banTalk           = 19;  // 禁言时间戳
+    
+    // string
+    nickName          = 31;  // 昵称
+    phoneNo           = 32;  // 电话
+    IDCard            = 33;  // 身份证号
+    realName          = 34;  // 真实姓名
+    alreadyRegistered = 40;  // 是否注册
+    manorName         = 41;  // 庭院名
+    
+    // list
+    syntheticList     = 51;  // 已学会的合成技能列表
+    clothesList       = 52;  // 玩家获得的衣服集合(该集合里面itemId不重复)
+    floorList         = 53;  // 衣帽间不可堆叠的家具（地板，墙壁）列表
+}
+
+message C2S_ChangeUserIntAttr {
+    Enum_UserAttr attrSort      = 1;  
+    int32         changeToValue = 2;
+}
+
+// 玩家的属性数据(类型为int,比如money,hp,level)变动
+message S2C_ChangeUserIntAttr {
+    OperationResult     ret       = 1; // 操作结果
+    Enum_UserAttr       attrSort  = 2; // 属性枚举
+    int32               curValue  = 3; // 现在的值
+    int32               origValue = 4; // 以前的值
+    int32               reason    = 5; // 变动原因：参考Enum_OpReas
+}
+
+message C2S_ChangeUserStrAttr {
+    Enum_UserAttr attrSort      = 1;  
+    string        changeToValue = 2;   
+}
+
+message S2C_ChangeUserStrAttr {
+    OperationResult     ret       = 1; // 操作结果
+    Enum_UserAttr       attrSort  = 2; // 属性枚举
+    string              curValue  = 3; // 现在的值
+    string              origValue = 4; // 以前的值
+    int32               reason    = 5; // 变动原因：参考Enum_OpReason
+}
+
+message  S2C_AddAttrList{
+    Enum_UserAttr  attrSort     = 1;
+    repeated int32 changeValues = 2; //新增的某些int类型的值
+    int32          reason       = 3; // 变动原因：参考Enum_OpReason
+}
+
+message C2S_StorePosition{
+    int32 x = 1;
+    int32 y = 2;
+}
+
+//-------------------------------UserValue End---------------------------------
+
+
+//-------------------------------Shop Begin---------------------------------
+
+ //限购类型
+enum Enum_Shop_Restriction {
+    shop_Restriction_unused     = 0;       //占位，无用
+    norestric  = 1;       //不限购
+    dayrefresh = 2;       //日限购
+    weekrefresh = 3;      //周限购
+    permanent  = 4;       //永久限购
+    timerange  = 5;       //时间段
+    timeLimit  = 99;      //限时活动
+}
+
+//一个商品条目
+message ShopItem {
+    int32                 id               = 1;  //充值条目ID
+    Enum_Shop_Restriction restriction      = 2;  //限购类型
+    int64                 resetTimeStamp   = 3;  // 该限制的到期时间戳
+    bool                  isTimeLimit      = 4;  // 是否限时礼包
+    int32                 currentTurnBuyNo = 5;  // 针对限购礼包：当前买了几个了
+    int32                 maxLimit         = 6;  // 针对限购礼包：总共可以买几个
+    int32                 purchasePrice    = 7;  // 购买限时礼包要多少货币（普通礼包应该跟xls里面的配置值同样）
+    int64                 startTime        = 8;  // 限时活动开始时间
+    int64                 endTime          = 9;  // 限时活动结束时间
+    int32                 webChargeId      = 10; // 网站配置的充值商品的ID
+    int32                 webOrder         = 11; // 网站配置的商品排序
+}
+
+
+//简易版的商品条目，主要是记录是否购买过该商品
+message HasBuyItem {
+    int32 id          = 1; // 充值条目ID
+    bool  hasBuy      = 2; // 是否购买过该商品
+    int32 webChargeId = 3; // 网站配置的充值商品的ID
+    int32 webOrder    = 4; // 网站配置的商品排序
+}
+
+message S2C_Shop_GetAllItems{
+    repeated HasBuyItem chargePearl = 1; // 用人民币购买珍珠的商品ID列表(第二个标签页)
+    repeated ShopItem   giftList    = 2; // 所有不用人民币购买的商品列表(第一个和第三个标签页)
+    repeated HasBuyItem monthCard   = 3; // 用人民币购买月卡商品列表(第四个标签页)
+}
+
+message C2S_Shop_Buy{
+    int32 id          = 1; // 充值条目ID
+    int32 clientPrice = 2; // 客户端以为要扣的货币数量
+}
+
+message BuyResult {
+    int64 resetTimeStamp   = 1; // 该限制的到期时间戳
+    int32 currentTurnBuyNo = 2; // 针对限购礼包：当前买了几个了
+}
+
+message S2C_Shop_Buy{
+     int32      id     = 1; // 充值条目ID
+     int32      result = 2; // 1,成功 2,未知原因失败 3,货币不足 4,客户端的商品价格有错误 5,已达到限购条件；6,商品ID不对;7,购买限时礼包不在时间范围内;8,背包已满
+     FailNotice notice = 3; // 错误文本提示
+     BuyResult  buyres = 4; // 购买成功后改变的那个商品信息
+}
+
+// 请求领取充值礼包
+message C2S_Recharge_GetGift {
+    string orderId    = 1; // 订单Id
+}
+
+// 响应领取充值礼包结果
+message S2C_Recharge_GetGift {
+    string                  orderId    = 1; // 订单Id
+    int32                   giftId     = 2; // 礼包Id
+    int32                   errCode    = 3; // 0-成功; 1-充值未到账; 2-奖励已领取
+    FailNotice              notice     = 4; // 错误提示信息
+}
+
+// 确认收到充值礼包
+message C2S_Recharge_GetGiftConfirm {
+    string                  orderId    = 1; // 订单Id
+}
+//-------------------------------Shop End---------------------------------
+
+//-----------------------------------Vip Start---------------------------------
+// 获取Vip卡到期时间
+message C2S_Vip_ExpireDate {
+}
+
+// 返回vip卡到期时间
+message S2C_Vip_ExpireDate {
+    repeated int32          cardListId = 1;  // Vip卡id(见card.xlsx id字段)
+    repeated int32          ExpireDate = 2;  // 截止时间(戳)
+}
+
+// 通知客户端获得购买/使用月卡奖励
+message S2C_Vip_BuyReward {
+    int32                   cardId     = 1;  // Vip卡id(见card.xlsx id字段)
+}
+
+// 通知客户端获得每日奖励
+message S2C_Vip_DailyReward {
+    repeated int32          cardListId = 1;  // Vip卡id(见card.xlsx id字段)
+}
+//------------------------------------Vip End----------------------------------
+
+//-----------------------------------防沉迷 begin---------------------------------
+//服务器下发玩家防沉迷信息
+message S2C_AntiAddictInfo {
+    int32 totalPlayTime = 1;                // 总游戏时间
+    int32 todayPlayTime = 2;                // 今天游戏时间
+    int32 age           = 3;                // 年龄 0表示没有实名认证
+    int32 todayPay      = 4;                // 今日充值
+    int32 monthPay      = 5;                // 本月充值
+    int32 lastPayDate   = 6;                // 最后充值时间
+}
+
+//客户端请求实名认证
+message C2S_VerifiedIDCard {
+    string name          = 1;                // 真实姓名
+    string idCard        = 2;                // 身份证号
+    string phone         = 3;                // 手机号，如果是用手机号登录的，可以不填
+}
+
+//服务器下发功能开关
+message S2C_Functions {
+    repeated int32 code  = 1;               // 功能代码
+    repeated int32 begin = 2;               // 功能开启时间
+    repeated int32 end   = 3;               // 功能结束时间
+}
+
+//-----------------------------------防沉迷 end-----------------------------------
+
+//通知客户端显示字符串
+message S2C_ShowNotice {
+    int32  showType = 1;   //显示类型，1直接显示服务器下发的notice内容，2 下发代码，客户端根据代码在配置表中读取内容显示
+    string notice   = 2;   //显示内容
+}
+
+
+//----------------------------------配置信息 begin----------------------------------
+message _config {
+    int32  key   = 1; 
+    string value = 2;
+}
+
+// 同步服务端配置
+message S2C_SyncConfig {
+    repeated _config config = 1;  //配置信息
+}
+//-----------------------------------配置信息 end-----------------------------------
+
+//-----------------------------------邮件 begin-----------------------------------
+message Attachment_Item {   //1个附件
+    int32 id = 1;           //道具ID  或者 钱种类
+    int32 number = 2;       //道具个数 或者 钱数量
+}
+
+//一条完整电子邮件 数据结构
+message EmailItem {
+    int32                    id          = 1; // 邮件ID（单个用户的邮件ID单调递增）
+    string                   sender      = 2; // 发送人
+    string                   title       = 3; // 主题
+    string                   content     = 4; // 内容
+    int64                    sendTime    = 5; // 发送时间
+    int64                    invalidTime = 6; // 失效时间（自动删除的时间）
+    repeated Attachment_Item attachment  = 7; // 附件
+    int32                    status      = 8; // 状态 1,未读 2,已读 3,已领取
+}
+
+//一条简易电子邮件 数据结构
+message SimpleEmailItem {
+    int32  id = 1;
+    string title = 2;
+    string sender = 3;
+    int32  status = 4;
+    int64  sendTime =5;     //发送时间
+    int64  invalidTime = 6; //失效时间（自动删除的时间）
+    bool   haveAttachment=7;//是否有附件
+}
+
+//批量的简易电子邮件
+message S2C_SimpleEmailItemList {
+    repeated SimpleEmailItem simpleItems = 1;
+}
+
+
+//对电子邮件进行操作的 返回结果
+message S2C_EmailOpResult {
+    int32                id  = 1; // 如果操作是 附件全部领取，则此值为0，否者为单条email的ID
+    OperationResult      res = 2; // 操作结果
+    Enum_Email_Operation op  = 3; // C2S_EmailOp里面的op，直接返回给客户端
+}
+
+enum Enum_Email_Operation {
+    enEmail_NoUse        = 0; // 占位
+    enEmail_Read         = 1; // 读某封邮件 (请求详情)
+    enEmail_Delete       = 2; // 删除某个邮件
+    enEmail_GetAttach    = 3; // 领取某个邮件的附件
+    enEmail_GetAllAttach = 4; // 附件全部领取
+    enEmail_DelAllRead   = 5; // 已读的全部领取
+}
+
+//客户端对电子邮件进行操作
+message C2S_EmailOp {
+    int32                id = 1; // 如果操作是 附件全部领取，则此值为0，否者为单条email的ID
+    Enum_Email_Operation op = 2;
+}
+//-----------------------------------邮件 end-----------------------------------
+
+//-----------------------------------好友 begin---------------------------------
+message friendInfo{
+    int32           charmPoint   = 1;   // 魅力值
+    friendSimpleInfo info        = 2;   //
+}
+
+message friendSimpleInfo{
+    int32    userId                   = 1;  // id
+    string   nickName                 = 2;  // 昵称
+    string   remarks                  = 3;  // 玩家备注
+    int32    lv                       = 4;  // 等级
+    int32    gameId                   = 5;  // 显示id
+    bool     state                    = 6;  // 当前在线状态，true在线 false 离线
+    int32    offlineDate              = 7;  // 离线时间
+    int32    icon                     = 8;  // 头像id
+    int32    frame                    = 9;  // 头像框id
+    bool     isFriendSendMeEnergy     = 10; // 今天该好友是否已经送了体力给你
+    bool     isGetFriendSendMeEnergy  = 11; // 今天我是否已经领取了该好友赠送的体力
+    bool     isSendFriendEnergy       = 12; // 今天我是否送了该好友体力
+    string   manorName                = 13; // 庄园名
+}
+
+message blockPerson{
+    int32       userId   = 1; // 要屏蔽的玩家id
+    int32       cloth    = 2; // 头像id
+    int32       frame    = 3; // 头像框
+    string      nickName = 4; // 昵称
+}
+
+// 客户端请求好友列表 message C2S_Empty
+// 服务器回复好友列表
+message S2C_Friend_GetList{
+    repeated friendSimpleInfo friends           = 1;
+    int32                     GetFriendEnergyNo = 2; // 今天领了多少次好友体力了
+    repeated blockPerson      blockList         = 3;
+}
+
+//客户端请求申请添加好友
+message C2S_Friend_Apply{
+    int32  userId  = 1; // 申请要加的好友id
+    string remarks = 2; // 发送好友请求的备注信息
+}
+
+//服务器回复申请好友请求
+message S2C_Friend_Apply{
+    int32       senderId  = 1;         //申请要加的好友id
+    int32       receiverId= 2;         //通过好友申请的id
+    OperationResult   result  = 3;     //处理结果
+}
+//客户端请求删除好友
+message C2S_Friend_Delete{
+    int32           userId      = 1;        //要删除的好友id
+}
+
+//服务器回复删除好友请求
+message S2C_Friend_Delete{
+    int32           userId = 1; // 赠送的玩家id
+    OperationResult result = 2; // 处理结果
+}
+
+//客户端发送聊天信息
+message C2S_Friend_Chat{
+    int32           userId      = 1;        //目标id
+    int32           msgId       = 2;        //消息id，客户端自己维护，返回操作结果时附带
+    string          msg         = 3;        //聊天内容
+}
+
+//回复消息发送结果
+message S2C_Friend_Chat{
+    int32           msgId       = 1;        //消息id
+    OperationResult ret         = 2;        //发送结果
+}
+
+//聊天消息内容
+message chatInfo{
+    int32           senderId    = 1;        //发送者id
+    string          msg         = 2;        //聊天内容
+    int32           sendDate    = 3;        //发送聊天的时间
+}
+
+//服务器转发在线聊天信息给玩家
+message S2C_Friend_OnLineMsg{
+    chatInfo        msg         = 1;        //聊天内容
+}
+
+//服务器转发离线聊天信息给玩家
+message S2C_Friend_OfflineMsg{
+    repeated  chatInfo msg      = 1;        //聊天内容
+}
+
+//客户端请求给玩家添加或修改备注
+message C2S_Friend_Remarks{
+    int32           userId      = 1;        //目标id
+    string          remarks     = 2;        //备注内容
+}
+
+//服务器回复添加或修改备注结果
+message S2C_Friend_Remarks{
+    int32           userId  = 1; // 玩家id
+    string          remarks = 2; // 玩家备注
+    OperationResult result  = 3; //处理结果
+}
+
+//客户端请求推荐好友message C2S_Empty
+//服务器回复推荐好友
+message S2C_Friend_Recommend{
+    repeated    friendSimpleInfo friends = 1;
+}
+
+//服务器下发玩家在线状态变化
+message S2C_Friend_State{
+    friendInfo  info   = 1;   // 玩家信息
+}
+
+//客户端请求好友名片
+message C2S_Friend_Card{
+    int32       userId  = 1;   // 请求的好友id
+}
+
+//服务器回复好友名片请求
+message S2C_Friend_Card{
+    friendInfo  friend  = 1;   // 好友信息
+}
+
+//客户端请求搜索玩家
+message C2S_Friend_Search{
+    int32  gameId   = 1; // 要搜索的玩家id
+    string nickName = 2; // 要搜索的玩家昵称
+}
+
+//服务器回复搜索玩家结果
+message S2C_Friend_Search{
+    repeated friendInfo friends = 1; // 搜索结果，可能有多位玩家
+}
+
+// 客户端处理别人的添加好友请求
+message C2S_Friend_DealApply{
+    repeated int32  userId  = 1;     // 处理的玩家id
+    bool            result  = 2;     // 处理结果，true通过 false 拒绝
+}
+
+// 服务器回复客户端处理别人的添加好友请求 通过
+message S2C_Friend_DealApplyPass{
+    OperationResult      result  = 1;     // 处理结果
+    repeated friendInfo  friends = 2;     // 好友信息
+}
+
+// 服务器回复客户端处理别人的添加好友请求 忽略
+message S2C_Friend_DealApplyIgnore{
+    OperationResult result    = 1; // 处理结果
+    repeated int32  friendIds = 2; // 好友id
+}
+
+// 服务器下发玩家被申请加好友的请求列表
+message S2C_Friend_ApplyList{
+    repeated friendSimpleInfo applications = 1;  //申请列表
+}
+
+// 客户端请求赠送体力
+message C2S_Friend_SendEnergy{
+    int32       userId  = 1;    //赠送的玩家id
+}
+
+// 服务器回复赠送结果
+message S2C_Friend_SendEnergy{
+    int32           senderId = 1; // 发起方的玩家ID
+    int32           recvId   = 2; // 被赠送的玩家id
+    OperationResult result   = 3; // 处理结果
+}
+
+// 客户端请求一键赠送体力 message C2S_Empty
+
+// 服务器回复一键赠送体力
+message S2C_Friend_SendEnergyAll{
+    repeated int32  userIds = 1;     //赠送成功的玩家id列表
+    OperationResult result  = 2;     //处理结果
+}
+
+// 客户端请求一键接收体力 message C2S_Empty
+
+// 服务器回复一键接收体力
+message S2C_Friend_GetEnergyAll{
+    repeated int32  userIds = 1; //被领取的玩家id
+    OperationResult result  = 2; //处理结果
+}
+
+// 服务器回复客户端请求领取体力
+message S2C_Friend_GetEnergy{
+    int32           userId = 1; //被领取的玩家id
+    OperationResult result = 2; //处理结果
+}
+
+// 客户端请求领取体力
+message C2S_Friend_GetEnergy{
+    int32       userId  = 1;    //被领取的玩家id
+}
+
+// 添加到屏蔽列表
+message C2S_Friend_AddBlock{
+    int32       userId   = 1; //要屏蔽的玩家id
+    int32       cloth    = 2; //头像id
+    int32       frame    = 3; //头像框
+    string      nickName = 4; //昵称
+}
+
+// 添加到屏蔽列表
+message S2C_Friend_AddBlock{
+    int32           userId = 1;     //要屏蔽的玩家id
+    OperationResult result = 2;     //处理结果
+}
+
+// 从屏蔽列表删除
+message C2S_Friend_DelBlock{
+    int32       userId = 1;     //要屏蔽的玩家id
+}
+
+// 从屏蔽列表删除
+message S2C_Friend_DelBlock{
+    int32       userId = 1;     //要屏蔽的玩家id
+    OperationResult   result  = 2;     //处理结果
+}
+
+//-----------------------------------好友 end-----------------------------------
+
+//-----------------------------------场景 begin----------------------------------
+// 场景玩家(简略)信息
+message sceneUser {
+    int32               userId    = 1; // 玩家id
+    string              name      = 2; // 玩家名
+    int32               clothesId = 3; // 穿戴衣服id
+    int32               level     = 4; // 玩家等级
+}
+
+// 玩家位置信息
+message posInfo {
+    int32               userId    = 1; // 玩家id
+    double              posX      = 2; // 玩家当前位置X
+    double              posZ      = 3; // 玩家当前位置Z
+    double              dirX      = 4; // 玩家当前方向X
+    double              dirZ      = 5; // 玩家当前方向Z
+    bool                findWay   = 6; // 是否寻路状态
+}
+
+// 请求进入场景
+message C2S_Syn_EnterScene {
+    int32               templateId   = 1; // 进入场景模板id(见map.xlsx)
+    int32               index        = 2; // 进入场景序号(副本地图(庭院/家园):传userId；公共地图-传序号(多公共地图使用，0-为系统自动分配，N-客户端指定))
+}
+
+// 进入场景结果
+message S2C_Syn_EnterScene {
+    int64               sceneId   = 1; // 场景id(唯一)
+    OperationResult     result    = 2; // 处理结果
+}
+
+// 请求场景(所有)玩家数据
+message C2S_Syn_SceneData {
+    int64               sceneId   = 1; // 场景id(唯一)
+}
+
+// 返回场景(所有)玩家数据
+message S2C_Syn_SceneData {
+    repeated sceneUser  baseData      = 1; // 玩家基础信息(等级，玩家名等)
+    repeated posInfo    posdata       = 2; // 玩家位置信息
+}
+
+// 同步玩家基础信息
+message S2C_Syn_Info {
+    sceneUser  data      = 1; // 玩家基础信息
+}
+
+// 同步玩家位置信息
+message S2C_Syn_Pos {
+    posInfo    data      = 1; // 玩家位置信息
+}
+
+// 请求位置变更(开始移动，方向变更，停止移动)
+message C2S_Syn_Move {
+    posInfo             data      = 1; // 玩家移动信息(包括当前坐标，移动方向，是否寻路状态)
+}
+
+// 请求修改(接收场景内玩家基础/坐标信息)状态
+message C2S_Syn_ModifyRecvMsgStatus {
+    bool                status    = 1; // false - 拒绝信息  true - 接收消息
+}
+
+// 告知有玩家离开场景
+message S2C_Syn_LeaveScene{
+    int32               userId    = 1; // 离开场景的玩家id
+}
+//------------------------------------场景 end-----------------------------------
+
+//-----------------------------------打地鼠 begin--------------------------------
+message mouse {
+    int32               mouseId      = 1; // 老鼠唯一id
+    int32               mouseType    = 2; // 老鼠类型(见配置表)
+}
+
+// 客户端请求进入老鼠洞(开始游戏)
+message C2S_Mouse_EnterHole {
+}
+
+// 服务端返回进入结果
+message S2C_Mouse_EnterHole {
+    OperationResult     result        = 1; // 处理结果
+}
+
+// 老鼠洞生成新老鼠
+message S2C_Mouse_NewMouse {
+    repeated mouse      mouseList     = 1; // 新老鼠信息
+}
+
+// 客户端告知击中某只老鼠
+message C2S_Mouse_Hit {
+    int64               mouseId        = 1; // 击中的老鼠id
+}
+
+// 客户端告知白菜被吃了一口
+message C2S_Mouse_Eat {
+    int64               mouseId        = 1; // 吃白菜老鼠id(不同老鼠攻击力不同)
+}
+
+// 客户端告知放炸弹了
+message C2S_Mouse_Bomb {
+}
+
+// 服务端告知游戏结束
+message S2C_Mouse_Over {
+}
+//------------------------------------打地鼠 end---------------------------------
+
+//-----------------------------------钓鱼 begin----------------------------------
+message fish {
+    int32               fishId       = 1; // 鱼摆摆唯一id
+    int32               templateId   = 2; // 鱼的模板id(见配置表)
+    int32               lifeTime     = 3; // 鱼寿命(结束时间戳)
+}
+
+// 客户端请求坐下(初始化自己鱼塘，需扣除精力)
+message C2S_Fish_SitDown {
+    int32               fishPondId   = 1; // 鱼塘模板id(见配置表)
+}
+
+// 服务端返回坐下(初始化鱼塘)结果
+message S2C_Fish_SitDown {
+    OperationResult     result        = 1; // 处理结果
+}
+
+// 客户端请求离开鱼塘
+message C2S_Fish_StandUp {
+}
+
+// 客户端请求鱼塘所有鱼
+message C2S_Fish_GetAllFish {
+}
+
+// 服务端返回鱼塘所以鱼
+message S2C_Fish_GetAllFish {
+    repeated fish       fishList      = 1; // 鱼摆摆列表
+}
+
+// 客户端请求拉钩
+message C2S_Fish_PullHook {
+    int64               fishId        = 1; // 钓中的鱼id
+}
+
+// 服务端返回拉钩结果
+message S2C_Fish_PullHook {
+    int64               fishId        = 1; // 钓中的鱼唯一id
+    OperationResult     result        = 2; // 处理结果
+    int32               itemId        = 3; // 本次获得鱼肉id
+}
+
+// 鱼塘生成新鱼摆摆
+message S2C_Fish_NewFish {
+    fish                newFish       = 1; // 新鱼信息
+}
+//------------------------------------钓鱼 end-----------------------------------
+
+//------------------------------------庄园 begin-----------------------------------
+message ManorBuilding {
+    int32 uid = 1;        //该建筑物的UID
+    int32 buildId = 2;   //策划表里面配的该建筑物ID，有类型，外观等属性
+    int32 posX = 3;
+    int32 posY = 4;
+    int32 orientation = 5;      //方向 1向左  2向右
+    bool hasFinishBuild = 6;  //是否已经完成过初次建筑
+    int64 buildEndTime = 7;     //建筑或者升级该楼的结束时间
+}
+
+message ManorStock {
+    int32 buildId = 1;
+    int32 no      = 2; //该建筑物在仓库的数量
+}
+
+message S2C_Manor_AllInfo{
+    repeated ManorBuilding buildingList = 1; //摆放在庭院的所有建筑列表
+    repeated ManorStock    freshList    = 2; //仓库里所有[新买的，需要经历初阶段构造的]建筑物
+    repeated ManorStock    junkList     = 3; //仓库里所有[旧货，不需要经历初阶段构造的]建筑物
+    int32                  ownerId      = 4; //庄园主人的ID
+    string                 manorName    = 5; //庄园名字
+}
+
+message C2S_Manor_SaveAllPos{
+    repeated ManorBuilding buildingList = 1;
+}
+
+message C2S_Manor_ChangeOne{
+    int32 uid         = 1; // 该值在action=1,2时不设置，其它时候需要设置
+    int32 buildId     = 2; // 该值在action=1,2时设置
+    int32 action      = 3; // 1全新建筑 2重放（已经经历过建筑阶段的建筑） 3变动位置 4回收 5,升级
+    int32 posX        = 4;
+    int32 posY        = 5;
+    int32 orientation = 6;
+}
+
+message S2C_Manor_ChangeOne{
+    OperationResult res         = 1;
+    ManorBuilding   buildResult = 2; // 新建或者升级该楼时，包含全部建筑物信息，比如uid,结束时间
+    int32           action      = 3; // 客户端上传的action,原样返回
+}
+
+message S2C_Manor_BuyBuilding{
+    OperationResult res      = 1;
+    int32           buildId  = 2; // 策划表里面配的该建筑物ID，有类型，外观等属性
+    int32           buildUid = 3; // 该建筑物的UID (购买时此值为0，进入建筑时此值才有意义)
+}
+
+//------------------------------------庄园 end-----------------------------------
+
+//----------------------------------自由操作 begin-------------------------------
+message _Anything {
+    int32 id    = 1; // 物品/货币/属性等Id
+    int32 count = 2; // 数量
+}
+
+// 添加游戏内任何东西(物品/货币/属性等)
+message C2S_Anything_Add {
+    repeated _Anything data = 1;
+}
+
+// 回复添加结果
+message S2C_Anything_Add {
+    OperationResult ret = 1; // 操作结果
+}
+
+// 扣除游戏内任何东西(物品/货币/属性等)
+message C2S_Anything_Sub {
+    repeated _Anything data = 1;
+}
+
+// 回复扣除结果
+message S2C_Anything_Sub {
+    OperationResult ret = 1; // 操作结果
+}
+//-----------------------------------自由操作 end--------------------------------
+
+//---------------------------------自定义变量 begin------------------------------
+// 自定义bool变量
+message _customizeVarBool {
+    string name  = 1; // 变量名
+    bool   value = 2; // 变量值
+}
+
+// 自定义int变量
+message _customizeVarDouble {
+    string name  = 1; // 变量名
+    double value = 2; // 变量值
+}
+
+// 自定义string变量
+message _customizeVarString {
+    string name  = 1; // 变量名
+    string value = 2; // 变量值
+}
+
+// 获取所有自定义变量
+message C2S_CustomizeVar_GetAll {
+}
+
+// 返回所有自定义变量值
+message S2C_CustomizeVar_GetAll {
+    repeated _customizeVarBool   dataBool   = 1; // bool变量信息
+    repeated _customizeVarDouble dataDouble = 2; // double变量信息
+    repeated _customizeVarString dataString = 3; // string变量信息
+}
+
+// 获取bool类型变量值
+message C2S_CustomizeVar_GetBoolValue {
+    int32  userId       = 1; // 需要获取变量的玩家id
+    string name         = 2; // 变量名
+	bool   defaultValue = 3; // 默认值
+}
+
+// 返回bool类型变量值
+message S2C_CustomizeVar_GetBoolValue {
+    int32             userId = 1; // 变量所属玩家id
+    _customizeVarBool data   = 2; // 值
+}
+
+// 获取double类型变量值
+message C2S_CustomizeVar_GetDoubleValue {
+    int32  userId       = 1; // 需要获取变量的玩家id
+    string name         = 2; // 变量名
+	double defaultValue = 3; // 默认值
+}
+
+// 返回double类型变量值
+message S2C_CustomizeVar_GetDoubleValue {
+    int32               userId = 1; // 变量所属玩家id
+    _customizeVarDouble data   = 2; // 值
+}
+
+// 获取string类型变量值
+message C2S_CustomizeVar_GetStringValue {
+    int32  userId       = 1; // 需要获取变量的玩家id
+    string name         = 2; // 变量名
+	string defaultValue = 3; // 默认值
+}
+
+// 返回string类型变量值
+message S2C_CustomizeVar_GetStringValue {
+    int32               userId = 1; // 需要获取变量的玩家id
+    _customizeVarString data   = 2; // 值
+}
+
+// 设置bool类型变量值
+message C2S_CustomizeVar_SetBoolValue {
+    _customizeVarBool data = 1; // 值
+}
+
+// 设置int类型变量值
+message C2S_CustomizeVar_SetDoubleValue {
+    _customizeVarDouble data = 1; // 值
+}
+
+// 设置string类型变量值
+message C2S_CustomizeVar_SetStringValue {
+    _customizeVarString data = 1; // 值
+}
+//----------------------------------自定义变量 end-------------------------------

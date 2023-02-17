@@ -1,0 +1,64 @@
+[
+  {
+    "NodeId": 1,
+    "NodeName": "All",
+    "ListenAddr" : "",
+    "ServiceList": [
+      "Dispatcher",
+      "GateWay",
+      "LoginSrv",
+      "BuJiDaoS",
+      "BuJiDaoC"
+    ]
+  },
+  {
+    "NodeId": 2,
+    "NodeName": "BaseServer",
+    "ListenAddr" : "192.168.201.165:6002",
+    "ServiceList": [
+      "Dispatcher",
+      "GateWay",
+      "LoginSrv"
+    ]
+  },
+  {
+    "NodeId": 3,
+    "NodeName": "Dispatcher",
+    "ListenAddr" : "192.168.201.165:6003",
+    "ServiceList": [
+      "Dispatcher"
+    ]
+  },
+  {
+    "NodeId": 4,
+    "NodeName": "GateWay",
+    "ListenAddr" : "192.168.201.165:6004",
+    "ServiceList": [
+      "GateWay"
+    ]
+  },
+  {
+    "NodeId": 5,
+    "NodeName": "LoginSrv",
+    "ListenAddr" : "192.168.201.165:6005",
+    "ServiceList": [
+      "LoginSrv"
+    ]
+  },
+  {
+    "NodeId": 6,
+    "NodeName": "Server",
+    "ListenAddr" : "192.168.201.165:6006",
+    "ServiceList": [
+      "BuJiDaoS"
+    ]
+  },
+  {
+    "NodeId": 7,
+    "NodeName": "Client",
+    "ListenAddr" : "192.168.201.165:6007",
+    "ServiceList": [
+      "BuJiDaoC"
+    ]
+  }
+]

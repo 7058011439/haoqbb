@@ -1,0 +1,10 @@
+{
+  "Other" : {
+    "DispatcherIp":"192.168.201.165",
+    "DispatcherPort":8000,
+    "GateWayIp":"192.168.201.165",
+    "GateWayPort":9000,
+    "StartID":1,
+    "MaxConn":5000
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "Remark":"建议id 1000 + nodeId",
+  "Id": 1000,
+  "Other" : {
+    "Port": 8000,
+    "HitType":2
+  }
+}
