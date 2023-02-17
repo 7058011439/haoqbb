@@ -2,22 +2,20 @@ package Log
 
 import (
 	"fmt"
+	"github.com/7058011439/haoqbb/File"
 	"github.com/7058011439/haoqbb/Stl"
+	"github.com/7058011439/haoqbb/Util"
 	"github.com/fatih/color"
-	"log"
 	"os"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 )
 
-//--------------------------------------------------------------------------------------------------
-// 错误日志处理
-//--------------------------------------------------------------------------------------------------
 var printLevel int
 var showFileLine bool
 var maxFileSize int64
-var boolStarted bool
 var dir string
 
 type logLevel = int
@@ -30,20 +28,28 @@ const (
 )
 
 type logInfo struct {
-	desc  string
-	color color.Attribute
-	queue *Stl.Queue
+	desc     string
+	color    color.Attribute
+	fileName string
+}
+
+type logData struct {
+	eType logLevel
+	data  string
 }
 
 var mapLogInfo = map[int]*logInfo{
-	LevelDebug:   {desc: "Debug", color: 34, queue: Stl.NewQueue()},
-	LevelLog:     {desc: "Log", color: 32, queue: Stl.NewQueue()},
-	LevelWarning: {desc: "Warning", color: 33, queue: Stl.NewQueue()},
-	LevelError:   {desc: "Error", color: 31, queue: Stl.NewQueue()},
+	LevelDebug:   {desc: "Debug", color: 34},
+	LevelLog:     {desc: "Log", color: 32},
+	LevelWarning: {desc: "Warning", color: 33},
+	LevelError:   {desc: "Error", color: 31},
 }
+
+var queue = Stl.NewQueue()
 
 func init() {
 	Init(LevelLog, false, 0, "")
+	go runPrint()
 }
 
 func Init(iPrintLevel int, bShowFileLine bool, iMaxFileSize int64, logDir string) {
@@ -59,12 +65,7 @@ func Init(iPrintLevel int, bShowFileLine bool, iMaxFileSize int64, logDir string
 	if dir == "" {
 		dir = "Logs"
 	}
-	exist, err := isPathExists(dir)
-	if err != nil {
-		fmt.Printf("get Logs/ dir error![%v]\n", err)
-		return
-	}
-	if !exist {
+	if !File.PathExists(dir) {
 		err := os.MkdirAll(dir, os.ModePerm)
 		if err != nil {
 			fmt.Printf("mkdir %s failed![%v]\n", dir, err)
@@ -72,37 +73,49 @@ func Init(iPrintLevel int, bShowFileLine bool, iMaxFileSize int64, logDir string
 			fmt.Printf("mkdir %s success!\n", dir)
 		}
 	}
-
-	if !boolStarted {
-		for _, info := range mapLogInfo {
-			go runPrint(info)
-		}
+	for eType, info := range mapLogInfo {
+		info.fileName = newFileName(eType)
 	}
-	boolStarted = true
 }
 
-func runPrint(info *logInfo) {
-	lastDate := getNowTimeStr("2006_01_02")
-	lastTime := time.Now().Unix() % 86400
+func newFileName(eType int) string {
+	info := getLogInfo(eType)
+	fileList, _ := File.WalkFile(dir, "", fmt.Sprintf("%v_%v", info.desc, getNowTimeStr("2006_01_02")))
+	maxIndex := 0
+	for _, fileName := range fileList {
+		arr := strings.Split(fileName[:len(fileName)-5], "_")
+		index := Util.StrToInt(arr[len(arr)-1])
+		if index > maxIndex {
+			maxIndex = index
+		}
+	}
+	return fmt.Sprintf("%v_%v_%v.zLog", info.desc, getNowTimeStr("2006_01_02"), maxIndex+1)
+}
 
+func runPrint() {
 	for true {
-		if info.queue.Head() != nil { //日期变了要重新打开文件
-			currDate := getNowTimeStr("2006_01_02")
-			if lastDate != currDate {
-				lastDate = currDate
+		if queue.Head() != nil {
+			typeData := map[int][]string{}
+			for queue.Head() != nil {
+				msg := queue.Dequeue().(*logData)
+				typeData[msg.eType] = append(typeData[msg.eType], msg.data)
+
+				// 任何类型日志都要出现在普通日志(Log)里面
+				if msg.eType != LevelLog {
+					typeData[LevelLog] = append(typeData[LevelLog], msg.data)
+				}
 			}
-			fileName := fmt.Sprintf("%s/%s_%s_%d.zLog", dir, info.desc, lastDate, lastTime)
-			if getFileSize(fileName) > maxFileSize {
-				lastTime = time.Now().Unix() % 86400
-				fileName = fmt.Sprintf("%s/%s_%s_%d.zLog", dir, info.desc, lastDate, lastTime)
+			for eType, dataList := range typeData {
+				info := getLogInfo(eType)
+				if File.GetFileSize(dir+"/"+info.fileName) > maxFileSize || strings.Index(info.fileName, getNowTimeStr("2006_01_02")) < 0 {
+					info.fileName = newFileName(eType)
+				}
+				logFile, _ := os.OpenFile(dir+"/"+info.fileName, os.O_CREATE|os.O_RDWR|os.O_APPEND, os.ModeAppend|os.ModePerm)
+				for _, data := range dataList {
+					logFile.WriteString(data + "\n")
+				}
+				logFile.Close()
 			}
-			logFile, _ := os.OpenFile(fileName, os.O_CREATE|os.O_RDWR|os.O_APPEND, os.ModeAppend|os.ModePerm)
-			for info.queue.Head() != nil {
-				msg := info.queue.Dequeue().(string)
-				logger := log.New(logFile, "", log.LstdFlags)
-				logger.Println(msg)
-			}
-			logFile.Close()
 		}
 		time.Sleep(20 * time.Millisecond)
 	}
@@ -116,14 +129,17 @@ func printLogger(str string, logLevel int) {
 			str = "[" + file + " 行：" + strconv.Itoa(line) + "]：" + str
 		}
 	}
-	logInfo := getLogInfo(logLevel)
-	str = fmt.Sprintf("[%s] %s", logInfo.desc, str)
+	info := getLogInfo(logLevel)
+	str = fmt.Sprintf("[%s] [%s] %s", getNowTimeStr(""), info.desc, str)
 	if logLevel != LevelDebug {
-		logInfo.queue.Enqueue(str)
+		queue.Enqueue(&logData{
+			eType: logLevel,
+			data:  str,
+		})
 	}
 	if logLevel >= printLevel || logLevel == LevelDebug {
-		color.Set(logInfo.color)
-		fmt.Println(fmt.Sprintf("[%s]:%s", getNowTimeStr(""), str))
+		color.Set(info.color)
+		fmt.Println(str)
 		color.Unset()
 	}
 }
@@ -142,26 +158,6 @@ func WarningLog(format string, args ...interface{}) {
 
 func ErrorLog(format string, args ...interface{}) {
 	printLogger(fmt.Sprintf(format, args...), LevelError)
-}
-
-// 判断文件夹是否存在
-func isPathExists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
-}
-
-func getFileSize(fileName string) int64 {
-	fi, err := os.Stat(fileName)
-	if err == nil {
-		return fi.Size()
-	}
-	return 0
 }
 
 func getNowTimeStr(format string) string {
