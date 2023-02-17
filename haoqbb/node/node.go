@@ -1,13 +1,13 @@
 package node
 
 import (
-	"Core/Log"
-	"Core/Stl"
-	"Core/System"
-	"Core/Util"
-	"Core/haoqbb/config"
-	"Core/haoqbb/service/interface/service"
 	"fmt"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Stl"
+	"github.com/7058011439/haoqbb/System"
+	"github.com/7058011439/haoqbb/Util"
+	"github.com/7058011439/haoqbb/haoqbb/config"
+	"github.com/7058011439/haoqbb/haoqbb/service/interface/service"
 	"math"
 	"os"
 	"reflect"

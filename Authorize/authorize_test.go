@@ -1,9 +1,9 @@
 package Authorize
 
 import (
-	"Core/Log"
-	"Core/System"
 	"fmt"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/System"
 	"io/ioutil"
 	"testing"
 	"time"

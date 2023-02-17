@@ -1,10 +1,10 @@
 package main
 
 import (
-	"Core/haoqbb/node"
-	_ "Core/haoqbb/server/dispatcher"
-	_ "Core/haoqbb/server/gateWay"
-	_ "Core/haoqbb/server/loginSrv"
+	"github.com/7058011439/haoqbb/haoqbb/node"
+	_ "github.com/7058011439/haoqbb/haoqbb/server/dispatcher"
+	_ "github.com/7058011439/haoqbb/haoqbb/server/gateWay"
+	_ "github.com/7058011439/haoqbb/haoqbb/server/loginSrv"
 )
 
 func main() {

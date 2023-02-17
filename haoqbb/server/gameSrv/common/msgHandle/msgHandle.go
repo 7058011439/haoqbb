@@ -1,8 +1,8 @@
 package msgHandle
 
 import (
-	"Core/Log"
-	"Core/Timer"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Timer"
 	"github.com/golang/protobuf/proto"
 )
 

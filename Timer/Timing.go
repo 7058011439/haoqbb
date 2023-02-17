@@ -1,8 +1,8 @@
 package Timer
 
 import (
-	"Core/Log"
 	"fmt"
+	"github.com/7058011439/haoqbb/Log"
 	"time"
 )
 

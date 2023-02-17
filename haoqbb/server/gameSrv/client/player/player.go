@@ -1,8 +1,8 @@
 package player
 
 import (
-	"Core/Timer"
-	"Core/haoqbb/server/gameSrv/client/interface"
+	"github.com/7058011439/haoqbb/Timer"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/interface"
 	"github.com/golang/protobuf/proto"
 )
 

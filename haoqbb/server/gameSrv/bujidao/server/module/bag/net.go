@@ -1,9 +1,9 @@
 package bag
 
 import (
-	"Core/haoqbb/server/gameSrv/bujidao/protocol"
-	"Core/haoqbb/server/gameSrv/common/msgHandle"
-	iCBag "Core/haoqbb/server/gameSrv/server/interface/bag"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/protocol"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/msgHandle"
+	iCBag "github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/bag"
 )
 
 func NetGiveAnything(msg *msgHandle.ClientMsg) {

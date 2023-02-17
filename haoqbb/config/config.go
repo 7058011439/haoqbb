@@ -1,10 +1,10 @@
 package config
 
 import (
-	"Core/File"
-	"Core/Log"
 	"encoding/json"
 	"fmt"
+	"github.com/7058011439/haoqbb/File"
+	"github.com/7058011439/haoqbb/Log"
 	"io/ioutil"
 	"strings"
 )

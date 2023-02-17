@@ -1,6 +1,6 @@
 package bag
 
-import "Core/Log"
+import "github.com/7058011439/haoqbb/Log"
 
 type Bag struct {
 	UserId   int

@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"Core/Ftp/server/core"
+	"github.com/7058011439/haoqbb/Ftp/server/core"
 )
 
 // Driver implements Driver directly read local file system

@@ -1,8 +1,8 @@
 package Net
 
 import (
-	"Core/Log"
 	"fmt"
+	"github.com/7058011439/haoqbb/Log"
 	"net"
 	"time"
 )
@@ -34,14 +34,6 @@ func WithCustomData(compare CompareCustomData) Options {
 	return func(pool *tcpConnPool) {
 		if compare != nil {
 			pool.compareData = compare
-		}
-	}
-}
-
-func WithSendTaskCount(count int) Options {
-	return func(pool *tcpConnPool) {
-		if count > 0 {
-			pool.sendTaskCount = count
 		}
 	}
 }

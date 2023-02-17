@@ -1,9 +1,9 @@
 package bag
 
 import (
-	"Core/haoqbb/server/gameSrv/bujidao/protocol"
-	"Core/haoqbb/server/gameSrv/client/player"
-	"Core/haoqbb/server/gameSrv/common/msgHandle"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/protocol"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/player"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/msgHandle"
 	"math/rand"
 )
 

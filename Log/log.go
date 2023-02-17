@@ -1,8 +1,8 @@
 package Log
 
 import (
-	"Core/Stl"
 	"fmt"
+	"github.com/7058011439/haoqbb/Stl"
 	"github.com/fatih/color"
 	"log"
 	"os"

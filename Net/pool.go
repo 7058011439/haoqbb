@@ -1,9 +1,9 @@
 package Net
 
 import (
-	"Core/GoroutinePool"
-	"Core/Log"
-	"Core/Stl"
+	"github.com/7058011439/haoqbb/GoroutinePool"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Stl"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -12,7 +12,6 @@ import (
 
 const (
 	bestTcpPackageSize    = 1460  // 最优tcp包长度
-	defaultSendTaskCount  = 8     // 默认发送任务(线程)数量
 	defaultPackageMaxSize = 65535 // 默认最大包长度(超过该包长度丢弃包，防止恶意包攻击)
 )
 
@@ -29,7 +28,6 @@ func newTcpConnPool(connect ConnectHandle, disconnect ConnectHandle, parse Parse
 	ret := &tcpConnPool{
 		id:               getPoolId(),
 		mapClient:        make(map[uint64]IClient, 1024),
-		sendTaskCount:    defaultSendTaskCount,
 		packageMaxSize:   defaultPackageMaxSize,
 		connectHandle:    connect,
 		disconnectHandle: disconnect,
@@ -56,7 +54,6 @@ type tcpConnPool struct {
 	compareData       CompareCustomData            // 自定义数据比较函数
 	heartbeatInterval time.Duration                // 心跳间隔(秒)
 	heartbeatHandle   HeartBeatHandle              // 心跳处理函数
-	sendTaskCount     int                          // 发送消息任务数量
 	packageMaxSize    int                          // 包最大长度
 	sendTaskPool      *GoroutinePool.GoRoutinePool // 发送任务协程池
 }
@@ -135,7 +132,7 @@ func (t *tcpConnPool) NewConnect(conn net.Conn, data interface{}) IClient {
 		id:         t.getClientId(),
 		conn:       conn,
 		customData: data,
-		recvBuff:   Stl.NewBuffer(recvCacheSize * 2),
+		revBuff:    Stl.NewBuffer(revCacheSize * 2),
 		sendBuff:   Stl.NewBuffer(bestTcpPackageSize),
 		chClose:    make(chan struct{}, 1),
 		INetPool:   t,
@@ -149,7 +146,7 @@ func (t *tcpConnPool) NewConnect(conn net.Conn, data interface{}) IClient {
 			t.connectHandle(client)
 		}
 	}
-	go client.recvMsg()
+	go client.revMsg()
 	return client
 }
 

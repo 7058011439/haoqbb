@@ -1,9 +1,9 @@
 package capability
 
 import (
-	"Core/haoqbb/server/gameSrv/common/msgHandle"
-	"Core/haoqbb/server/gameSrv/common/protocol"
-	"Core/haoqbb/server/gameSrv/server/interface/net"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/msgHandle"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/net"
 )
 
 func NetC2SRT(msg *msgHandle.ClientMsg) {

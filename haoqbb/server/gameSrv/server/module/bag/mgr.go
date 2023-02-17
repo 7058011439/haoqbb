@@ -1,9 +1,9 @@
 package bag
 
 import (
-	"Core/haoqbb/server/gameSrv/common"
-	"Core/haoqbb/server/gameSrv/server/interface/bag"
-	"Core/haoqbb/server/gameSrv/server/multiAccess"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/bag"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/multiAccess"
 )
 
 func OnLogin(userId int) {

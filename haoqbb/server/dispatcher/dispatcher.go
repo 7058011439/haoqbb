@@ -1,12 +1,12 @@
 package dispatcher
 
 import (
-	"Core/Log"
-	"Core/Net"
-	"Core/haoqbb/server/common"
-	"Core/haoqbb/server/dispatcher/interface"
-	"Core/haoqbb/service"
 	"encoding/json"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Net"
+	"github.com/7058011439/haoqbb/haoqbb/server/common"
+	"github.com/7058011439/haoqbb/haoqbb/server/dispatcher/interface"
+	"github.com/7058011439/haoqbb/haoqbb/service"
 	"github.com/mitchellh/mapstructure"
 )
 

@@ -1,9 +1,9 @@
 package Http
 
 import (
-	"Core/Log"
 	"encoding/json"
 	"fmt"
+	"github.com/7058011439/haoqbb/Log"
 	"io"
 	"io/ioutil"
 	"net/http"

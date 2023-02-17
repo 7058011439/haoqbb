@@ -1,16 +1,16 @@
 package gateWay
 
 import (
-	"Core/Log"
-	"Core/Net"
-	"Core/System"
-	"Core/Timer"
-	"Core/Util"
-	"Core/haoqbb/server/common"
-	"Core/haoqbb/service"
-	"Core/haoqbb/service/interface/timer"
 	"encoding/json"
 	"fmt"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Net"
+	"github.com/7058011439/haoqbb/System"
+	"github.com/7058011439/haoqbb/Timer"
+	"github.com/7058011439/haoqbb/Util"
+	"github.com/7058011439/haoqbb/haoqbb/server/common"
+	"github.com/7058011439/haoqbb/haoqbb/service"
+	"github.com/7058011439/haoqbb/haoqbb/service/interface/timer"
 	"github.com/mitchellh/mapstructure"
 	"time"
 )

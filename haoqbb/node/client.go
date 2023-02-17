@@ -1,12 +1,12 @@
 package node
 
 import (
-	"Core/Log"
-	"Core/Net"
-	"Core/Stl"
-	"Core/Util"
-	"Core/haoqbb/config"
-	"Core/haoqbb/server/protocol"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Net"
+	"github.com/7058011439/haoqbb/Stl"
+	"github.com/7058011439/haoqbb/Util"
+	"github.com/7058011439/haoqbb/haoqbb/config"
+	"github.com/7058011439/haoqbb/haoqbb/server/protocol"
 	"github.com/golang/protobuf/proto"
 	"net"
 	"sync"

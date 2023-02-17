@@ -1,9 +1,9 @@
 package DataBase
 
 import (
-	"Core/Log"
-	"Core/Stl"
 	"fmt"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Stl"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"strings"
@@ -28,7 +28,7 @@ var mysqlDbErr error
 var mysqlQueue []*Stl.Queue
 var connIndex int64
 
-// 初始化链接
+// MysqlInit 初始化链接
 func MysqlInit(userName string, passWord string, ip string, port int, dbName string) {
 	dbDSN := fmt.Sprintf("%s:%s@tcp(%s:%v)/%s?charset=%s", userName, passWord, ip, port, dbName, "utf8")
 
@@ -61,23 +61,17 @@ func mysqlExec(queue *Stl.Queue) {
 		if queue.Head() != nil {
 			for queue.Head() != nil {
 				data := queue.Dequeue().(*mysqlCallBack)
-				err := mysqlexec(data.sql)
-				if data.fun != nil {
-					data.fun(data.sql, err, data.args...)
+				if _, err := mysqlDb.Exec(data.sql); err == nil {
+					if data.fun != nil {
+						data.fun(data.sql, err, data.args...)
+					}
+				} else {
+					Log.ErrorLog("Failed to mysqlExec, err = %v, sql = %v", err, data.sql)
 				}
 			}
 		}
 		time.Sleep(time.Microsecond)
 	}
-}
-
-func mysqlexec(sql string) error {
-	_, err := mysqlDb.Exec(sql)
-	if err != nil {
-		Log.ErrorLog("Failed to mysqlExec, err = %v, sql = %v", err, sql)
-
-	}
-	return err
 }
 
 func mysqlIntoQueue(sql string, back callBack, param ...interface{}) {
@@ -97,7 +91,7 @@ func MysqlExec(sql string, back callBack, param ...interface{}) {
 	mysqlIntoQueue(sql, back, param...)
 }
 
-// 插入数据
+// MysqlInsert 插入数据
 func MysqlInsert(tabName string, data map[string]interface{}, back callBack, param ...interface{}) {
 	fields, values := insertToString(data)
 	sql := fmt.Sprintf("insert into %s (%s) values (%s)", tabName, fields, values)
@@ -157,13 +151,13 @@ func MysqlInsertMany(tabName string, manyData []map[string]interface{}, back cal
 	mysqlIntoQueue(sql.String(), back, args...)
 }
 
-// 插入数据
+// MysqlUpdate 插入数据
 func MysqlUpdate(tabName string, condition map[string]interface{}, data map[string]interface{}, back callBack, args ...interface{}) {
 	sql := fmt.Sprintf("update %s set %s where %s", tabName, dataToString(data), conditionToString(condition))
 	mysqlIntoQueue(sql, back, args...)
 }
 
-// 删除数据
+// MysqlDelete 删除数据
 func MysqlDelete(tabName string, condition map[string]interface{}, data map[string]interface{}, back callBack, args ...interface{}) {
 	sql := fmt.Sprintf("delete from %s where %s", tabName, conditionToString(condition))
 	mysqlIntoQueue(sql, back, args...)

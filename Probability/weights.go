@@ -1,7 +1,7 @@
 package Probability
 
 import (
-	"Core/Log"
+	"github.com/7058011439/haoqbb/Log"
 	"math/rand"
 )
 

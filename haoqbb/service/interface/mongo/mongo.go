@@ -1,7 +1,7 @@
 package IMongo
 
 import (
-	"Core/DataBase"
+	"github.com/7058011439/haoqbb/DataBase"
 )
 
 type IMongo interface {

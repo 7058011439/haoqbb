@@ -1,17 +1,17 @@
 package main
 
 import (
-	"Core/Http"
-	"Core/Timer"
-	"Core/haoqbb/node"
-	"Core/haoqbb/server/common"
-	_ "Core/haoqbb/server/dispatcher"
-	"Core/haoqbb/server/gameSrv/bujidao/client"
-	"Core/haoqbb/server/gameSrv/bujidao/server"
-	_ "Core/haoqbb/server/gateWay"
-	_ "Core/haoqbb/server/loginSrv"
 	"encoding/json"
 	"fmt"
+	"github.com/7058011439/haoqbb/Http"
+	"github.com/7058011439/haoqbb/Timer"
+	"github.com/7058011439/haoqbb/haoqbb/node"
+	"github.com/7058011439/haoqbb/haoqbb/server/common"
+	_ "github.com/7058011439/haoqbb/haoqbb/server/dispatcher"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/client"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/server"
+	_ "github.com/7058011439/haoqbb/haoqbb/server/gateWay"
+	_ "github.com/7058011439/haoqbb/haoqbb/server/loginSrv"
 	"strings"
 )
 
@@ -27,7 +27,8 @@ func init() {
 }
 
 func main() {
-	data := string(Http.GetHttpSyncNew("http://192.168.13.220:8086/", Http.NewHead(nil)))
+	byteData, _ := Http.GetHttpSync("http://192.168.13.220:8086/", Http.NewHead(nil))
+	data := string(byteData)
 	//fmt.Println(data)
 	sessionKey := "var _SessionID = "
 	posBegin := strings.Index(data, sessionKey)
@@ -46,7 +47,7 @@ func main() {
 
 	fmt.Println(serverList)
 	t := Timer.NewTiming(Timer.Second)
-	query := Http.PostHttpSyncNew("http://192.168.13.220:8086/API/CreateQuery.html",
+	query, _ := Http.PostHttpSync("http://192.168.13.220:8086/API/CreateQuery.html",
 		Http.NewHead(nil),
 		Http.NewBody(nil).
 			Add("servernid", "76Rx光辉岁月2021.11.25").

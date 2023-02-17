@@ -1,7 +1,7 @@
 package player
 
 import (
-	"Core/haoqbb/server/gameSrv/common/msgHandle"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/msgHandle"
 )
 
 func DoSomething(msg *msgHandle.ClientMsg) {

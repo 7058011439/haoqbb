@@ -1,11 +1,11 @@
 package server
 
 import (
-	"Core/haoqbb/server/gameSrv/bujidao/protocol"
-	"Core/haoqbb/server/gameSrv/bujidao/server/module/bag"
-	"Core/haoqbb/server/gameSrv/bujidao/server/module/home"
-	"Core/haoqbb/server/gameSrv/bujidao/server/module/player"
-	"Core/haoqbb/server/gameSrv/server"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/protocol"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/server/module/bag"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/server/module/home"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/server/module/player"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server"
 )
 
 type BuJiDaoSrv struct {

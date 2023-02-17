@@ -1,9 +1,9 @@
 package player
 
 import (
-	"Core/Log"
-	"Core/haoqbb/server/gameSrv/client/interface"
-	"Core/haoqbb/service/interface/timer"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/interface"
+	"github.com/7058011439/haoqbb/haoqbb/service/interface/timer"
 	"sync"
 )
 

@@ -1,9 +1,9 @@
 package DataBase
 
 import (
-	"Core/Log"
-	"Core/Stl"
 	"fmt"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Stl"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 	"time"

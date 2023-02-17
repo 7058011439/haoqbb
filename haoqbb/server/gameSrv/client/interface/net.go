@@ -1,8 +1,8 @@
 package Interface
 
 import (
-	"Core/Net"
-	"Core/haoqbb/server/common"
+	"github.com/7058011439/haoqbb/Net"
+	"github.com/7058011439/haoqbb/haoqbb/server/common"
 	"github.com/golang/protobuf/proto"
 	"net"
 )

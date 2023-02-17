@@ -39,12 +39,12 @@ func (g *GoRoutinePool) Run(fun func(...interface{}), args ...interface{}) {
 	g.chNewTask <- &task{fun: fun, args: args}
 }
 
-// 协程池是否完全空闲
+// Empty 协程池是否完全空闲
 func (g *GoRoutinePool) Empty() bool {
 	return atomic.LoadInt32(&g.idleGoroutineCount) == g.workGoroutineCount
 }
 
-// 是否空闲协程池
+// HaveIdle 是否空闲协程池
 func (g *GoRoutinePool) HaveIdle() bool {
 	return atomic.LoadInt32(&g.idleGoroutineCount) > 0
 }

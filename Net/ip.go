@@ -1,8 +1,8 @@
 package Net
 
 import (
-	"Core/Http"
-	"Core/Log"
+	"github.com/7058011439/haoqbb/Http"
+	"github.com/7058011439/haoqbb/Log"
 	"net"
 	"strings"
 )

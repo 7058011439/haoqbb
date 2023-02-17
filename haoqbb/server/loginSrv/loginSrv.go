@@ -1,13 +1,13 @@
 package gateWay
 
 import (
-	"Core/Log"
-	"Core/haoqbb/server/common"
-	"Core/haoqbb/server/gameSrv/common/msgHandle"
-	"Core/haoqbb/server/gameSrv/common/protocol"
-	"Core/haoqbb/service"
-	"Core/haoqbb/service/interface/http"
 	"encoding/json"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/haoqbb/server/common"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/msgHandle"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
+	"github.com/7058011439/haoqbb/haoqbb/service"
+	"github.com/7058011439/haoqbb/haoqbb/service/interface/http"
 )
 
 const (
@@ -40,7 +40,7 @@ func (l *LoginSrv) loginWithToken(msg *msgHandle.ClientMsg) {
 		l.noticeLoginRet(msg.UserId, msg.ClientId, 3, "MachineId or Token is nil", 0)
 		return
 	}
-	IHttp.GetAsync(l.GetName(), httpCheckToken+"/"+data.Token, map[string]string{}, l.httpVerifyTokenCallBack, msg.ClientId, msg.UserId)
+	IHttp.GetAsync(l.GetName(), httpCheckToken+"/"+data.Token, nil, l.httpVerifyTokenCallBack, msg.ClientId, msg.UserId)
 }
 
 func (l *LoginSrv) httpVerifyTokenCallBack(getData map[string]interface{}, backData ...interface{}) {

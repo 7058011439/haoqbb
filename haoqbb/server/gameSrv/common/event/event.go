@@ -1,9 +1,9 @@
 package event
 
 import (
-	"Core/EventBus"
-	"Core/haoqbb/server/gameSrv/bujidao/server/module/home"
-	cBag "Core/haoqbb/server/gameSrv/server/module/bag"
+	"github.com/7058011439/haoqbb/EventBus"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/server/module/home"
+	cBag "github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/module/bag"
 )
 
 const (

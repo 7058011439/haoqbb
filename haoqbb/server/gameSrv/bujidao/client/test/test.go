@@ -1,10 +1,10 @@
 package test
 
 import (
-	"Core/haoqbb/server/gameSrv/bujidao/client/bag"
-	"Core/haoqbb/server/gameSrv/bujidao/client/home"
-	"Core/haoqbb/server/gameSrv/client/player"
-	"Core/haoqbb/server/gameSrv/client/test"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/client/bag"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/client/home"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/player"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/test"
 )
 
 const (

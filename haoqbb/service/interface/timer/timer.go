@@ -1,7 +1,7 @@
 package ITimer
 
 import (
-	"Core/Timer"
+	"github.com/7058011439/haoqbb/Timer"
 	"runtime"
 )
 

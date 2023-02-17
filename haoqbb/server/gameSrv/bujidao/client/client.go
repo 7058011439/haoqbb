@@ -1,10 +1,10 @@
 package client
 
 import (
-	"Core/haoqbb/server/gameSrv/bujidao/client/bag"
-	"Core/haoqbb/server/gameSrv/bujidao/client/home"
-	"Core/haoqbb/server/gameSrv/bujidao/protocol"
-	"Core/haoqbb/server/gameSrv/client"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/client/bag"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/client/home"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/protocol"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client"
 )
 
 type GameClient struct {

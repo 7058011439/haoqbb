@@ -1,16 +1,16 @@
 package login
 
 import (
-	"Core/Log"
-	"Core/Util"
-	"Core/haoqbb/server/common"
-	"Core/haoqbb/server/gameSrv/common/protocol"
-	"Core/haoqbb/server/gameSrv/server/interface/net"
-	"Core/haoqbb/server/gameSrv/server/interface/player"
-	"Core/haoqbb/server/gameSrv/server/interface/service"
-	"Core/haoqbb/service/interface/redis"
 	"encoding/json"
 	"fmt"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Util"
+	"github.com/7058011439/haoqbb/haoqbb/server/common"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/net"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/player"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/service"
+	"github.com/7058011439/haoqbb/haoqbb/service/interface/redis"
 	"time"
 )
 

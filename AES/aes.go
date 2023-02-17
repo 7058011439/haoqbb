@@ -23,9 +23,7 @@ func formatKey(key string) string {
 	}
 }
 
-// =================== CBC ======================
 func EncryptCBC(origData string, key string) string {
-	// 分组秘钥
 	// NewCipher该函数限制了输入k的长度必须为16, 24或者32
 	key = formatKey(key)
 	block, _ := aes.NewCipher([]byte(key))
@@ -44,14 +42,14 @@ func DecryptCBC(encrypted string, key string) string {
 	blockSize := block.BlockSize()                                      // 获取秘钥块的长度
 	blockMode := cipher.NewCBCDecrypter(block, []byte(key[:blockSize])) // 加密模式
 	decrypted := make([]byte, len(encryptedByte))                       // 创建数组
-	blockMode.CryptBlocks(decrypted, []byte(encryptedByte))             // 解密
+	blockMode.CryptBlocks(decrypted, encryptedByte)                     // 解密
 	return pkcs5UnPadding(string(decrypted))                            // 去除补全码
 }
 
 func pkcs5Padding(ciphertext string, blockSize int) string {
 	padding := blockSize - len(ciphertext)%blockSize
-	padtext := string(bytes.Repeat([]byte{byte(padding)}, padding))
-	return ciphertext + padtext
+	padText := string(bytes.Repeat([]byte{byte(padding)}, padding))
+	return ciphertext + padText
 }
 
 func pkcs5UnPadding(origData string) string {
@@ -60,7 +58,6 @@ func pkcs5UnPadding(origData string) string {
 	return origData[:(length - unpadding)]
 }
 
-// =================== ECB ======================
 func EncryptECB(origData string, key string) string {
 	key = formatKey(key)
 	cipher, _ := aes.NewCipher(generateKey(key))
@@ -85,7 +82,6 @@ func DecryptECB(encrypted string, key string) string {
 	encryptedByte, _ := base64.StdEncoding.DecodeString(encrypted)
 	cipher, _ := aes.NewCipher(generateKey(key))
 	decrypted := make([]byte, len(encryptedByte))
-	//
 	for bs, be := 0, cipher.BlockSize(); bs < len(encryptedByte); bs, be = bs+cipher.BlockSize(), be+cipher.BlockSize() {
 		cipher.Decrypt(decrypted[bs:be], encryptedByte[bs:be])
 	}
@@ -109,7 +105,6 @@ func generateKey(key string) (genKey []byte) {
 	return genKey
 }
 
-// =================== CFB ======================
 func EncryptCFB(origData string, key string) string {
 	key = formatKey(key)
 	block, err := aes.NewCipher([]byte(key))

@@ -1,10 +1,10 @@
 package capability
 
 import (
-	"Core/Log"
-	"Core/haoqbb/server/gameSrv/client/player"
-	"Core/haoqbb/server/gameSrv/common/msgHandle"
-	"Core/haoqbb/server/gameSrv/common/protocol"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/player"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/msgHandle"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
 	"time"
 )
 

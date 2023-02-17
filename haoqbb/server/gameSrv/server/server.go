@@ -1,18 +1,18 @@
 package server
 
 import (
-	"Core/Log"
-	"Core/haoqbb/server/common"
-	cProtocol "Core/haoqbb/server/gameSrv/common/protocol"
-	"Core/haoqbb/server/gameSrv/server/capability"
-	"Core/haoqbb/server/gameSrv/server/interface/net"
-	iPlayer "Core/haoqbb/server/gameSrv/server/interface/player"
-	iService "Core/haoqbb/server/gameSrv/server/interface/service"
-	"Core/haoqbb/server/gameSrv/server/module/bag"
-	"Core/haoqbb/server/gameSrv/server/module/login"
-	"Core/haoqbb/server/gameSrv/server/module/player"
-	"Core/haoqbb/service"
 	"encoding/json"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/haoqbb/server/common"
+	cProtocol "github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/capability"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/net"
+	iPlayer "github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/player"
+	iService "github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/service"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/module/bag"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/module/login"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/module/player"
+	"github.com/7058011439/haoqbb/haoqbb/service"
 )
 
 type GameSrv struct {

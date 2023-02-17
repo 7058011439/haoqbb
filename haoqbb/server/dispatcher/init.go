@@ -1,8 +1,8 @@
 package dispatcher
 
 import (
-	"Core/haoqbb/node"
-	"Core/haoqbb/server/common"
+	"github.com/7058011439/haoqbb/haoqbb/node"
+	"github.com/7058011439/haoqbb/haoqbb/server/common"
 )
 
 func init() {

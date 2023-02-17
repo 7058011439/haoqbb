@@ -1,10 +1,10 @@
 package bag
 
 import (
-	iBag "Core/haoqbb/server/gameSrv/bujidao/server/interface/bag"
-	"Core/haoqbb/server/gameSrv/common"
-	cBag "Core/haoqbb/server/gameSrv/server/module/bag"
-	"Core/haoqbb/server/gameSrv/server/multiAccess"
+	iBag "github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/server/interface/bag"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common"
+	cBag "github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/module/bag"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/multiAccess"
 )
 
 var agent *Mgr

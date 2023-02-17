@@ -1,7 +1,7 @@
 package System
 
 import (
-	"Core/Log"
+	"github.com/7058011439/haoqbb/Log"
 	"log"
 	"os"
 	"os/exec"

@@ -1,12 +1,12 @@
 package service
 
 import (
-	"Core/DataBase"
-	"Core/Http"
-	"Core/Log"
-	"Core/Net"
-	"Core/Timer"
 	"fmt"
+	"github.com/7058011439/haoqbb/DataBase"
+	"github.com/7058011439/haoqbb/Http"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Net"
+	"github.com/7058011439/haoqbb/Timer"
 	"time"
 )
 
@@ -310,7 +310,7 @@ func (q *queue) UpdateMongoAsync(tabName string, condition interface{}, data int
 }
 
 func (q *queue) GetHttpAsync(url string, header map[string]string, fun func(getData map[string]interface{}, backData ...interface{}), backData ...interface{}) {
-	Http.GetHttpAsync(url, header, func(getData map[string]interface{}, backData ...interface{}) {
+	Http.GetHttpAsync(url, Http.NewHead(header), func(getData map[string]interface{}, _ error, backData ...interface{}) {
 		if len(q.chanHttp) == cap(q.chanHttp) {
 			Log.ErrorLog("%v Failed to insert http to chan, chan full", q.name)
 			return
@@ -324,7 +324,7 @@ func (q *queue) GetHttpAsync(url string, header map[string]string, fun func(getD
 }
 
 func (q *queue) PostHttpAsync(url string, header map[string]string, body map[string]interface{}, callback func(map[string]interface{}, ...interface{}), backData ...interface{}) {
-	Http.PostHttpAsync(url, header, body, func(getData map[string]interface{}, backData ...interface{}) {
+	Http.PostHttpAsync(url, Http.NewHead(header), Http.NewBody(body), func(getData map[string]interface{}, _ error, backData ...interface{}) {
 		if len(q.chanHttp) == cap(q.chanHttp) {
 			Log.ErrorLog("%v Failed to insert http to chan, chan full", q.name)
 			return

@@ -1,8 +1,8 @@
 package SimpleXML
 
 import (
-	"Core/Log"
 	"fmt"
+	"github.com/7058011439/haoqbb/Log"
 	"github.com/beevik/etree"
 )
 

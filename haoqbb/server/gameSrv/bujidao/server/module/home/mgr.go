@@ -1,11 +1,11 @@
 package home
 
 import (
-	"Core/haoqbb/server/gameSrv/bujidao/protocol"
-	iHome "Core/haoqbb/server/gameSrv/bujidao/server/interface/home"
-	"Core/haoqbb/server/gameSrv/common"
-	"Core/haoqbb/server/gameSrv/server/interface/net"
-	"Core/haoqbb/server/gameSrv/server/multiAccess"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/protocol"
+	iHome "github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/server/interface/home"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/net"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/multiAccess"
 )
 
 func OnLogin(userId int) {

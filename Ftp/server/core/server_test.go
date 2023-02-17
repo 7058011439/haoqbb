@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"Core/Ftp/server/core"
-	"Core/Ftp/server/driver/file"
+	"github.com/7058011439/haoqbb/Ftp/server/core"
+	"github.com/7058011439/haoqbb/Ftp/server/driver/file"
 	"github.com/jlaffaye/ftp"
 	"github.com/stretchr/testify/assert"
 )

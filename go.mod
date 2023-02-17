@@ -1,4 +1,4 @@
-module "github.com/7058011439/haoqbb"
+module github.com/7058011439/haoqbb
 
 go 1.16
 

@@ -1,12 +1,12 @@
 package File
 
 import (
-	"Core/Log"
 	"archive/tar"
 	"archive/zip"
 	"bufio"
 	"compress/gzip"
 	"fmt"
+	"github.com/7058011439/haoqbb/Log"
 	"github.com/axgle/mahonia"
 	"github.com/saintfish/chardet"
 	"io"

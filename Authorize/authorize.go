@@ -1,11 +1,11 @@
 package Authorize
 
 import (
-	"Core/AES"
-	"Core/MyEncryption"
-	"Core/System"
 	"encoding/json"
 	"fmt"
+	"github.com/7058011439/haoqbb/AES"
+	"github.com/7058011439/haoqbb/MyEncryption"
+	"github.com/7058011439/haoqbb/System"
 	"io/ioutil"
 	"math/rand"
 	"time"

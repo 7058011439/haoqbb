@@ -1,11 +1,11 @@
 package multiAccess
 
 import (
-	"Core/Stl"
-	"Core/Timer"
-	"Core/haoqbb/server/gameSrv/server/interface/service"
-	"Core/haoqbb/service/interface/mongo"
-	"Core/haoqbb/service/interface/timer"
+	"github.com/7058011439/haoqbb/Stl"
+	"github.com/7058011439/haoqbb/Timer"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/service"
+	"github.com/7058011439/haoqbb/haoqbb/service/interface/mongo"
+	"github.com/7058011439/haoqbb/haoqbb/service/interface/timer"
 )
 
 //某玩家的农场或者家园有哪些访问者

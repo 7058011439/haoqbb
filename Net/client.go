@@ -1,9 +1,9 @@
 package Net
 
 import (
-	"Core/Log"
-	"Core/Stl"
-	"Core/Timer"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Stl"
+	"github.com/7058011439/haoqbb/Timer"
 	"net"
 	"strings"
 	"sync"
@@ -11,14 +11,14 @@ import (
 )
 
 const (
-	recvCacheSize = 2048
+	revCacheSize = 2048
 )
 
 type Client struct {
 	conn       net.Conn      // 网络连接
 	id         uint64        // 客户端id
 	customData interface{}   // 自定义数据
-	recvBuff   *Stl.Buffer   // 接受缓存池
+	revBuff    *Stl.Buffer   // 接受缓存池
 	sendBuff   *Stl.Buffer   // 缓存池
 	chClose    chan struct{} // 关闭客户端(先通知接受协程结束，接受协程通知发送协程)
 	sendMutex  sync.RWMutex  // 发送数据锁
@@ -56,7 +56,7 @@ func (c *Client) GetAddr() string {
 	}
 }
 
-// 关闭连接，先通知接受协程退出，接受协程退出后通知发送协程处理(将待发送数据发送，然后关闭端口)
+// Close 关闭连接，先通知接受协程退出，接受协程退出后通知发送协程处理(将待发送数据发送，然后关闭端口)
 func (c *Client) Close() {
 	c.chClose <- struct{}{}
 }
@@ -74,7 +74,7 @@ func (c *Client) SendMsg(data []byte) {
 	}
 }
 
-func (c *Client) send(timerId Timer.TimerID, args ...interface{}) {
+func (c *Client) send(timerId Timer.TimerID, _ ...interface{}) {
 	c.sendMutex.Lock()
 	defer c.sendMutex.Unlock()
 	if c.sendBuff.Len() < 1 {
@@ -90,14 +90,14 @@ func (c *Client) send(timerId Timer.TimerID, args ...interface{}) {
 	atomic.StoreInt64(&c.timerId, 0)
 }
 
-func (c *Client) recvMsg() {
+func (c *Client) revMsg() {
 	defer func() {
 		c.send(0)
 		c.conn.Close()
 		c.onDisconnect(c)
 	}()
 	tcpConn := c.conn.(net.Conn)
-	buf := make([]byte, recvCacheSize)
+	buf := make([]byte, revCacheSize)
 	for {
 		select {
 		case <-c.chClose:
@@ -105,8 +105,8 @@ func (c *Client) recvMsg() {
 		default:
 			n, err := tcpConn.Read(buf)
 			if err == nil && n > 0 {
-				c.recvBuff.Write(buf[:n])
-				buff := c.recvBuff.Bytes()
+				c.revBuff.Write(buf[:n])
+				buff := c.revBuff.Bytes()
 				i := 0
 				for i = 0; i < len(buff); {
 					if data, offSize := c.onParseProtocol(buff[i:]); offSize > 0 {
@@ -119,10 +119,10 @@ func (c *Client) recvMsg() {
 					}
 				}
 				if i > 0 {
-					c.recvBuff.OffSize(i)
+					c.revBuff.OffSize(i)
 				}
-				if c.recvBuff.Len() > c.getPackageMaxSize() {
-					Log.ErrorLog("recv buff to long, size = %v", c.recvBuff.Len())
+				if c.revBuff.Len() > c.getPackageMaxSize() {
+					Log.ErrorLog("rev buff to long, size = %v", c.revBuff.Len())
 					return
 				}
 			} else {

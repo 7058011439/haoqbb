@@ -1,10 +1,10 @@
 package test
 
 import (
-	"Core/Log"
-	"Core/Probability"
-	"Core/Timer"
-	"Core/haoqbb/server/gameSrv/client/player"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Probability"
+	"github.com/7058011439/haoqbb/Timer"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/player"
 	"math/rand"
 )
 

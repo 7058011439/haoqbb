@@ -1,14 +1,14 @@
 package player
 
 import (
-	"Core/Log"
-	"Core/Stl"
-	"Core/haoqbb/server/common"
-	common2 "Core/haoqbb/server/gameSrv/common"
-	"Core/haoqbb/server/gameSrv/common/event"
-	"Core/haoqbb/server/gameSrv/server/interface/net"
-	"Core/haoqbb/server/gameSrv/server/interface/player"
-	"Core/haoqbb/server/gameSrv/server/multiAccess"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Stl"
+	"github.com/7058011439/haoqbb/haoqbb/server/common"
+	common2 "github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/event"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/net"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/player"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/multiAccess"
 )
 
 var agent *Mgr

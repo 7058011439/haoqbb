@@ -1,10 +1,10 @@
 package Net
 
 import (
-	"Core/Log"
-	"Core/Timer"
 	"encoding/json"
 	"fmt"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Timer"
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
 	"reflect"

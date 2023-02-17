@@ -1,14 +1,14 @@
 package login
 
 import (
-	"Core/Http"
-	"Core/Log"
-	"Core/Timer"
-	"Core/haoqbb/server/gameSrv/client/interface"
-	"Core/haoqbb/server/gameSrv/client/player"
-	"Core/haoqbb/server/gameSrv/common/msgHandle"
-	"Core/haoqbb/server/gameSrv/common/protocol"
 	"fmt"
+	"github.com/7058011439/haoqbb/Http"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Timer"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/interface"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/player"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/msgHandle"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
 )
 
 const (
@@ -29,11 +29,11 @@ func C2SLogin(clientId uint64) {
 		"mobile":   currPhone,
 		"serverId": 2,
 	}
-	Http.PostHttpSyncNew(getMSM, Http.NewHead(nil), Http.NewBody(nil).Add("mobile", currPhone))
-	Http.PostHttpAsyncNew(getToken, Http.NewHead(nil), Http.NewBody(body), LoginWithToken, clientId, currPhone)
+	Http.PostHttpSync(getMSM, Http.NewHead(nil), Http.NewBody(nil).Add("mobile", currPhone))
+	Http.PostHttpAsync(getToken, Http.NewHead(nil), Http.NewBody(body), LoginWithToken, clientId, currPhone)
 }
 
-func LoginWithToken(data map[string]interface{}, callBack ...interface{}) {
+func LoginWithToken(data map[string]interface{}, _ error, callBack ...interface{}) {
 	clientId := callBack[0].(uint64)
 	currPhone := callBack[1].(string)
 	if data["code"].(float64) != 200 {

@@ -1,8 +1,8 @@
 package common
 
 import (
-	"Core/Stl"
-	"Core/Util"
+	"github.com/7058011439/haoqbb/Stl"
+	"github.com/7058011439/haoqbb/Util"
 	"math"
 )
 

@@ -1,9 +1,9 @@
 package Http
 
 import (
-	"Core/Log"
-	"Core/Timer"
 	"fmt"
+	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Timer"
 	"os"
 	"sync"
 	"testing"
