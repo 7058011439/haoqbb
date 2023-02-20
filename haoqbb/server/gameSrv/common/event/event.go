@@ -2,7 +2,6 @@ package event
 
 import (
 	"github.com/7058011439/haoqbb/EventBus"
-	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/bujidao/server/module/home"
 	cBag "github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/module/bag"
 )
 
@@ -12,7 +11,6 @@ const (
 )
 
 func init() {
-	EventBus.Subscribe(ServerGameServer+GameServerLogin, home.OnLogin)
 	EventBus.Subscribe(ServerGameServer+GameServerLogin, cBag.OnLogin)
 }
 
