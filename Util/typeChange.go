@@ -58,7 +58,7 @@ func StrToFloat32(value string) float32 {
 		return 0
 	}
 	if data, err := strconv.ParseFloat(value, 32); err != nil {
-		fmt.Printf("Failed to StrToFloat64, err = %v\r\n", err)
+		fmt.Printf("Failed to StrToFloat32, err = %v\r\n", err)
 		return 0
 	} else {
 		return float32(data)
