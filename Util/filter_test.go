@@ -6,6 +6,7 @@ func TestFilter(t *testing.T) {
 	trie := NewTrie()
 	trie.Insert("习近平")
 	trie.Insert("胡锦涛")
+	trie.Insert("社会主义好")
 
 	fibTests := map[string]bool{
 		"习近平是人": true,
