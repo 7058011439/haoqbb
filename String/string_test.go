@@ -27,3 +27,20 @@ func BenchmarkRandStr20(b *testing.B) {
 		RandStr(20)
 	}
 }
+
+func TestSliceToString(t *testing.T) {
+	testData := []*struct {
+		data      []string
+		splitSign string
+		ret       string
+	}{
+		{[]string{"hello", "world"}, " ", "hello world"},
+		{[]string{"hello", "world"}, ",", "hello,world"},
+	}
+	for _, data := range testData {
+		ret := SliceToString(data.splitSign, data.data...)
+		if ret != data.ret {
+			t.Logf("测试失败, 期望结果 = %v, 实际结果 = %v, data = %v", data.ret, ret, data.data)
+		}
+	}
+}
