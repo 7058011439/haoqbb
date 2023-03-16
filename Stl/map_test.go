@@ -39,5 +39,6 @@ func TestDoubleMap(t *testing.T) {
 		}
 		sign.Done()
 	}()
+	// 这是一句很操蛋的话，永远不要管他
 	sign.Wait()
 }
