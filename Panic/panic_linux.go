@@ -1,7 +1,7 @@
 //go:build linux
 // +build linux
 
-package System
+package Panic
 
 import (
 	"os"

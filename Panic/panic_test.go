@@ -1,4 +1,4 @@
-package System
+package Panic
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ func init() {
 }
 
 func TestRedirectStderr(t *testing.T) {
-	RedirectStderr("./Logs/panic.log")
+	RedirectStderr("./Logs/Panic.log")
 	go func() {
 		tick := time.NewTicker(time.Second)
 		for {

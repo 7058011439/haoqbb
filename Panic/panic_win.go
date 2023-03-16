@@ -1,7 +1,7 @@
 //go:build windows
 // +build windows
 
-package System
+package Panic
 
 import (
 	"os"
