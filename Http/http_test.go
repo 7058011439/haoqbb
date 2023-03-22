@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Timer"
+	"github.com/gin-gonic/gin"
+	"net/http"
 	"os"
 	"sync"
 	"testing"
@@ -36,4 +38,30 @@ func TestGetHttpSync(t *testing.T) {
 func TestGetHttpSyncProxy(t *testing.T) {
 	data, _ := GetHttpSync("https://fapi.binance.com/fapi/v1/ticker/24hr", nil)
 	fmt.Println(string(data))
+}
+
+type testApi struct {
+	*Api
+}
+
+func (t *testApi) login(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, "登录")
+}
+
+func (t *testApi) regedit(ctx *gin.Context) {
+	ctx.String(http.StatusOK, "注册")
+}
+
+func TestNewHttpServer(t *testing.T) {
+	server := NewHttpServer(ServerModeRelease)
+
+	group := &testApi{
+		Api: NewApi(server, "/account"),
+	}
+	group.Regedit(TypeGet, "/login", group.login)
+	group.Regedit(TypeGet, "/regedit", group.regedit)
+
+	server.Start(1000)
+
+	select {}
 }

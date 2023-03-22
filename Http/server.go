@@ -24,8 +24,11 @@ func (h *Server) Start(port int) {
 
 func NewHttpServer(mode ServerMode) *Server {
 	gin.SetMode(mode)
-	en := gin.Default()
-	en.Use(options)
+	en := gin.New()
+	if mode != ServerModeRelease {
+		en.Use(gin.Logger())
+	}
+	en.Use(gin.Recovery(), options)
 	return &Server{Engine: en}
 }
 
