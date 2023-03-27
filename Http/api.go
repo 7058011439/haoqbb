@@ -1,8 +1,8 @@
 package Http
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -10,33 +10,27 @@ const (
 	TypeGet  = "get"
 )
 
+type IApi interface {
+	setApi(api *Api)
+}
+
 type Api struct {
-	BaseUrl string
-	server  *Server
-	group   *gin.RouterGroup
+	*gin.RouterGroup
 }
 
-func (a *Api) Regedit(reType string, uri string, fun func(c *gin.Context), middleware ...gin.HandlerFunc) error {
-	if a.server != nil {
-		middleware = append(middleware, fun)
-		switch reType {
-
-		case TypePost:
-			a.group.POST(uri, middleware...)
-		case TypeGet:
-			a.group.GET(uri, middleware...)
-		default:
-			return errors.Errorf("unknown type error")
-		}
+func (a *Api) RegeditApi(reType string, uri string, fun func(c *gin.Context), middleware ...gin.HandlerFunc) error {
+	middleware = append(middleware, fun)
+	switch reType {
+	case TypePost:
+		a.RouterGroup.POST(uri, middleware...)
+	case TypeGet:
+		a.RouterGroup.GET(uri, middleware...)
+	default:
+		return fmt.Errorf("unknown type error")
 	}
-	return errors.Errorf("engine is nil")
+	return nil
 }
 
-func NewApi(server *Server, baseUrl string, middleware ...gin.HandlerFunc) *Api {
-	ret := &Api{
-		BaseUrl: baseUrl,
-		server:  server,
-		group:   server.Group(baseUrl, middleware...),
-	}
-	return ret
+func (a *Api) setApi(api *Api) {
+	a.RouterGroup = api.RouterGroup
 }

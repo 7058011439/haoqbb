@@ -22,6 +22,14 @@ func (h *Server) Start(port int) {
 	go h.Run(fmt.Sprintf(":%v", port))
 }
 
+func (h *Server) RegeditGroup(baseUrl string, api IApi, middleware ...gin.HandlerFunc) IApi {
+	ret := &Api{
+		RouterGroup: h.Group(baseUrl, middleware...),
+	}
+	api.setApi(ret)
+	return api
+}
+
 func NewHttpServer(mode ServerMode) *Server {
 	gin.SetMode(mode)
 	en := gin.New()

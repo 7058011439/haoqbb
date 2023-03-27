@@ -41,7 +41,7 @@ func TestGetHttpSyncProxy(t *testing.T) {
 }
 
 type testApi struct {
-	*Api
+	Api
 }
 
 func (t *testApi) login(ctx *gin.Context) {
@@ -53,13 +53,11 @@ func (t *testApi) regedit(ctx *gin.Context) {
 }
 
 func TestNewHttpServer(t *testing.T) {
-	server := NewHttpServer(ServerModeRelease)
+	server := NewHttpServer(ServerModeDebug)
+	account := server.RegeditGroup("/account", &testApi{}).(*testApi)
 
-	group := &testApi{
-		Api: NewApi(server, "/account"),
-	}
-	group.Regedit(TypeGet, "/login", group.login)
-	group.Regedit(TypeGet, "/regedit", group.regedit)
+	account.RegeditApi(TypeGet, "/login", account.login)
+	account.RegeditApi(TypeGet, "/regedit", account.regedit)
 
 	server.Start(1000)
 
