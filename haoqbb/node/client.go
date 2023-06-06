@@ -6,7 +6,7 @@ import (
 	"github.com/7058011439/haoqbb/Stl"
 	"github.com/7058011439/haoqbb/Util"
 	"github.com/7058011439/haoqbb/haoqbb/config"
-	"github.com/7058011439/haoqbb/haoqbb/server/protocol"
+	"github.com/7058011439/haoqbb/haoqbb/protocol"
 	"github.com/golang/protobuf/proto"
 	"net"
 	"sync"
@@ -15,8 +15,8 @@ import (
 
 var nodeConnPool = Net.NewTcpClient(newConnectClient, disConnectClient, parseProtocol, msgHandleClient, Net.WithCustomData(compareData), Net.WithPackageMaxSize(65535*64))
 var mutex sync.Mutex
-var remoteServiceConn = map[int]Net.IClient{} // 远程服务连接 map[serviceId]connect 可能多个不同serviceId对应同一个connect
-var remoteServiceList = map[string][]int{}    // 远程服务列表 map[serviceName][]serviceId
+var remoteServiceConn = map[int]Net.IClient{}     // 远程服务连接 map[serviceId]connect 可能多个不同serviceId对应同一个connect
+var remoteServiceList = map[string]map[int]bool{} // 远程服务列表 map[serviceName][serviceId]bool
 
 func StartClient() {
 	tick := time.NewTicker(time.Second * 5)
@@ -54,18 +54,12 @@ func disConnectClient(client Net.IClient) {
 	for serviceId, c := range remoteServiceConn {
 		if c == client {
 			for serviceName, serviceIdList := range remoteServiceList {
-				for index, id := range serviceIdList {
-					if serviceId == id {
-						serviceIdList = append(serviceIdList[:index], serviceIdList[index+1:]...)
-						Log.Log("disconnect from other service, serviceName = %v, serviceId = %v", serviceName, serviceId)
-						for _, service := range localNodeService {
-							service.LoseService(serviceName, serviceId)
-						}
-						break
+				if _, ok := serviceIdList[serviceId]; ok {
+					Log.Log("disconnect from other service, serviceName = %v, serviceId = %v", serviceName, serviceId)
+					for _, service := range localNodeService {
+						service.LoseService(serviceName, serviceId)
 					}
-				}
-				if len(serviceIdList) == 0 {
-					delete(remoteServiceList, serviceName)
+					delete(serviceIdList, serviceId)
 				}
 			}
 			delete(remoteServiceConn, serviceId)
@@ -84,7 +78,10 @@ func msgHandleClient(client Net.IClient, data []byte) {
 	}
 	for _, info := range msg.ServiceList {
 		remoteServiceConn[int(info.ServiceId)] = client
-		remoteServiceList[info.ServiceName] = append(remoteServiceList[info.ServiceName], int(info.ServiceId))
+		if remoteServiceList[info.ServiceName] == nil {
+			remoteServiceList[info.ServiceName] = map[int]bool{}
+			remoteServiceList[info.ServiceName][int(info.ServiceId)] = true
+		}
 		Log.Log("connect to other service, serviceName = %v, serviceId = %v", info.ServiceName, info.ServiceId)
 		for _, service := range localNodeService {
 			service.DiscoverService(info.ServiceName, int(info.ServiceId))

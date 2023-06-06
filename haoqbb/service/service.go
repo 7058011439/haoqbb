@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"github.com/7058011439/haoqbb/DataBase"
 	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/haoqbb/msgHandle"
 	"github.com/7058011439/haoqbb/haoqbb/node"
-	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/msgHandle"
 	"github.com/7058011439/haoqbb/haoqbb/service/interface/http"
 	"github.com/7058011439/haoqbb/haoqbb/service/interface/mongo"
 	"github.com/7058011439/haoqbb/haoqbb/service/interface/redis"
@@ -42,10 +42,10 @@ type serviceCfg struct {
 }
 
 type Service struct {
-	name       string
-	ServiceCfg serviceCfg
-	*msgHandle.Dispatcher
 	*queue
+	ServiceCfg serviceCfg
+	msgHandle.IDispatcher
+	name string
 }
 
 func (s *Service) run() {
@@ -73,16 +73,15 @@ func (s *Service) Regedit(serviceCfg string) {
 		Log.ErrorLog("Failed to json.Unmarshal on RegeditApi, err = %v", err)
 	}
 	s.queue = NewQueue(s.name)
-	s.Dispatcher = msgHandle.NewDispatcher()
+	s.setAgent()
 	go s.run()
-	s.SetAgent()
 }
 
 func (s *Service) Init() error {
 	return nil
 }
 
-func (s *Service) SetAgent() {
+func (s *Service) setAgent() {
 	if s.ServiceCfg.Mongo != nil {
 		cfg := s.ServiceCfg.Mongo
 		s.MongoDB = DataBase.NewMongoDB(cfg.Ip, cfg.Port, cfg.DBName, "", "", 0)

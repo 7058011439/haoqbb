@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/haoqbb/msgHandle"
 	"github.com/7058011439/haoqbb/haoqbb/server/common"
 	cProtocol "github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/capability"
@@ -38,6 +39,8 @@ func (g *GameSrv) InitMsg() {
 	g.RegeditServiceMsg(common.GateWayClientConnect, g.clientConnect)
 	g.RegeditServiceMsg(common.GateWayClientDisconnect, g.clientDisconnect)
 	g.RegeditServiceMsg(common.EventLoginSrvLogin, login.Login)
+
+	g.IDispatcher = msgHandle.NewPBDispatcher()
 	g.RegeditMsgHandle(cProtocol.SCmd_C2S_RT, &cProtocol.C2S_Test_RT{}, capability.NetC2SRT)
 }
 

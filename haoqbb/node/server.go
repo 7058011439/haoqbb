@@ -7,7 +7,7 @@ import (
 	"github.com/7058011439/haoqbb/Stl"
 	"github.com/7058011439/haoqbb/Util"
 	"github.com/7058011439/haoqbb/haoqbb/config"
-	"github.com/7058011439/haoqbb/haoqbb/server/protocol"
+	"github.com/7058011439/haoqbb/haoqbb/protocol"
 	"github.com/golang/protobuf/proto"
 	"net/http"
 	"strings"

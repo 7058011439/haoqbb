@@ -19,7 +19,7 @@ func SendMsgByName(srcServiceId int, serviceName string, msgType int, data []byt
 		revMsg(srcServiceId, getLocalServiceId(serviceName), msgType, data)
 		// 发送数据到远程节点
 		if list, ok := remoteServiceList[serviceName]; ok {
-			for _, serviceId := range list {
+			for serviceId, _ := range list {
 				SendMsgById(srcServiceId, serviceId, msgType, data)
 			}
 		}

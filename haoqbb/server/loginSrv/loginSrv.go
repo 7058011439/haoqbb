@@ -3,8 +3,8 @@ package gateWay
 import (
 	"encoding/json"
 	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/haoqbb/msgHandle"
 	"github.com/7058011439/haoqbb/haoqbb/server/common"
-	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/msgHandle"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
 	"github.com/7058011439/haoqbb/haoqbb/service"
 	"github.com/7058011439/haoqbb/haoqbb/service/interface/http"

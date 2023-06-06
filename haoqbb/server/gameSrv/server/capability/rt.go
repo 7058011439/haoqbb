@@ -1,7 +1,7 @@
 package capability
 
 import (
-	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/msgHandle"
+	"github.com/7058011439/haoqbb/haoqbb/msgHandle"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/net"
 )
