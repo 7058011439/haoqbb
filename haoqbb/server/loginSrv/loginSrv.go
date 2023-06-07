@@ -21,6 +21,7 @@ type LoginSrv struct {
 func (l *LoginSrv) InitMsg() {
 	l.RegeditServiceMsg(common.GateToLoginSrvClientMsg, l.revMsgFromGateWay)
 
+	l.IDispatcher = msgHandle.NewPBDispatcher()
 	l.RegeditMsgHandle(protocol.SCmd_C2S_Login, &protocol.C2S_LoginWithToken{}, l.loginWithToken)
 }
 

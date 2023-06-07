@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Net"
-	"github.com/7058011439/haoqbb/Stl"
 	"github.com/7058011439/haoqbb/Util"
 	"github.com/7058011439/haoqbb/haoqbb/config"
 	"github.com/7058011439/haoqbb/haoqbb/protocol"
@@ -14,7 +13,7 @@ import (
 )
 
 func StartServer() {
-	tcpAddr := config.GetCurrNodeListenAddr()
+	tcpAddr := config.GetListenAddr()
 	if tcpAddr != "" {
 		params := strings.Split(tcpAddr, ":")
 		if len(params) != 2 {
@@ -36,27 +35,11 @@ func newConnectServer(client Net.IClient) {
 			ServiceId:   int32(serviceId),
 		})
 	}
-	sendData, _ := proto.Marshal(&sendMsg)
-	sendBuff := Stl.NewBuffer(2 + len(sendData))
-	sendBuff.Write(Util.Int16ToBytes(int16(len(sendData))))
-	sendBuff.Write(sendData)
-	client.SendMsg(sendBuff.Bytes())
+	client.SendMsg(encodeMsg(&sendMsg))
 }
 
 func disConnectServer(client Net.IClient) {
 	//Log.WarningLog("node disconnect, ip = %v", client.GetIp())
-}
-
-func parseProtocol(data []byte) (rdata []byte, offset int) {
-	allLen := len(data)
-	if allLen < 2 {
-		return nil, offset
-	}
-	msgLen := int(Util.Int16(data[0:2]))
-	if allLen >= msgLen+2 {
-		return data[2 : 2+msgLen], 2 + msgLen
-	}
-	return nil, 0
 }
 
 func msgHandleServer(client Net.IClient, data []byte) {

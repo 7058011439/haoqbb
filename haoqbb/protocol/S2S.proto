@@ -19,3 +19,15 @@ message ServiceInfo {
 message N2NRegedit {
   repeated ServiceInfo serviceList = 2;
 }
+
+// 节点信息
+message NodeInfo {
+  int32 nodeId = 1; // 节点id
+  string nodeName = 2; // 节点名(无鸟用)
+  string addr = 3; // 节点监听地址
+}
+
+// 节点列表
+message NodeList {
+  repeated NodeInfo nodeList = 1;
+}

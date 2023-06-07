@@ -10,27 +10,36 @@ import (
 )
 
 type nodeCfg struct {
-	NodeId      int
+	NodeId      int `json:"-"`
 	NodeName    string
 	ListenAddr  string
 	ServiceList []string
 }
 
-var nodeConfig = make(map[int]*nodeCfg, 20)
+type clusterCfg struct {
+	CenterAddr string
+	NodeId     int
+	NodeList   map[int]*nodeCfg
+}
+
+func (c *clusterCfg) Init() {
+	for nodeId, node := range c.NodeList {
+		node.NodeId = nodeId
+	}
+}
+
+var clusterConfig clusterCfg
+
 var serviceConfig = make(map[string]string, 20)
-var nodeID int
 
 func init() {
 	fileData, _ := ioutil.ReadFile("cfg/Cluster.json")
-	var data []*nodeCfg
-	err := json.Unmarshal(fileData, &data)
+	err := json.Unmarshal(fileData, &clusterConfig)
 	if err != nil {
 		Log.ErrorLog("Failed to init nodeConfig, err = %v, fileDate = %v", err, fileData)
 		return
 	}
-	for _, node := range data {
-		nodeConfig[node.NodeId] = node
-	}
+	clusterConfig.Init()
 	fileList, _ := File.WalkFile("cfg", ".json", "")
 	for _, file := range fileList {
 		pos := strings.LastIndex(file, "\\")
@@ -43,33 +52,36 @@ func init() {
 	}
 }
 
-func GetAllNodeConfig() map[int]*nodeCfg {
-	return nodeConfig
-}
-
-func GetNodeConfig(nodeId int) *nodeCfg {
-	return nodeConfig[nodeId]
-}
-
 func GetServiceConfig(serviceName string) string {
-	cfg := serviceConfig[fmt.Sprintf("%v_%v", serviceName, nodeID)]
+	cfg := serviceConfig[fmt.Sprintf("%v_%v", serviceName, clusterConfig.NodeId)]
 	if cfg == "" {
 		cfg = serviceConfig[serviceName]
 	}
 	return cfg
 }
 
-func SetCurrNodeID(nodeId int) {
-	nodeID = nodeId
+func GetNodeID() int {
+	return clusterConfig.NodeId
 }
 
-func GetCurrNodeId() int {
-	return nodeID
+func GetNodeConfig() *nodeCfg {
+	return clusterConfig.NodeList[clusterConfig.NodeId]
 }
 
-func GetCurrNodeListenAddr() string {
-	if nodeConfig[nodeID] != nil {
-		return nodeConfig[nodeID].ListenAddr
+// GetListenAddr 获取当前节点监听地址
+func GetListenAddr() string {
+	if clusterConfig.NodeList[clusterConfig.NodeId] != nil {
+		return clusterConfig.NodeList[clusterConfig.NodeId].ListenAddr
 	}
 	return ""
+}
+
+// GetCenterAddr 获取中心节点监听地址
+func GetCenterAddr() string {
+	return clusterConfig.CenterAddr
+}
+
+// IsCenterNode 是否中心节点
+func IsCenterNode() bool {
+	return clusterConfig.NodeId == 0
 }

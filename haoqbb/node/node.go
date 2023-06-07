@@ -5,11 +5,9 @@ import (
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Stl"
 	"github.com/7058011439/haoqbb/System"
-	"github.com/7058011439/haoqbb/Util"
 	"github.com/7058011439/haoqbb/haoqbb/config"
 	"github.com/7058011439/haoqbb/haoqbb/service/interface/service"
 	"math"
-	"os"
 	"reflect"
 	"time"
 )
@@ -46,17 +44,13 @@ func startNodeService() {
 }
 
 func Start() {
-	args := os.Args
-	if len(args) < 2 {
-		Log.ErrorLog("Failed to start, nodeId is nil")
-		return
-	}
-	nodeID := Util.StrToInt(args[1])
-	nodeConfig := config.GetAllNodeConfig()
-	for _, node := range nodeConfig {
-		if node.NodeId == nodeID {
-			initLog(node.NodeId)
-			config.SetCurrNodeID(nodeID)
+	initLog(config.GetNodeID())
+	if config.IsCenterNode() {
+		System.SetTitle("中心节点")
+		StartCenterServer()
+		Log.Log("启动中心节点完成")
+	} else {
+		if node := config.GetNodeConfig(); node != nil {
 			System.SetTitle(node.NodeName)
 			for _, startServerName := range node.ServiceList {
 				if s, ok := preSetupService[startServerName]; ok {
@@ -67,15 +61,36 @@ func Start() {
 					Log.ErrorLog("Failed to start service, service not setup, service name = %v", startServerName)
 				}
 			}
-			break
+			startNodeService()
+			StartServer()
+			StartClient()
+		} else {
+			Log.ErrorLog("未找到节点id配置, nodeId = %v", config.GetNodeID())
 		}
 	}
-	startNodeService()
-	StartServer()
-	StartClient()
 	for {
 		time.Sleep(time.Second)
 	}
+
+	/*
+		for _, node := range nodeConfig {
+			if node.NodeId == nodeID {
+				initLog(node.NodeId)
+				config.SetNodeID(nodeID)
+				System.SetTitle(node.NodeName)
+				for _, startServerName := range node.ServiceList {
+					if s, ok := preSetupService[startServerName]; ok {
+						s.Regedit(config.GetServiceConfig(startServerName))
+						localNodeService[s.GetId()] = s
+						localNodeServiceName.Add(s.GetId(), s.GetName())
+					} else {
+						Log.ErrorLog("Failed to start service, service not setup, service name = %v", startServerName)
+					}
+				}
+				break
+			}
+		}
+	*/
 }
 
 func Setup(s service.IService) {

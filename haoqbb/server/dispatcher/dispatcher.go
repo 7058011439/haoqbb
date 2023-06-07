@@ -103,7 +103,7 @@ func (d *Dispatcher) gateWayRegedit(srcServiceId int, data []byte) {
 func (d *Dispatcher) loseGateWay(gateWayId int) {
 	delete(d.mapAllGate, gateWayId)
 	d.mapOptimalGate = map[int]*common.GateInfo{}
-	Log.WarningLog("有网关丢失, gateWayId = %v, 剩余网关数量 = %v", gateWayId, len(d.mapOptimalGate))
+	Log.Log("有网关丢失, gateWayId = %v, 剩余网关数量 = %v", gateWayId, len(d.mapAllGate))
 
 	for _, gate := range d.mapAllGate {
 		for t := cpuRate; t <= random; t++ {

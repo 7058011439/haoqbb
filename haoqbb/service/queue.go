@@ -143,7 +143,7 @@ func (q *queue) run() {
 		q.loseServiceHandle[status.serviceName](status.serviceId)
 		msgType = msgTypeLoseService
 	}
-	cost.PrintCost(warningTime, false, "%v %s callFun timeout", q.name, msgType)
+	//cost.PrintCost(warningTime, false, "%v %s callFun timeout", q.name, msgType)
 	per := q.performance[msgType]
 	per.update(int64(cost.GetCost()))
 	q.performance[msgType] = per

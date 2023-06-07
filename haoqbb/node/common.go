@@ -1,5 +1,11 @@
 package node
 
+import (
+	"github.com/7058011439/haoqbb/Stl"
+	"github.com/7058011439/haoqbb/Util"
+	"github.com/golang/protobuf/proto"
+)
+
 const (
 	socketCacheSize = 1024 * 1024 * 64
 )
@@ -19,9 +25,29 @@ func SendMsgByName(srcServiceId int, serviceName string, msgType int, data []byt
 		revMsg(srcServiceId, getLocalServiceId(serviceName), msgType, data)
 		// 发送数据到远程节点
 		if list, ok := remoteServiceList[serviceName]; ok {
-			for serviceId, _ := range list {
+			for serviceId := range list {
 				SendMsgById(srcServiceId, serviceId, msgType, data)
 			}
 		}
 	}
+}
+
+func parseProtocol(data []byte) (rdata []byte, offset int) {
+	allLen := len(data)
+	if allLen < 2 {
+		return nil, offset
+	}
+	msgLen := int(Util.Int16(data[0:2]))
+	if allLen >= msgLen+2 {
+		return data[2 : 2+msgLen], 2 + msgLen
+	}
+	return nil, 0
+}
+
+func encodeMsg(message proto.Message) []byte {
+	sendData, _ := proto.Marshal(message)
+	sendBuff := Stl.NewBuffer(2 + len(sendData))
+	sendBuff.Write(Util.Int16ToBytes(int16(len(sendData))))
+	sendBuff.Write(sendData)
+	return sendBuff.Bytes()
 }

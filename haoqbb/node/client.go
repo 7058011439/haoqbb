@@ -3,8 +3,6 @@ package node
 import (
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Net"
-	"github.com/7058011439/haoqbb/Stl"
-	"github.com/7058011439/haoqbb/Util"
 	"github.com/7058011439/haoqbb/haoqbb/config"
 	"github.com/7058011439/haoqbb/haoqbb/protocol"
 	"github.com/golang/protobuf/proto"
@@ -13,38 +11,33 @@ import (
 	"time"
 )
 
-var nodeConnPool = Net.NewTcpClient(newConnectClient, disConnectClient, parseProtocol, msgHandleClient, Net.WithCustomData(compareData), Net.WithPackageMaxSize(65535*64))
+var nodeConnPool = Net.NewTcpClient(func(client Net.IClient) {}, disConnectClient, parseProtocol, msgHandleClient, Net.WithCustomData(compareData), Net.WithPackageMaxSize(65535*64))
+
+var nodeConnPoolCenterClient = Net.NewTcpClient(connectCenterNode, func(client Net.IClient) {}, parseProtocol, msgHandleCenterClient)
+
 var mutex sync.Mutex
 var remoteServiceConn = map[int]Net.IClient{}     // 远程服务连接 map[serviceId]connect 可能多个不同serviceId对应同一个connect
 var remoteServiceList = map[string]map[int]bool{} // 远程服务列表 map[serviceName][serviceId]bool
-
-func StartClient() {
-	tick := time.NewTicker(time.Second * 5)
-	go func() {
-		for {
-			<-tick.C
-			connServer()
-		}
-	}()
-}
 
 func compareData(dataA interface{}, dataB interface{}) bool {
 	return dataA != nil && dataB != nil && dataA.(int) == dataB.(int)
 }
 
-func connServer() {
-	currNodeId := config.GetCurrNodeId()
-	nodeConfig := config.GetAllNodeConfig()
-	for _, node := range nodeConfig {
-		if node.NodeId != currNodeId && nodeConnPool.GetClientByData(node.NodeId) == nil && node.ListenAddr != "" {
-			if conn, err := net.DialTimeout("tcp", node.ListenAddr, time.Second*5); err == nil {
-				nodeConnPool.NewConnect(conn, node.NodeId)
-			}
-		}
+func StartClient() {
+	if conn, err := net.DialTimeout("tcp", config.GetCenterAddr(), time.Second*5); err == nil {
+		nodeConnPoolCenterClient.NewConnect(conn, nil)
+	} else {
+		Log.ErrorLog("连接到中心节点错误, err = %v", err)
 	}
 }
 
-func newConnectClient(_ Net.IClient) {
+func connectCenterNode(client Net.IClient) {
+	Log.Log("成功连接到中心节点")
+	client.SendMsg(encodeMsg(&protocol.NodeInfo{
+		NodeId:   int32(config.GetNodeConfig().NodeId),
+		NodeName: config.GetNodeConfig().NodeName,
+		Addr:     config.GetNodeConfig().ListenAddr,
+	}))
 }
 
 // 和其他节点断开连接
@@ -82,9 +75,26 @@ func msgHandleClient(client Net.IClient, data []byte) {
 			remoteServiceList[info.ServiceName] = map[int]bool{}
 			remoteServiceList[info.ServiceName][int(info.ServiceId)] = true
 		}
-		Log.Log("connect to other service, serviceName = %v, serviceId = %v", info.ServiceName, info.ServiceId)
+		Log.Log("connect to other node, nodeId = %v, serviceName = %v, serviceId = %v", client.CustomData(), info.ServiceName, info.ServiceId)
 		for _, service := range localNodeService {
 			service.DiscoverService(info.ServiceName, int(info.ServiceId))
+		}
+	}
+}
+
+// 连接到中心节点后，中心节点报其他告节点信息
+func msgHandleCenterClient(client Net.IClient, data []byte) {
+	defer mutex.Unlock()
+	mutex.Lock()
+	msg := protocol.NodeList{}
+	if err := proto.Unmarshal(data, &msg); err != nil {
+		Log.ErrorLog("Failed to parse NodeList, err = %v", err)
+		return
+	}
+	for _, info := range msg.NodeList {
+		Log.Log("发现新节点, id = %v, name = %v, addr = %v", info.NodeId, info.NodeName, info.Addr)
+		if conn, err := net.DialTimeout("tcp", info.Addr, time.Second*5); err == nil {
+			nodeConnPool.NewConnect(conn, info.NodeId)
 		}
 	}
 }
@@ -96,17 +106,14 @@ func sendMsg(srcServiceId, destServiceId int, msgType int, data []byte) {
 		MsgType:       int32(msgType),
 		Data:          data,
 	}
-	sendData, _ := proto.Marshal(&msg)
-	sendBuff := Stl.NewBuffer(2 + len(sendData))
-	sendBuff.Write(Util.Int16ToBytes(int16(len(sendData))))
-	sendBuff.Write(sendData)
+	sendData := encodeMsg(&msg)
 	if destServiceId == 0 {
 		nodeConnPool.Range(func(client Net.IClient) {
-			client.SendMsg(sendBuff.Bytes())
+			client.SendMsg(sendData)
 		})
 	} else {
 		if conn := remoteServiceConn[destServiceId]; conn != nil {
-			conn.SendMsg(sendBuff.Bytes())
+			conn.SendMsg(sendData)
 		}
 	}
 }
