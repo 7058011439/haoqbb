@@ -18,6 +18,7 @@ const (
 type Timing struct {
 	startTime time.Time
 	eType     timingType
+	print     func(string)
 }
 
 var mapDesc = map[timingType]string{
@@ -34,6 +35,10 @@ func NewTiming(eType timingType) *Timing {
 	}
 
 	return &ret
+}
+
+func (t *Timing) SetPrint(print func(string)) {
+	t.print = print
 }
 
 func (t *Timing) getDesc() string {
@@ -68,7 +73,12 @@ func (t *Timing) String() string {
 func (t *Timing) PrintCost(condition float64, restart bool, format string, args ...interface{}) {
 	if t.GetCost() >= condition {
 		title := fmt.Sprintf(format, args...)
-		Log.ErrorLog("%v : cost = %v", title, t.GetCost())
+		msg := fmt.Sprintf("%v : cost = %v", title, t.GetCost())
+		if t.print != nil {
+			t.print(msg)
+		} else {
+			Log.WarningLog("%v", msg)
+		}
 	}
 	if restart {
 		t.ReStart()
