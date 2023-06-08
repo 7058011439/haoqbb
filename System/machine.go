@@ -8,6 +8,7 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
+	net1 "github.com/shirou/gopsutil/net"
 	"net"
 	"strings"
 	"time"
@@ -21,6 +22,14 @@ func GetCpuPercent() float64 {
 func GetMemPercent() float64 {
 	memInfo, _ := mem.VirtualMemory()
 	return memInfo.UsedPercent
+}
+
+// GetNetRate 网络下载速率(kb/s)
+func GetNetRate() float64 {
+	oldStatus, _ := net1.IOCounters(false)
+	time.Sleep(time.Millisecond)
+	currStatus, _ := net1.IOCounters(false)
+	return float64(currStatus[0].BytesRecv - oldStatus[0].BytesRecv)
 }
 
 func GetDiskPercent() float64 {
