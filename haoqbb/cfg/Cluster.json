@@ -1,6 +1,6 @@
 {
   "CenterAddr": "127.0.0.1:6666",
-  "NodeId": 1,
+  "NodeId": 2,
   "NodeList": {
     "1": {
       "NodeName": "All",

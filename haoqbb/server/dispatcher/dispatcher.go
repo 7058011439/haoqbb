@@ -13,7 +13,7 @@ import (
 type hitType = int
 
 const (
-	cpuRate      hitType = iota // cpu使用率
+	memRate      hitType = iota // 内存使用率
 	netRate                     // 网络带宽
 	connectCount                // 连接数量
 	random                      // 随机
@@ -75,14 +75,14 @@ func (d *Dispatcher) gateWayRegedit(srcServiceId int, data []byte) {
 		return
 	}
 	d.mapAllGate[srcServiceId] = newGate
-	for t := cpuRate; t <= random; t++ {
+	for t := memRate; t <= random; t++ {
 		oldGate := d.mapOptimalGate[t]
 		if oldGate == nil {
 			d.mapOptimalGate[t] = newGate
 		} else {
 			switch t {
-			case cpuRate:
-				if oldGate.CpuRate > newGate.CpuRate {
+			case memRate:
+				if oldGate.MemRate > newGate.MemRate {
 					d.mapOptimalGate[t] = newGate
 				}
 			case netRate:
@@ -106,14 +106,14 @@ func (d *Dispatcher) loseGateWay(gateWayId int) {
 	Log.Log("有网关丢失, gateWayId = %v, 剩余网关数量 = %v", gateWayId, len(d.mapAllGate))
 
 	for _, gate := range d.mapAllGate {
-		for t := cpuRate; t <= random; t++ {
+		for t := memRate; t <= random; t++ {
 			oldGate := d.mapOptimalGate[t]
 			if oldGate == nil {
 				d.mapOptimalGate[t] = gate
 			} else {
 				switch t {
-				case cpuRate:
-					if oldGate.CpuRate > gate.CpuRate {
+				case memRate:
+					if oldGate.MemRate > gate.MemRate {
 						d.mapOptimalGate[t] = gate
 					}
 				case netRate:

@@ -136,8 +136,8 @@ func (g *GateWay) handleClientMsg(clientId uint64, data []byte) {
 func (g *GateWay) uploadStatus(_ Timer.TimerID, _ ...interface{}) {
 	data := &common.GateInfo{
 		Addr:         g.addr,
-		CpuRate:      System.GetCpuPercent(),
-		NetRate:      10,
+		MemRate:      System.GetMemPercent(),
+		NetRate:      System.GetNetRate(),
 		ConnectCount: g.GetClientCount(),
 	}
 	g.PublicEventByName(common.Dispatcher, common.GateToDispatcherStatus, data)
