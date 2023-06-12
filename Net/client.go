@@ -80,7 +80,7 @@ func (c *Client) send(timerId Timer.TimerID, _ ...interface{}) {
 	if c.sendBuff.Len() < 1 {
 		return
 	}
-	if _, err := c.conn.(net.Conn).Write(c.sendBuff.Bytes()); err != nil {
+	if _, err := c.conn.Write(c.sendBuff.Bytes()); err != nil {
 		Log.ErrorLog("Failed to conn.write, err = %v, data = %v, clientId = %v", err, c.sendBuff.Bytes(), c.GetId())
 	}
 	c.sendBuff.Reset()
@@ -96,14 +96,13 @@ func (c *Client) revMsg() {
 		c.conn.Close()
 		c.onDisconnect(c)
 	}()
-	tcpConn := c.conn.(net.Conn)
 	buf := make([]byte, revCacheSize)
 	for {
 		select {
 		case <-c.chClose:
 			return
 		default:
-			n, err := tcpConn.Read(buf)
+			n, err := c.conn.Read(buf)
 			if err == nil && n > 0 {
 				c.revBuff.Write(buf[:n])
 				buff := c.revBuff.Bytes()
