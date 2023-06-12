@@ -13,10 +13,12 @@ import (
 type hitType = int
 
 const (
-	memRate      hitType = iota // 内存使用率
+	random       hitType = iota // 随机
+	cpuRate                     // cpu使用率
+	memRate                     // 内存使用率
 	netRate                     // 网络带宽
 	connectCount                // 连接数量
-	random                      // 随机
+	max
 )
 
 type dispatcherConfig struct {
@@ -27,8 +29,8 @@ type dispatcherConfig struct {
 type Dispatcher struct {
 	service.Service
 	Net.INetPool
-	mapOptimalGate map[hitType]*common.GateInfo
-	mapAllGate     map[int]*common.GateInfo
+	mapOptimalGate map[hitType]*common.GateInfo // 最优网关
+	mapAllGate     map[int]*common.GateInfo     // 所有网关
 	config         *dispatcherConfig
 }
 
@@ -75,26 +77,34 @@ func (d *Dispatcher) gateWayRegedit(srcServiceId int, data []byte) {
 		return
 	}
 	d.mapAllGate[srcServiceId] = newGate
-	for t := memRate; t <= random; t++ {
+	d.refreshOptimalGate(newGate)
+}
+
+func (d *Dispatcher) refreshOptimalGate(gate *common.GateInfo) {
+	for t := random; t < max; t++ {
 		oldGate := d.mapOptimalGate[t]
 		if oldGate == nil {
-			d.mapOptimalGate[t] = newGate
+			d.mapOptimalGate[t] = gate
 		} else {
 			switch t {
+			case random:
+				d.mapOptimalGate[t] = gate
+			case cpuRate:
+				if oldGate.CpuRate > gate.CpuRate {
+					d.mapOptimalGate[t] = gate
+				}
 			case memRate:
-				if oldGate.MemRate > newGate.MemRate {
-					d.mapOptimalGate[t] = newGate
+				if oldGate.MemRate > gate.MemRate {
+					d.mapOptimalGate[t] = gate
 				}
 			case netRate:
-				if oldGate.NetRate > newGate.NetRate {
-					d.mapOptimalGate[t] = newGate
+				if oldGate.NetRate > gate.NetRate {
+					d.mapOptimalGate[t] = gate
 				}
 			case connectCount:
-				if oldGate.ConnectCount > newGate.ConnectCount {
-					d.mapOptimalGate[t] = newGate
+				if oldGate.ConnectCount > gate.ConnectCount {
+					d.mapOptimalGate[t] = gate
 				}
-			case random:
-				d.mapOptimalGate[t] = newGate
 			}
 		}
 	}
@@ -106,28 +116,6 @@ func (d *Dispatcher) loseGateWay(gateWayId int) {
 	Log.Log("有网关丢失, gateWayId = %v, 剩余网关数量 = %v", gateWayId, len(d.mapAllGate))
 
 	for _, gate := range d.mapAllGate {
-		for t := memRate; t <= random; t++ {
-			oldGate := d.mapOptimalGate[t]
-			if oldGate == nil {
-				d.mapOptimalGate[t] = gate
-			} else {
-				switch t {
-				case memRate:
-					if oldGate.MemRate > gate.MemRate {
-						d.mapOptimalGate[t] = gate
-					}
-				case netRate:
-					if oldGate.NetRate > gate.NetRate {
-						d.mapOptimalGate[t] = gate
-					}
-				case connectCount:
-					if oldGate.ConnectCount > gate.ConnectCount {
-						d.mapOptimalGate[t] = gate
-					}
-				case random:
-					d.mapOptimalGate[t] = gate
-				}
-			}
-		}
+		d.refreshOptimalGate(gate)
 	}
 }

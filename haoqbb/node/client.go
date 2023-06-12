@@ -33,10 +33,16 @@ func StartClient() {
 
 func connectCenterNode(client Net.IClient) {
 	Log.Log("成功连接到中心节点")
+	client.SendMsg(encodeMsgOrigin([]byte(config.GetSign())))
+
+	// 上报自己节点信息
+	nodeConfig := config.GetNodeConfig()
 	client.SendMsg(encodeMsg(&protocol.NodeInfo{
-		NodeId:   int32(config.GetNodeConfig().NodeId),
-		NodeName: config.GetNodeConfig().NodeName,
-		Addr:     config.GetNodeConfig().ListenAddr,
+		NodeId:      int32(nodeConfig.NodeId),
+		NodeName:    nodeConfig.NodeName,
+		Addr:        nodeConfig.ListenAddr,
+		ServiceList: nodeConfig.ServiceList,
+		NeedService: nodeConfig.NeedService,
 	}))
 }
 
@@ -73,8 +79,8 @@ func msgHandleClient(client Net.IClient, data []byte) {
 		remoteServiceConn[int(info.ServiceId)] = client
 		if remoteServiceList[info.ServiceName] == nil {
 			remoteServiceList[info.ServiceName] = map[int]bool{}
-			remoteServiceList[info.ServiceName][int(info.ServiceId)] = true
 		}
+		remoteServiceList[info.ServiceName][int(info.ServiceId)] = true
 		Log.Log("connect to other node, nodeId = %v, serviceName = %v, serviceId = %v", client.CustomData(), info.ServiceName, info.ServiceId)
 		for _, service := range localNodeService {
 			service.DiscoverService(info.ServiceName, int(info.ServiceId))
@@ -95,6 +101,8 @@ func msgHandleCenterClient(client Net.IClient, data []byte) {
 		Log.Log("发现新节点, id = %v, name = %v, addr = %v", info.NodeId, info.NodeName, info.Addr)
 		if conn, err := net.DialTimeout("tcp", info.Addr, time.Second*5); err == nil {
 			nodeConnPool.NewConnect(conn, info.NodeId)
+		} else {
+			Log.ErrorLog("连接到新节点失败, err = %v", err)
 		}
 	}
 }

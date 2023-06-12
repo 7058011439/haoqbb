@@ -14,10 +14,12 @@ type nodeCfg struct {
 	NodeName    string
 	ListenAddr  string
 	ServiceList []string
+	NeedService []string
 }
 
 type clusterCfg struct {
 	CenterAddr string
+	Sign       string
 	NodeId     int
 	NodeList   map[int]*nodeCfg
 }
@@ -76,9 +78,22 @@ func GetListenAddr() string {
 	return ""
 }
 
+// GetNeedService 获取该节点服务所需其他服务列表
+func GetNeedService() []string {
+	if clusterConfig.NodeList[clusterConfig.NodeId] != nil {
+		return clusterConfig.NodeList[clusterConfig.NodeId].NeedService
+	}
+	return nil
+}
+
 // GetCenterAddr 获取中心节点监听地址
 func GetCenterAddr() string {
 	return clusterConfig.CenterAddr
+}
+
+// GetSign 获取签名
+func GetSign() string {
+	return clusterConfig.Sign
 }
 
 // IsCenterNode 是否中心节点

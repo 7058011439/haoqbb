@@ -1,50 +1,51 @@
 {
-  "CenterAddr": "127.0.0.1:6666",
-  "NodeId": 2,
+  "CenterAddr": "127.0.0.1:1000",
+  "Sign": "59d997cf3c8e640b0192b719afd65f6d",
+  "NodeId": 4,
   "NodeList": {
     "1": {
       "NodeName": "All",
-      "ListenAddr": "127.0.0.1:6002",
+      "ListenAddr": "127.0.0.1:1001",
       "ServiceList": [
         "GateWay",
-        "GameServer",
+        "Dispatcher",
+        "LoginSrv"
+      ],
+      "NeedService": [
+        "GateWay",
+        "Dispatcher",
         "LoginSrv"
       ]
     },
     "2": {
-      "NodeName": "Server",
-      "ListenAddr": "127.0.0.1:6001",
+      "NodeName": "Dispatcher",
+      "ListenAddr": "127.0.0.1:1002",
       "ServiceList": [
-        "GateWay",
         "Dispatcher"
+      ],
+      "NeedService": [
+        "GateWay"
       ]
     },
     "3": {
       "NodeName": "GateWay",
-      "ListenAddr": "192.168.6.16:6003",
+      "ListenAddr": "127.0.0.1:1003",
       "ServiceList": [
         "GateWay"
+      ],
+      "NeedService": [
+        "Dispatcher",
+        "LoginSrv"
       ]
     },
     "4": {
-      "NodeName": "GameServer",
-      "ListenAddr": "192.168.6.38:6004",
+      "NodeName": "LoginSrv",
+      "ListenAddr": "127.0.0.1:1004",
       "ServiceList": [
-        "GameServer"
-      ]
-    },
-    "5": {
-      "NodeName": "Dispatcher",
-      "ListenAddr": "",
-      "ServiceList": [
-        "Dispatcher"
-      ]
-    },
-    "6": {
-      "NodeName": "Client",
-      "ListenAddr": "",
-      "ServiceList": [
-        "Client"
+        "LoginSrv"
+      ],
+      "NeedService": [
+        "GateWay"
       ]
     }
   }

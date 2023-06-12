@@ -46,8 +46,12 @@ func parseProtocol(data []byte) (rdata []byte, offset int) {
 
 func encodeMsg(message proto.Message) []byte {
 	sendData, _ := proto.Marshal(message)
-	sendBuff := Stl.NewBuffer(2 + len(sendData))
-	sendBuff.Write(Util.Int16ToBytes(int16(len(sendData))))
-	sendBuff.Write(sendData)
+	return encodeMsgOrigin(sendData)
+}
+
+func encodeMsgOrigin(data []byte) []byte {
+	sendBuff := Stl.NewBuffer(2 + len(data))
+	sendBuff.Write(Util.Int16ToBytes(int16(len(data))))
+	sendBuff.Write(data)
 	return sendBuff.Bytes()
 }

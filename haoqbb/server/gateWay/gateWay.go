@@ -10,7 +10,7 @@ import (
 	"github.com/7058011439/haoqbb/Util"
 	"github.com/7058011439/haoqbb/haoqbb/server/common"
 	"github.com/7058011439/haoqbb/haoqbb/service"
-	"github.com/7058011439/haoqbb/haoqbb/service/interface/timer"
+	ITimer "github.com/7058011439/haoqbb/haoqbb/service/interface/timer"
 	"github.com/mitchellh/mapstructure"
 	"time"
 )
@@ -134,13 +134,17 @@ func (g *GateWay) handleClientMsg(clientId uint64, data []byte) {
 }
 
 func (g *GateWay) uploadStatus(_ Timer.TimerID, _ ...interface{}) {
-	data := &common.GateInfo{
-		Addr:         g.addr,
-		MemRate:      System.GetMemPercent(),
-		NetRate:      System.GetNetRate(),
-		ConnectCount: g.GetClientCount(),
-	}
-	g.PublicEventByName(common.Dispatcher, common.GateToDispatcherStatus, data)
+	// 原则上该框架不应该拉起其他协程，但是该操作因为要读取硬件信息，极为耗时，会阻塞主协程，所以特别go了一下
+	go func() {
+		data := &common.GateInfo{
+			Addr:         g.addr,
+			MemRate:      System.GetMemPercent(),
+			CpuRate:      System.GetCpuPercent(),
+			NetRate:      System.GetNetRate(),
+			ConnectCount: g.GetClientCount(),
+		}
+		g.PublicEventByName(common.Dispatcher, common.GateToDispatcherStatus, data)
+	}()
 }
 
 func (g *GateWay) playerOnLine(gameServerId int, data []byte) {

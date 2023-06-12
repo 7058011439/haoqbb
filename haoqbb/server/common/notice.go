@@ -20,8 +20,9 @@ const (
 // GateInfo 网关状态，对应EventG2DGateWayRegedit消息
 type GateInfo struct {
 	Addr         string
-	MemRate      float64
-	NetRate      float64
+	MemRate      float64 // 内存占用率
+	CpuRate      float64 // Cpu使用率
+	NetRate      float64 // 带框
 	ConnectCount int
 }
 
