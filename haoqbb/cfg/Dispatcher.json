@@ -1,9 +1,9 @@
 {
-  "Remark":"建议id 10000 + nodeId",
-  "Id": 10000,
+  "Remark":"建议id 2000 + N",
+  "Id": 2000,
   "Other" : {
     "Remark": "hitType 0-随机, 1-cpu使用率, 2-内存使用率, 3-带宽, 4-连接数量",
-    "Port": 10000,
+    "Port": 2000,
     "HitType":0
   }
 }

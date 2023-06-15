@@ -35,9 +35,9 @@ func (g *GameSrv) Start() {
 }
 
 func (g *GameSrv) InitMsg() {
-	g.RegeditServiceMsg(common.GateToGameSrvClientMsg, g.revMsgFromGateWay)
-	g.RegeditServiceMsg(common.GateWayClientConnect, g.clientConnect)
-	g.RegeditServiceMsg(common.GateWayClientDisconnect, g.clientDisconnect)
+	g.RegeditServiceMsg(common.GwForwardClToSrv, g.revMsgFromGateWay)
+	g.RegeditServiceMsg(common.GwClConnect, g.clientConnect)
+	g.RegeditServiceMsg(common.GwClDisconnect, g.clientDisconnect)
 	g.RegeditServiceMsg(common.EventLoginSrvLogin, login.Login)
 
 	g.IDispatcher = msgHandle.NewPBDispatcher()
@@ -45,7 +45,7 @@ func (g *GameSrv) InitMsg() {
 }
 
 func (g *GameSrv) revMsgFromGateWay(_ int, data []byte) {
-	msg := &common.GateWayToGameSrv{}
+	msg := &common.GwForwardClToSrvTag{}
 	if err := json.Unmarshal(data, msg); err != nil {
 		Log.ErrorLog("Failed to Unmarshal S2S, data = %v", data)
 	} else {
@@ -54,7 +54,7 @@ func (g *GameSrv) revMsgFromGateWay(_ int, data []byte) {
 			g.DispatchMsg(msg.ClientId, userId, int32(msg.CmdId), msg.Data)
 		} else {
 			Log.WarningLog("没有找到对应的userId, clientId = %v", msg.ClientId)
-			net.PublicEventByName(common.GateWay, common.GameSrvPlayerOffLine, msg.ClientId)
+			net.PublicEventByName(common.GateWay, common.SrvPlayerOffLine, msg.ClientId)
 		}
 	}
 }
@@ -69,12 +69,12 @@ func (g *GameSrv) SendMsgToUser(userId int, cmdId int32, data []byte) {
 
 func (g *GameSrv) BroadCastMsgToClient(clientIds []uint64, cmdId int32, data []byte) {
 	if clientIds == nil {
-		sendMsg := &common.GameSrvToGateWay{
+		sendMsg := &common.GwForwardSrvToClTag{
 			ClientId: clientIds,
 			CmdId:    int(cmdId),
 			Data:     data,
 		}
-		g.PublicEventById(0, common.GameSrvToGateClientMsg, sendMsg)
+		g.PublicEventById(0, common.GwForwardSrvToCl, sendMsg)
 	}
 	serverIds := map[int][]uint64{}
 	for _, clientId := range clientIds {
@@ -85,12 +85,12 @@ func (g *GameSrv) BroadCastMsgToClient(clientIds []uint64, cmdId int32, data []b
 		}
 	}
 	for serverId, clientIds := range serverIds {
-		sendMsg := &common.GameSrvToGateWay{
+		sendMsg := &common.GwForwardSrvToClTag{
 			ClientId: clientIds,
 			CmdId:    int(cmdId),
 			Data:     data,
 		}
-		g.PublicEventById(serverId, common.GameSrvToGateClientMsg, sendMsg)
+		g.PublicEventById(serverId, common.GwForwardSrvToCl, sendMsg)
 	}
 }
 

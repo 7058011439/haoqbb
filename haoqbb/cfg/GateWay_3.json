@@ -1,8 +1,8 @@
 {
-  "Remark":"建议id 20000 + nodeId",
-  "Id": 20003,
+  "Remark":"建议id 50000 + N",
+  "Id": 50003,
   "Other": {
-    "Port": 20003,
+    "Port": 50003,
     "HeartBeat": 50
   }
 }

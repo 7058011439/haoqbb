@@ -13,7 +13,7 @@ message S2C_Test_RT {
 message C2S_LoginWithToken {
 	string machineId     = 1; // 机器序列
 	string token         = 2; // 通过账号服获得的token (必须发)
-	string srvid         = 3; // 游戏服ID，比如1004
+	int32  srvId         = 3; // 游戏服ID，比如1004
 	int32  channel       = 4; // 渠道号 1为官网
 	int32  gameId        = 5; // 登录游戏编号,qiumi为1
 	int32  mainVer       = 6; // 主版本号

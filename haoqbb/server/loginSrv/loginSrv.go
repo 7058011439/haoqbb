@@ -2,6 +2,7 @@ package gateWay
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/haoqbb/msgHandle"
 	"github.com/7058011439/haoqbb/haoqbb/server/common"
@@ -11,56 +12,73 @@ import (
 )
 
 const (
-	httpCheckToken = "http://api-chummy.qianchengxing.cn/api/game/check/token"
+	chanGuest = iota // 匿名登录
+	chanSelf         // 自营渠道
 )
 
 type LoginSrv struct {
 	service.Service
+	loginFun map[int]func(data *protocol.C2S_LoginWithToken, clientId uint64)
+}
+
+func (l *LoginSrv) Init() error {
+	l.loginFun = map[int]func(data *protocol.C2S_LoginWithToken, clientId uint64){
+		chanGuest: l.loginGuest,
+		chanSelf:  l.loginMy,
+	}
+	return nil
 }
 
 func (l *LoginSrv) InitMsg() {
-	l.RegeditServiceMsg(common.GateToLoginSrvClientMsg, l.revMsgFromGateWay)
+	l.RegeditServiceMsg(common.GwForwardClToSrv, l.revMsgFromGateWay)
 
 	l.IDispatcher = msgHandle.NewPBDispatcher()
 	l.RegeditMsgHandle(protocol.SCmd_C2S_Login, &protocol.C2S_LoginWithToken{}, l.loginWithToken)
 }
 
 func (l *LoginSrv) revMsgFromGateWay(_ int, data []byte) {
-	msg := &common.GateWayToLoginSrv{}
+	msg := &common.GwForwardClToSrvTag{}
 	if err := json.Unmarshal(data, msg); err != nil {
 		Log.ErrorLog("Failed to Unmarshal S2S, data = %v", data)
 	} else {
-		// 这个地方处理很不科学，将gamesrvid 的值传递给了userid
-		l.DispatchMsg(msg.ClientId, msg.GameSrvId, int32(msg.CmdId), msg.Data)
+		l.DispatchMsg(msg.ClientId, 0, int32(msg.CmdId), msg.Data)
 	}
 }
 
 func (l *LoginSrv) loginWithToken(msg *msgHandle.ClientMsg) {
 	data := msg.Data.(*protocol.C2S_LoginWithToken)
-	if data.MachineId == "" || data.Token == "" {
-		l.noticeLoginRet(msg.UserId, msg.ClientId, 3, "MachineId or Token is nil", 0)
-		return
-	}
-	IHttp.GetAsync(l.GetName(), httpCheckToken+"/"+data.Token, nil, l.httpVerifyTokenCallBack, msg.ClientId, msg.UserId)
-}
 
-func (l *LoginSrv) httpVerifyTokenCallBack(getData map[string]interface{}, backData ...interface{}) {
-	clientId := backData[0].(uint64)
-	gameSrvId := backData[1].(int)
-	if getData["code"].(float64) == 200 {
-		openId := int(getData["data"].(float64))
-		l.noticeLoginRet(gameSrvId, clientId, 0, getData["msg"].(string), openId)
+	if fun, ok := l.loginFun[int(data.Channel)]; ok {
+		fun(data, msg.ClientId)
 	} else {
-		l.noticeLoginRet(gameSrvId, clientId, 1, getData["msg"].(string), 0)
+		l.noticeLoginRet(data.Channel, data.SrvId, msg.ClientId, "未知渠道", "")
 	}
 }
 
-func (l *LoginSrv) noticeLoginRet(gameSrvId int, clientId uint64, ret int, msg string, openId int) {
+func (l *LoginSrv) loginGuest(data *protocol.C2S_LoginWithToken, clientId uint64) {
+	l.noticeLoginRet(data.Channel, data.SrvId, clientId, "", data.MachineId)
+}
+
+func (l *LoginSrv) loginMy(data *protocol.C2S_LoginWithToken, clientId uint64) {
+	IHttp.GetAsync(l.GetName(), "http://api-chummy.qianchengxing.cn/api/game/check/token/"+data.Token, nil, func(getData map[string]interface{}, backData ...interface{}) {
+		clientId := backData[0].(uint64)
+		data := backData[1].(*protocol.C2S_LoginWithToken)
+		openId := ""
+		if getData["code"].(float64) == 200 {
+			openId = fmt.Sprintf("%v", getData["data"])
+		}
+		l.noticeLoginRet(data.Channel, data.SrvId, clientId, getData["msg"].(string), openId)
+	}, clientId, data)
+}
+
+func (l *LoginSrv) noticeLoginRet(channel int32, gameSrvId int32, clientId uint64, msg string, openId string) {
+	if openId != "" {
+		openId = fmt.Sprintf("%v_%v", channel, openId)
+	}
 	data := &common.LoginSrvToGameSrv{
 		ClientId: clientId,
-		Ret:      ret,
 		OpenId:   openId,
 		Msg:      msg,
 	}
-	l.PublicEventById(gameSrvId, common.EventLoginSrvLogin, data)
+	l.PublicEventById(int(gameSrvId), common.EventLoginSrvLogin, data)
 }

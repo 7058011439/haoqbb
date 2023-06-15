@@ -44,6 +44,7 @@ func LoginWithToken(data map[string]interface{}, _ error, callBack ...interface{
 			MachineId: "123456",
 			Token:     data["data"].(map[string]interface{})["gameToken"].(string),
 			Phone:     currPhone,
+			Channel:   1,
 		}
 		Interface.SendMsgToServer(clientId, protocol.SCmd_C2S_Login, &sendMsg)
 	}

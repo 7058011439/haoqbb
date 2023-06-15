@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/7058011439/haoqbb/DataBase"
 	"github.com/7058011439/haoqbb/Http"
 	"github.com/7058011439/haoqbb/Log"
@@ -16,11 +17,11 @@ const (
 type msgType = int
 
 const (
-	typeTimer msgType = iota // 定时器
+	typeTcpMsg msgType = iota // 定时器
 	typeServiceMsg
-	typeTcpMsg
 	typeMongoMsg
 	typeHttpMsg
+	typeTimer
 	typeDiscoverService
 	typeLoseService
 )
@@ -96,66 +97,71 @@ func (t *perform) update(costTime float64) {
 	t.msgCount++
 }
 
+func (t perform) String() string {
+	return fmt.Sprintf("count = %v, cost = %vms, argv = %vms", t.msgCount, t.costTime, t.costTime/float64(t.msgCount))
+}
+
 func (q *queue) run() {
 	cost := Timer.NewTiming(Timer.Millisecond)
 	lastTime := time.Now()
 	performance := map[int]*perform{}
-	select {
-	case msg := <-q.chanAll:
-		cost.ReStart()
-		switch msg.eType {
-		case typeTcpMsg:
-			data := msg.data.(*tcpMsgData)
-			if q.tcpMsgHandler != nil {
-				q.tcpMsgHandler(data.clientId, data.data)
+	for {
+		select {
+		case msg := <-q.chanAll:
+			switch msg.eType {
+			case typeTcpMsg:
+				data := msg.data.(*tcpMsgData)
+				if q.tcpMsgHandler != nil {
+					q.tcpMsgHandler(data.clientId, data.data)
+				}
+			case typeServiceMsg:
+				data := msg.data.(*serviceMsgData)
+				if q.serviceMsgHandle[data.msgType] != nil {
+					q.serviceMsgHandle[data.msgType](data.srcServiceId, data.data)
+				}
+			case typeMongoMsg:
+				data := msg.data.(*mongoData)
+				if data.callFunGet != nil {
+					data.callFunGet(data.data, data.backData...)
+				}
+				if data.callFunUpdate != nil {
+					data.callFunUpdate(data.backData...)
+				}
+			case typeHttpMsg:
+				data := msg.data.(*httpData)
+				if data.callFun != nil {
+					data.callFun(data.data, data.backData...)
+				}
+			case typeTimer:
+				data := msg.data.(*timerData)
+				if data.callFun != nil {
+					data.callFun(data.timeId, data.backData...)
+				}
+			case typeDiscoverService:
+				data := msg.data.(*serviceData)
+				if q.discoverServiceHandle[data.serviceName] != nil {
+					q.discoverServiceHandle[data.serviceName](data.serviceId)
+				}
+			case typeLoseService:
+				data := msg.data.(*serviceData)
+				if q.loseServiceHandle[data.serviceName] != nil {
+					q.loseServiceHandle[data.serviceName](data.serviceId)
+				}
 			}
-		case typeServiceMsg:
-			data := msg.data.(*serviceMsgData)
-			if q.serviceMsgHandle[data.msgType] != nil {
-				q.serviceMsgHandle[data.msgType](data.srcServiceId, data.data)
+			if performance[msg.eType] != nil {
+				performance[msg.eType].update(cost.GetCost())
+			} else {
+				performance[msg.eType] = &perform{
+					msgCount: 1,
+					costTime: cost.GetCost(),
+				}
 			}
-		case typeMongoMsg:
-			data := msg.data.(*mongoData)
-			if data.callFunGet != nil {
-				data.callFunGet(data.data, data.backData...)
+			if gaps := time.Now().Sub(lastTime).Seconds(); gaps > 1 {
+				Log.Debug("queue run cost 1 second, name = %v, gaps = %vs, info = %v", q.name, gaps, performance)
+				lastTime = time.Now()
+				performance = map[int]*perform{}
 			}
-			if data.callFunUpdate != nil {
-				data.callFunUpdate(data.backData...)
-			}
-		case typeHttpMsg:
-			data := msg.data.(*httpData)
-			if data.callFun != nil {
-				data.callFun(data.data, data.backData...)
-			}
-		case typeTimer:
-			data := msg.data.(*timerData)
-			if data.callFun != nil {
-				data.callFun(data.timeId, data.backData...)
-			}
-		case typeDiscoverService:
-			data := msg.data.(*serviceData)
-			if q.discoverServiceHandle[data.serviceName] != nil {
-				q.discoverServiceHandle[data.serviceName](data.serviceId)
-			}
-		case typeLoseService:
-			data := msg.data.(*serviceData)
-			if q.loseServiceHandle[data.serviceName] != nil {
-				q.loseServiceHandle[data.serviceName](data.serviceId)
-			}
-		}
-		cost.PrintCost(warningTime, false, "%v(%v) callFun timeout", q.name, msg.eType)
-		if performance[msg.eType] != nil {
-			performance[msg.eType].update(cost.GetCost())
-		} else {
-			performance[msg.eType] = &perform{
-				msgCount: 1,
-				costTime: cost.GetCost(),
-			}
-		}
-		if gaps := time.Now().Sub(lastTime).Seconds(); gaps > 1 {
-			//Log.Debug("queue run cost 1 second, name = %v, gaps = %vs, info = %v, NumGoroutine = %v", q.name, gaps, q.performance, runtime.NumGoroutine())
-			lastTime = time.Now()
-			performance = map[int]*perform{}
+			cost.PrintCost(warningTime, true, "%v(%v) callFun timeout", q.name, msg.eType)
 		}
 	}
 }
@@ -227,7 +233,7 @@ func (q *queue) NewTcpMsg(client Net.IClient, data []byte) {
 		return
 	}
 	q.chanAll <- &queueData{
-		eType: typeHttpMsg,
+		eType: typeTcpMsg,
 		data: &tcpMsgData{
 			clientId: client.GetId(),
 			data:     data,

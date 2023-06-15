@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/7058011439/haoqbb/DataBase"
 	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Net"
 	"github.com/7058011439/haoqbb/haoqbb/msgHandle"
 	"github.com/7058011439/haoqbb/haoqbb/node"
 	"github.com/7058011439/haoqbb/haoqbb/service/interface/http"
@@ -43,17 +44,14 @@ type serviceCfg struct {
 
 type Service struct {
 	*queue
+	Net.INetPool
 	ServiceCfg serviceCfg
 	msgHandle.IDispatcher
 	name string
 }
 
 func (s *Service) run() {
-	//tick := time.NewTicker(time.Millisecond * 5)
-	for {
-		//<-tick.C
-		s.queue.run()
-	}
+	s.queue.run()
 }
 
 func (s *Service) SetName(name string) {
@@ -103,6 +101,12 @@ func (s *Service) Start() {
 
 func (s *Service) InitMsg() {
 
+}
+
+func (s *Service) InitTcpServer(port int, connect Net.ConnectHandle, disconnect Net.ConnectHandle, parse Net.ParseProtocol, fun func(clientId uint64, data []byte), options ...Net.Options) {
+	options = append(options, Net.WithPoolId(s.GetId()))
+	s.INetPool = Net.NewTcpServer(port, connect, disconnect, parse, s.NewTcpMsg, options...)
+	s.RegeditHandleTcpMsg(fun)
 }
 
 func (s *Service) RegeditServiceMsg(msgType int, fun func(srcServiceId int, data []byte)) {

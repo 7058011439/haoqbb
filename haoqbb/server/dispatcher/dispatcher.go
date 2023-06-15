@@ -28,9 +28,8 @@ type dispatcherConfig struct {
 
 type Dispatcher struct {
 	service.Service
-	Net.INetPool
-	mapOptimalGate map[hitType]*common.GateInfo // 最优网关
-	mapAllGate     map[int]*common.GateInfo     // 所有网关
+	mapOptimalGate map[hitType]*common.GsInfoTag // 最优网关
+	mapAllGate     map[int]*common.GsInfoTag     // 所有网关
 	config         *dispatcherConfig
 }
 
@@ -38,9 +37,9 @@ func (d *Dispatcher) Init() error {
 	if err := mapstructure.Decode(d.ServiceCfg.Other, &d.config); err != nil {
 		Log.ErrorLog("Failed to parse dispatcher Config, err = %v", err)
 	}
-	d.INetPool = Net.NewTcpServer(d.config.Port, d.connect, d.disConnect, nil, nil, Net.WithPoolId(d.GetId()))
-	d.mapOptimalGate = map[hitType]*common.GateInfo{}
-	d.mapAllGate = map[int]*common.GateInfo{}
+	d.INetPool = Net.NewTcpServer(d.config.Port, d.connect, nil, nil, nil, Net.WithPoolId(d.GetId()))
+	d.mapOptimalGate = map[hitType]*common.GsInfoTag{}
+	d.mapAllGate = map[int]*common.GsInfoTag{}
 	Interface.SetServiceAgent(d)
 	return nil
 }
@@ -51,7 +50,7 @@ func (d *Dispatcher) Start() {
 }
 
 func (d *Dispatcher) InitMsg() {
-	d.RegeditServiceMsg(common.GateToDispatcherStatus, d.gateWayRegedit)
+	d.RegeditServiceMsg(common.GwToDsStatus, d.gateWayRegedit)
 }
 
 func (d *Dispatcher) connect(client Net.IClient) {
@@ -66,12 +65,8 @@ func (d *Dispatcher) connect(client Net.IClient) {
 	//Log.Debug("Client request gateway, ip = %v, return = %v", client.GetAddr(), data)
 }
 
-func (d *Dispatcher) disConnect(_ Net.IClient) {
-
-}
-
 func (d *Dispatcher) gateWayRegedit(srcServiceId int, data []byte) {
-	var newGate = &common.GateInfo{}
+	var newGate = &common.GsInfoTag{}
 	if err := json.Unmarshal(data, newGate); err != nil {
 		Log.ErrorLog("Failed to json.Unmarshal on gateWayRegedit, err = %v, data = %v", err, data)
 		return
@@ -80,7 +75,7 @@ func (d *Dispatcher) gateWayRegedit(srcServiceId int, data []byte) {
 	d.refreshOptimalGate(newGate)
 }
 
-func (d *Dispatcher) refreshOptimalGate(gate *common.GateInfo) {
+func (d *Dispatcher) refreshOptimalGate(gate *common.GsInfoTag) {
 	for t := random; t < max; t++ {
 		oldGate := d.mapOptimalGate[t]
 		if oldGate == nil {
@@ -112,7 +107,7 @@ func (d *Dispatcher) refreshOptimalGate(gate *common.GateInfo) {
 
 func (d *Dispatcher) loseGateWay(gateWayId int) {
 	delete(d.mapAllGate, gateWayId)
-	d.mapOptimalGate = map[int]*common.GateInfo{}
+	d.mapOptimalGate = map[int]*common.GsInfoTag{}
 	Log.Log("有网关丢失, gateWayId = %v, 剩余网关数量 = %v", gateWayId, len(d.mapAllGate))
 
 	for _, gate := range d.mapAllGate {

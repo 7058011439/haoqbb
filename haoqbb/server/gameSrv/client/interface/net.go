@@ -16,9 +16,9 @@ func NewConnManager(connect Net.ConnectHandle, disconnect Net.ConnectHandle, par
 func SendMsgToServer(clientId uint64, cmdId int16, msg proto.Message) {
 	data, _ := proto.Marshal(msg)
 	if cmdId == 30003 {
-		netConn.SendToClient(clientId, common.EncodeSendMsg(10000, 3, cmdId, data))
+		netConn.SendToClient(clientId, common.EncodeSendMsg(10000, 1, cmdId, data))
 	} else {
-		netConn.SendToClient(clientId, common.EncodeSendMsg(10000, 2, cmdId, data))
+		netConn.SendToClient(clientId, common.EncodeSendMsg(10000, 0, cmdId, data))
 	}
 }
 

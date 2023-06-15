@@ -6,6 +6,7 @@ import (
 	"github.com/7058011439/haoqbb/Net"
 	"github.com/7058011439/haoqbb/Timer"
 	"github.com/7058011439/haoqbb/Util"
+	"github.com/7058011439/haoqbb/haoqbb/msgHandle"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/capability"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/interface"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/login"
@@ -49,6 +50,7 @@ func (g *GameClient) Start() {
 
 func (g *GameClient) InitMsg() {
 	g.RegeditHandleTcpMsg(g.msgHandle)
+	g.IDispatcher = msgHandle.NewPBDispatcher()
 	g.RegeditMsgHandle(cProtocol.SCmd_S2C_Login, &cProtocol.S2C_GameLoginResult{}, login.S2CLogin)
 	g.RegeditMsgHandle(cProtocol.SCmd_S2C_RT, &cProtocol.S2C_Test_RT{}, capability.S2CRT)
 }

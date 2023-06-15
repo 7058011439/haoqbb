@@ -21,94 +21,80 @@ type gateConfig struct {
 }
 
 type GateWay struct {
-	Net.INetPool
 	service.Service
-	config            *gateConfig
-	addr              string                  // 对外的地址端口
-	mapClientSenderId map[int]map[uint64]bool // map[gameServerId]map[clientId]
-	mapLoginSrv       map[int]bool            // map[LoginSrvId]bool
+	Config     *gateConfig             // 网关配置
+	ClientList map[int]map[uint64]bool // map[gameServerId]map[clientId]
+	addr       string                  // 对外的地址端口
 }
 
 func (g *GateWay) Init() error {
-	if err := mapstructure.Decode(g.ServiceCfg.Other, &g.config); err != nil {
+	if err := mapstructure.Decode(g.ServiceCfg.Other, &g.Config); err != nil {
 		Log.ErrorLog("Failed to parse gateway Config, err = %v", err)
 	}
-	g.INetPool = Net.NewTcpServer(g.config.Port, g.connect, g.disConnect, g.parseProtocol, g.NewTcpMsg, Net.WithPoolId(g.GetId()), Net.WithHeartbeat(g.heartBeat, g.config.HeartBeat))
-	g.mapClientSenderId = make(map[int]map[uint64]bool, 2)
-	g.mapLoginSrv = make(map[int]bool, 2)
+	g.ClientList = make(map[int]map[uint64]bool, 2)
 	return nil
 }
 
 func (g *GateWay) Start() {
-	g.StartServer()
-	g.addr = fmt.Sprintf("%v:%v", Net.GetOutBoundIP(), g.config.Port)
-	g.RegeditDiscoverService(common.LoginSrv, g.discoverLoginSrv)
-	g.RegeditLoseService(common.LoginSrv, g.loseLoginSrv)
+	g.addr = fmt.Sprintf("%v:%v", Net.GetOutBoundIP(), g.Config.Port)
 	g.uploadStatus(0)
 	ITimer.SetRepeatTimer(g.GetName(), 1000, g.uploadStatus)
 }
 
 func (g *GateWay) InitMsg() {
-	g.RegeditHandleTcpMsg(g.handleClientMsg)
+	g.RegeditServiceMsg(common.GwForwardSrvToCl, g.RecvMsgFromSrv)
 
-	g.RegeditServiceMsg(common.GameSrvToGateClientMsg, g.revMsgFromGameServer)
-	g.RegeditServiceMsg(common.GameSrvPlayerOnLine, g.playerOnLine)
-	g.RegeditServiceMsg(common.GameSrvPlayerOffLine, g.playerOffLine)
+	g.RegeditServiceMsg(common.SrvPlayerOnLine, g.PlayerOnLine)
+	g.RegeditServiceMsg(common.SrvPlayerOffLine, g.PlayerOffLine)
 }
 
-func (g *GateWay) sendMsgToGameServer(serverId int, clientId uint64, cmdId int, data []byte) {
-	sendMsg := &common.GateWayToGameSrv{
-		ClientId: clientId,
-		CmdId:    cmdId,
-		Data:     data,
-	}
-	g.PublicEventById(serverId, common.GateToGameSrvClientMsg, sendMsg)
-}
-
-func (g *GateWay) sendMsgToLoginSrv(loginSrvId, GameSrvId int, clientId uint64, cmdId int, data []byte) {
-	sendMsg := &common.GateWayToLoginSrv{
-		GameSrvId: GameSrvId,
-		ClientId:  clientId,
-		CmdId:     cmdId,
-		Data:      data,
-	}
-	g.PublicEventById(loginSrvId, common.GateToLoginSrvClientMsg, sendMsg)
-}
-
-func (g *GateWay) revMsgFromGameServer(gameServerId int, data []byte) {
-	revMsg := common.GameSrvToGateWay{}
+func (g *GateWay) RecvMsgFromSrv(serverId int, data []byte) {
+	// 这个地方有点绕, 如果其他服有指定发送给具体的客户端，那就发送给指定客户端，如果没指定，那就是区服广播
+	revMsg := common.GwForwardSrvToClTag{}
 	if err := json.Unmarshal(data, &revMsg); err == nil {
 		if revMsg.ClientId == nil {
-			if game, ok := g.mapClientSenderId[gameServerId]; ok && game != nil {
+			if game, ok := g.ClientList[serverId]; ok && game != nil {
 				for clientId := range game {
-					g.SendToClient(clientId, common.EncodeSendMsg(int16(gameServerId), 2, int16(revMsg.CmdId), revMsg.Data))
+					g.SendToClient(clientId, common.EncodeSendMsg(int16(serverId), 0, int16(revMsg.CmdId), revMsg.Data))
 				}
 			}
 		} else {
 			for _, clientId := range revMsg.ClientId {
-				g.SendToClient(clientId, common.EncodeSendMsg(0, 2, int16(revMsg.CmdId), revMsg.Data))
+				g.SendToClient(clientId, common.EncodeSendMsg(0, 0, int16(revMsg.CmdId), revMsg.Data))
 			}
 		}
 	} else {
-		Log.ErrorLog("Failed to Unmarshal S2G, data = %v", data)
+		Log.ErrorLog("Failed to Unmarshal GwForwardSrvToClTag, data = %v", string(data))
 	}
 }
 
-func (g *GateWay) connect(client Net.IClient) {
+func (g *GateWay) OnConnect(client Net.IClient) {
 	Log.Log("new client connect, addr = %v, clientId = %v, have connect = %v", client.GetIp(), client.GetId(), g.GetClientCount())
-	g.PublicEventByName("", common.GateWayClientConnect, client.GetId())
+	g.PublicEventByName("", common.GwClConnect, client.GetId())
 }
 
-func (g *GateWay) disConnect(client Net.IClient) {
+func (g *GateWay) OnDisConnect(client Net.IClient) {
 	Log.Log("client disconnect, addr = %v, clientId = %v, have connect = %v", client.GetIp(), client.GetId(), g.GetClientCount())
-	g.PublicEventByName("", common.GateWayClientDisconnect, client.GetId())
+	g.PublicEventByName("", common.GwClDisconnect, client.GetId())
 }
 
-func (g *GateWay) heartBeat(_ Net.IClient) bool {
-	return true
-}
+// ParseProtocol 解析数据流, 请配合HandleClientMsg 使用
+/* 这是第一个奇葩的协议, 分为 协议头 + 数据 + 协议尾
+协议头11个字节，分别为:
+0: 固定 0xFE
+1-2: 预留
+3-4: 数据长度
+5-6: 主命令号
+7-8: 子命令号
+9-10: 预留(目前用作服务id)
 
-func (g *GateWay) parseProtocol(data []byte) (rdata []byte, offset int) {
+数据:
+根据协议头的数据长度推算
+
+协议尾1个字节:
+0: 固定 0xEE
+这个地方就要了 协议头部分(主命令号开始) + 数据 */
+func (g *GateWay) ParseProtocol(data []byte) (rdata []byte, offset int) {
 	if len(data) < 12 {
 		return nil, 0
 	}
@@ -119,69 +105,67 @@ func (g *GateWay) parseProtocol(data []byte) (rdata []byte, offset int) {
 	return nil, 0
 }
 
-func (g *GateWay) handleClientMsg(clientId uint64, data []byte) {
-	cmdId := Util.Uint16(data[0:2])
-	serverId := int(Util.Int16(data[4:6]))
-	switch cmdId {
-	case cmdId_C2S:
-		g.sendMsgToGameServer(serverId, clientId, int(Util.Int16(data[2:4])), data[6:])
-	case cmdId_C2L:
-		for loginSrvId := range g.mapLoginSrv {
-			g.sendMsgToLoginSrv(loginSrvId, serverId, clientId, int(Util.Int16(data[2:4])), data[6:])
-			break
-		}
+// HandleClientMsg 处理客户端消息, 请配合ParseProtocol 使用
+/* 这是第一个奇葩的数据, 分为 (部分)协议头 + 数据
+部分协议头6个字节，分别为:
+0-1: 主命令(暂时无用)
+2-4: 子命令
+5-6: 服务id
+
+数据:
+*/
+func (g *GateWay) HandleClientMsg(clientId uint64, data []byte) {
+	if len(data) < 6 {
+		Log.ErrorLog("failed to HandleClientMsg, data too shoot, data = %v", data)
+		return
 	}
+	g.ForwardClMsgToSrv(int(Util.Int16(data[4:6])), clientId, int(Util.Int16(data[2:4])), data[6:])
+}
+
+func (g *GateWay) ForwardClMsgToSrv(serverId int, clientId uint64, cmdId int, data []byte) {
+	g.PublicEventById(serverId, common.GwForwardClToSrv, &common.GwForwardClToSrvTag{
+		ClientId: clientId,
+		CmdId:    cmdId,
+		Data:     data,
+	})
 }
 
 func (g *GateWay) uploadStatus(_ Timer.TimerID, _ ...interface{}) {
 	// 原则上该框架不应该拉起其他协程，但是该操作因为要读取硬件信息，极为耗时，会阻塞主协程，所以特别go了一下
 	go func() {
-		data := &common.GateInfo{
+		data := &common.GsInfoTag{
 			Addr:         g.addr,
 			MemRate:      System.GetMemPercent(),
 			CpuRate:      System.GetCpuPercent(),
 			NetRate:      System.GetNetRate(),
 			ConnectCount: g.GetClientCount(),
 		}
-		g.PublicEventByName(common.Dispatcher, common.GateToDispatcherStatus, data)
+		g.PublicEventByName(common.Dispatcher, common.GwToDsStatus, data)
 	}()
 }
 
-func (g *GateWay) playerOnLine(gameServerId int, data []byte) {
+func (g *GateWay) PlayerOnLine(gameServerId int, data []byte) {
 	var clientId uint64
 	if err := json.Unmarshal(data, &clientId); err != nil {
-		Log.ErrorLog("Failed to json.Unmarshal on playerOnLine, err = %v, data = %v", err, data)
+		Log.ErrorLog("Failed to json.Unmarshal on PlayerOnLine, err = %v, data = %v", err, data)
 		return
 	}
-	if game, ok := g.mapClientSenderId[gameServerId]; ok {
-		game[clientId] = true
-	} else {
-		game = make(map[uint64]bool, 64)
-		game[clientId] = true
-		g.mapClientSenderId[gameServerId] = game
+	if _, ok := g.ClientList[gameServerId]; !ok {
+		g.ClientList[gameServerId] = make(map[uint64]bool, 64)
 	}
+	g.ClientList[gameServerId][clientId] = true
 }
 
-func (g *GateWay) playerOffLine(gameServerId int, data []byte) {
+func (g *GateWay) PlayerOffLine(gameServerId int, data []byte) {
 	var clientId uint64
 	if err := json.Unmarshal(data, &clientId); err != nil {
-		Log.ErrorLog("Failed to json.Unmarshal on playerOffLine, err = %v, data = %v", err, data)
+		Log.ErrorLog("Failed to json.Unmarshal on PlayerOffLine, err = %v, data = %v", err, data)
 		return
 	}
 	if client := g.GetClientByID(clientId); client != nil {
 		client.Close()
 	}
-	if game, ok := g.mapClientSenderId[gameServerId]; ok {
+	if game, ok := g.ClientList[gameServerId]; ok {
 		delete(game, clientId)
 	}
-}
-
-func (g *GateWay) loseLoginSrv(serverId int) {
-	delete(g.mapLoginSrv, serverId)
-	Log.Log("登录服务器断开连接, serverId = %v, 剩余登录服务器 = %v", serverId, len(g.mapLoginSrv))
-}
-
-func (g *GateWay) discoverLoginSrv(serverId int) {
-	g.mapLoginSrv[serverId] = true
-	Log.Log("新登录服务器连接, serverId = %v, 总计登录服务器 = %v", serverId, len(g.mapLoginSrv))
 }
