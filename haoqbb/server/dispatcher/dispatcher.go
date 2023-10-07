@@ -5,7 +5,7 @@ import (
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Net"
 	"github.com/7058011439/haoqbb/haoqbb/server/common"
-	"github.com/7058011439/haoqbb/haoqbb/server/dispatcher/interface"
+	"github.com/7058011439/haoqbb/haoqbb/server/dispatcher/Interface"
 	"github.com/7058011439/haoqbb/haoqbb/service"
 	"github.com/mitchellh/mapstructure"
 )

@@ -391,7 +391,7 @@ func (q *queue) UpdateMongoAsync(tabName string, condition interface{}, data int
 }
 
 func (q *queue) GetHttpAsync(url string, header map[string]string, callback func(getData map[string]interface{}, backData ...interface{}), backData ...interface{}) {
-	Http.GetHttpAsync(url, Http.NewHead(header), func(getData map[string]interface{}, _ error, backData ...interface{}) {
+	Http.GetHttpAsync(url, nil, Http.NewHead(header), func(getData map[string]interface{}, _ error, backData ...interface{}) {
 		if len(q.chanAll) == cap(q.chanAll) {
 			Log.ErrorLog("%v Failed to insert chan, chan full", q.name)
 			return

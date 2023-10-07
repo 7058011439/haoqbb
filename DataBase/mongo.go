@@ -194,7 +194,7 @@ func (m *MongoDB) updateOne(tabName string, condition interface{}, newData inter
 
 	maps := bson.M{}
 	if err := bson.Unmarshal(filter, maps); err != nil {
-		Log.ErrorLog("updateOne error, bson.Unmarshal, err = ", err)
+		Log.ErrorLog("updateOne error, bson.Unmarshal, err = %v", err)
 		return
 	}
 

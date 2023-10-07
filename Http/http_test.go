@@ -19,7 +19,7 @@ func TestGetHttpSync(t *testing.T) {
 		group.Add(1)
 		go func() {
 			for index := 0; index < 100000; index++ {
-				if _, err := GetHttpSync("http://39.101.212.11:8888/api/forum/card/card-info?id=2", NewHead(nil).Add("token", "xE.YHURaksbUuoJ.9qxlWDMhtChAtuO0HqyKUISr3s.GqvmfNlZt0dOpnoAS62oH")); err != nil {
+				if _, err := GetHttpSync("http://39.101.212.11:8888/api/forum/card/card-info?id=2", nil, NewHead(nil).Add("token", "xE.YHURaksbUuoJ.9qxlWDMhtChAtuO0HqyKUISr3s.GqvmfNlZt0dOpnoAS62oH")); err != nil {
 					Log.ErrorLog("http 访问失败, err = %v", err.Error())
 					break
 				}
@@ -36,7 +36,7 @@ func TestGetHttpSync(t *testing.T) {
 }
 
 func TestGetHttpSyncProxy(t *testing.T) {
-	data, _ := GetHttpSync("https://fapi.binance.com/fapi/v1/ticker/24hr", nil)
+	data, _ := GetHttpSync("https://fapi.binance.com/fapi/v1/ticker/24hr", nil, nil)
 	fmt.Println(string(data))
 }
 
