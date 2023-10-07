@@ -85,6 +85,7 @@ func (b *Buffer) OffSize(os int) error {
 		return errors.Errorf("Failed to OffSize, os larger than size")
 	}
 	buff := b.cs[os:]
+	// 这里很绕，既要让cs 不重新分配内存空间，又要让cs有足够容量存放保留内容
 	b.cs = b.bs[0 : len(b.cs)-os]
 	copy(b.cs, buff)
 	return nil
@@ -95,7 +96,8 @@ func (b *Buffer) Reset() {
 }
 
 func (b *Buffer) checkCap(size int) {
-	if size+len(b.cs) > cap(b.cs) {
+	// 这个地方写成 size+len(b.cs)>cap(b.cs) 也可以
+	if size+len(b.cs) > cap(b.bs) {
 		b.bs = make([]byte, 0, (size+len(b.cs))*2)
 		b.OffSize(0)
 	}

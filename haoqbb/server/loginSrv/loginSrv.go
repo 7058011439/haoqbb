@@ -4,16 +4,24 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Util"
 	"github.com/7058011439/haoqbb/haoqbb/msgHandle"
 	"github.com/7058011439/haoqbb/haoqbb/server/common"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
 	"github.com/7058011439/haoqbb/haoqbb/service"
 	"github.com/7058011439/haoqbb/haoqbb/service/interface/http"
+	"github.com/7058011439/haoqbb/haoqbb/service/interface/redis"
 )
 
 const (
 	chanGuest = iota // 匿名登录
 	chanSelf         // 自营渠道
+)
+
+const (
+	redisOpenUserIdKey        = "OpenUserId"
+	redisGlobalVarKey         = "GlobalVar"
+	redisGlobalVarFieldUserId = "UserId"
 )
 
 type LoginSrv struct {
@@ -72,12 +80,18 @@ func (l *LoginSrv) loginMy(data *protocol.C2S_LoginWithToken, clientId uint64) {
 }
 
 func (l *LoginSrv) noticeLoginRet(channel int32, gameSrvId int32, clientId uint64, msg string, openId string) {
+	userId := 0
 	if openId != "" {
 		openId = fmt.Sprintf("%v_%v", channel, openId)
+		userId = Util.StrToInt(IRedis.GetRedisSync(l.GetName(), redisOpenUserIdKey, openId))
+		if userId == 0 {
+			userId = int(IRedis.IncRedisSyn(l.GetName(), redisGlobalVarKey, redisGlobalVarFieldUserId, 1))
+			IRedis.SetRedisSync(l.GetName(), redisOpenUserIdKey, fmt.Sprintf("%v", openId), userId)
+		}
 	}
 	data := &common.LoginSrvToGameSrv{
 		ClientId: clientId,
-		OpenId:   openId,
+		UserId:   userId,
 		Msg:      msg,
 	}
 	l.PublicEventById(int(gameSrvId), common.EventLoginSrvLogin, data)

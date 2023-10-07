@@ -66,6 +66,10 @@ func GetNodeID() int {
 	return clusterConfig.NodeId
 }
 
+func SetNodeId(nodeId int) {
+	clusterConfig.NodeId = nodeId
+}
+
 func GetNodeConfig() *nodeCfg {
 	return clusterConfig.NodeList[clusterConfig.NodeId]
 }

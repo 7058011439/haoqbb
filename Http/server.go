@@ -18,16 +18,29 @@ type Server struct {
 	*gin.Engine
 }
 
-func (h *Server) Start(port int) {
-	go h.Run(fmt.Sprintf(":%v", port))
+func (s *Server) Start(port int) {
+	go s.Run(fmt.Sprintf(":%v", port))
 }
 
-func (h *Server) RegeditGroup(baseUrl string, api IApi, middleware ...gin.HandlerFunc) IApi {
+func (s *Server) RegeditGroup(baseUrl string, api IApi, middleware ...gin.HandlerFunc) IApi {
 	ret := &Api{
-		RouterGroup: h.Group(baseUrl, middleware...),
+		RouterGroup: s.Group(baseUrl, middleware...),
 	}
 	api.setApi(ret)
 	return api
+}
+
+func (s *Server) RegeditApi(reType string, uri string, fun func(c *gin.Context), middleware ...gin.HandlerFunc) error {
+	middleware = append(middleware, fun)
+	switch reType {
+	case TypePost:
+		s.POST(uri, middleware...)
+	case TypeGet:
+		s.GET(uri, middleware...)
+	default:
+		return fmt.Errorf("unknown type error")
+	}
+	return nil
 }
 
 func NewHttpServer(mode ServerMode) *Server {

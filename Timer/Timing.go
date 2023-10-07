@@ -73,7 +73,7 @@ func (t *Timing) String() string {
 func (t *Timing) PrintCost(condition float64, restart bool, format string, args ...interface{}) {
 	if t.GetCost() >= condition {
 		title := fmt.Sprintf(format, args...)
-		msg := fmt.Sprintf("%v : cost = %v", title, t.GetCost())
+		msg := fmt.Sprintf("%v : cost = %v", title, t)
 		if t.print != nil {
 			t.print(msg)
 		} else {

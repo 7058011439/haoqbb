@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	bestTcpPackageSize    = 1460  // 最优tcp包长度
-	defaultPackageMaxSize = 65535 // 默认最大包长度(超过该包长度丢弃包，防止恶意包攻击)
+	defaultSendPackageMaxSize = 1024  // 默认发送缓存区大小
+	defaultPackageMaxSize     = 65535 // 默认最大包长度(超过该包长度丢弃包，防止恶意包攻击)
+	revCacheSize              = 1024
 )
 
 func getPoolId() int {
@@ -28,7 +29,8 @@ func newTcpConnPool(connect ConnectHandle, disconnect ConnectHandle, parse Parse
 	ret := &tcpConnPool{
 		id:               getPoolId(),
 		mapClient:        make(map[uint64]IClient, 1024),
-		packageMaxSize:   defaultPackageMaxSize,
+		recvPackageLimit: defaultPackageMaxSize,
+		sendPackageSize:  defaultSendPackageMaxSize,
 		connectHandle:    connect,
 		disconnectHandle: disconnect,
 		parseProtocol:    parse,
@@ -54,7 +56,8 @@ type tcpConnPool struct {
 	compareData       CompareCustomData            // 自定义数据比较函数
 	heartbeatInterval time.Duration                // 心跳间隔(秒)
 	heartbeatHandle   HeartBeatHandle              // 心跳处理函数
-	packageMaxSize    int                          // 包最大长度
+	recvPackageLimit  int                          // 接收包最大长度(防止乱报攻击)
+	sendPackageSize   int                          // 发送包最大长度
 	sendTaskPool      *GoroutinePool.GoRoutinePool // 发送任务协程池
 }
 
@@ -114,7 +117,7 @@ func (t *tcpConnPool) onParseProtocol(data []byte) ([]byte, int) {
 }
 
 func (t *tcpConnPool) onHandleMsg(client IClient, msg []byte) {
-	if t.onHandleMsg != nil {
+	if t.msgHandle != nil {
 		t.msgHandle(client, msg)
 	}
 }
@@ -123,8 +126,12 @@ func (t *tcpConnPool) onDisconnect(client IClient) {
 	t.disconnect(client)
 }
 
-func (t *tcpConnPool) getPackageMaxSize() int {
-	return t.packageMaxSize
+func (t *tcpConnPool) getRecvPackageLimit() int {
+	return t.recvPackageLimit
+}
+
+func (t *tcpConnPool) getSendPackageSize() int {
+	return t.sendPackageSize
 }
 
 func (t *tcpConnPool) NewConnect(conn net.Conn, data interface{}) IClient {
@@ -132,12 +139,12 @@ func (t *tcpConnPool) NewConnect(conn net.Conn, data interface{}) IClient {
 		id:         t.getClientId(),
 		conn:       conn,
 		customData: data,
-		revBuff:    Stl.NewBuffer(revCacheSize * 2),
-		sendBuff:   Stl.NewBuffer(bestTcpPackageSize),
+		recvBuff:   Stl.NewBuffer(revCacheSize),
+		sendBuff:   Stl.NewBuffer(defaultSendPackageMaxSize),
 		chClose:    make(chan struct{}, 1),
 		INetPool:   t,
 	}
-	client.conn.(*net.TCPConn).SetNoDelay(true)
+	//client.conn.(*net.TCPConn).SetNoDelay(true)
 	if client != nil {
 		t.mutexClient.Lock()
 		t.mapClient[client.GetId()] = client

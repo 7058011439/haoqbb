@@ -93,6 +93,43 @@ func NewBody(data map[string]interface{}) *Body {
 	return ret
 }
 
+type Params struct {
+	data map[string]interface{}
+}
+
+func (p *Params) Add(key string, value interface{}) *Params {
+	if p.data == nil {
+		p.init()
+	}
+	p.data[key] = value
+	return p
+}
+
+func (p *Params) Del(key string) *Params {
+	if p.data != nil {
+		delete(p.data, key)
+	}
+	return p
+}
+
+func (p *Params) Value() map[string]interface{} {
+	return p.data
+}
+
+func (p *Params) init() {
+	p.data = map[string]interface{}{}
+}
+
+func NewParam(data map[string]interface{}) *Params {
+	ret := &Params{
+		data: data,
+	}
+	if ret.data == nil {
+		ret.init()
+	}
+	return ret
+}
+
 var client *http.Client
 
 func init() {
@@ -105,9 +142,9 @@ func init() {
 	}
 }
 
-func GetHttpAsync(url string, head *Head, callback func(map[string]interface{}, error, ...interface{}), backData ...interface{}) {
+func GetHttpAsync(url string, param *Params, head *Head, callback func(map[string]interface{}, error, ...interface{}), backData ...interface{}) {
 	go func() {
-		resBytes, err := GetHttpSync(url, head)
+		resBytes, err := GetHttpSync(url, param, head)
 		result := make(map[string]interface{})
 		if resBytes != nil {
 			err := json.Unmarshal(resBytes, &result)
@@ -121,14 +158,29 @@ func GetHttpAsync(url string, head *Head, callback func(map[string]interface{}, 
 	}()
 }
 
-func GetHttpSync(url string, head *Head) ([]byte, error) {
-	if head == nil {
-		head = NewHead(nil)
+func GetHttpSync(url string, param *Params, head *Head) ([]byte, error) {
+	// 将 params 参数转换为 URL 查询字符串
+	queryString := ""
+	if param != nil {
+		values := URL.Values{}
+		for key, value := range param.data {
+			values.Add(key, fmt.Sprintf("%v", value))
+		}
+		queryString = values.Encode()
 	}
+
+	// 构建完整的 URL
+	if queryString != "" {
+		url += "?" + queryString
+	}
+
 	req, _ := http.NewRequest("GET", url, nil)
-	for k, v := range head.data {
-		req.Header.Add(k, v)
+	if head != nil {
+		for k, v := range head.data {
+			req.Header.Add(k, v)
+		}
 	}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		Log.ErrorLog("http get error %s %s", err, url)

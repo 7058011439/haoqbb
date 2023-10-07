@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-var n, m = 140, 13
+var n, m = 130, 13
 
 //[C(13, 4)]^4 / [C(52, 13) * C(39, 13) * C(26, 13) * C(13, 13)]。
 func TestCombination(t *testing.T) {

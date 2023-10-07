@@ -2,9 +2,7 @@ package login
 
 import (
 	"fmt"
-	"github.com/7058011439/haoqbb/Http"
 	"github.com/7058011439/haoqbb/Log"
-	"github.com/7058011439/haoqbb/Timer"
 	"github.com/7058011439/haoqbb/haoqbb/msgHandle"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/interface"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/player"
@@ -19,6 +17,20 @@ const (
 var phone = 13996434474
 var offset = 0
 
+// 匿名登录，只需要currPhone
+func C2SLogin(clientId uint64) {
+	offset += 1
+	currPhone := fmt.Sprintf("%v", phone+offset)
+	sendMsg := protocol.C2S_LoginWithToken{
+		MachineId: currPhone,
+		Token:     "",
+		Phone:     currPhone,
+		Channel:   0,
+	}
+	Interface.SendMsgToServer(clientId, protocol.SCmd_C2S_Login, &sendMsg)
+}
+
+/*
 func C2SLogin(clientId uint64) {
 	offset += 1
 	currPhone := fmt.Sprintf("%v", phone+offset)
@@ -49,6 +61,7 @@ func LoginWithToken(data map[string]interface{}, _ error, callBack ...interface{
 		Interface.SendMsgToServer(clientId, protocol.SCmd_C2S_Login, &sendMsg)
 	}
 }
+*/
 
 func S2CLogin(msg *msgHandle.ClientMsg) {
 	data := msg.Data.(*protocol.S2C_GameLoginResult)

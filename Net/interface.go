@@ -38,9 +38,15 @@ func WithCustomData(compare CompareCustomData) Options {
 	}
 }
 
-func WithPackageMaxSize(size int) Options {
+func WithRecvPackageMaxLimit(size int) Options {
 	return func(pool *tcpConnPool) {
-		pool.packageMaxSize = size
+		pool.recvPackageLimit = size
+	}
+}
+
+func WithSendPackageSize(size int) Options {
+	return func(pool *tcpConnPool) {
+		pool.sendPackageSize = size
 	}
 }
 
@@ -85,7 +91,8 @@ type INetPool interface {
 	onParseProtocol(data []byte) ([]byte, int)
 	onHandleMsg(client IClient, msg []byte)
 	onDisconnect(client IClient)
-	getPackageMaxSize() int
+	getRecvPackageLimit() int
+	getSendPackageSize() int
 }
 
 type IClient interface {

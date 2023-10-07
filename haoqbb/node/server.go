@@ -20,7 +20,7 @@ func StartServer() {
 			Log.ErrorLog("Failed to Start node server, ListenAddr error, try ***.***.***.***:****")
 			return
 		}
-		tcpServer := Net.NewTcpServer(Util.StrToInt(params[1]), newConnectServer, disConnectServer, parseProtocol, msgHandleServer, Net.WithPackageMaxSize(socketCacheSize))
+		tcpServer := Net.NewTcpServer(Util.StrToInt(params[1]), newConnectServer, disConnectServer, parseProtocol, msgHandleServer)
 		tcpServer.StartServer()
 		go http.ListenAndServe(fmt.Sprintf("0.0.0.0:1%v", params[1]), nil)
 	}

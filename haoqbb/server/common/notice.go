@@ -52,6 +52,6 @@ type GwForwardSrvToClTag struct {
 // LoginSrvToGameSrv 玩家登录结果, 对应 EventLoginSrvLogin
 type LoginSrvToGameSrv struct {
 	ClientId uint64
-	OpenId   string
+	UserId   int
 	Msg      string
 }

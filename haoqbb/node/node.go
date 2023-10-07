@@ -5,9 +5,11 @@ import (
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Stl"
 	"github.com/7058011439/haoqbb/System"
+	"github.com/7058011439/haoqbb/Util"
 	"github.com/7058011439/haoqbb/haoqbb/config"
 	"github.com/7058011439/haoqbb/haoqbb/service/interface/service"
 	"math"
+	"os"
 	"reflect"
 	"time"
 )
@@ -44,6 +46,9 @@ func startNodeService() {
 }
 
 func Start() {
+	if len(os.Args) > 1 {
+		config.SetNodeId(Util.StrToInt(os.Args[1]))
+	}
 	initLog(config.GetNodeID())
 	if config.IsCenterNode() {
 		System.SetTitle("中心节点")

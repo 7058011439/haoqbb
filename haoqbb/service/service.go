@@ -87,7 +87,7 @@ func (s *Service) setAgent() {
 	}
 	if s.ServiceCfg.Redis != nil {
 		cfg := s.ServiceCfg.Redis
-		s.RedisDB = DataBase.NewRedisDB(cfg.Ip, cfg.Port, cfg.PassWord, 1)
+		s.RedisDB = DataBase.NewRedisDB(cfg.Ip, cfg.Port, cfg.PassWord, cfg.Index)
 		IRedis.SetRedisAgent(s)
 	}
 

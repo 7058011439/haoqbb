@@ -99,7 +99,7 @@ func (g *GameClient) newConnect(client Net.IClient) {
 	if Interface.GetPlayerCount() == 1 {
 		player.SetTimerId(ITimer.SetRepeatTimer(Interface.GetServiceName(), 1000, capability.Main, clientId))
 	} else {
-		player.SetTimerId(ITimer.SetRepeatTimer(Interface.GetServiceName(), 500, test.Run, clientId))
+		player.SetTimerId(ITimer.SetRepeatTimer(Interface.GetServiceName(), 5, test.Run, clientId))
 	}
 	login.C2SLogin(clientId)
 }

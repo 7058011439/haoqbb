@@ -10,15 +10,11 @@ import (
 	"sync/atomic"
 )
 
-const (
-	revCacheSize = 2048
-)
-
 type Client struct {
 	conn       net.Conn      // 网络连接
 	id         uint64        // 客户端id
 	customData interface{}   // 自定义数据
-	revBuff    *Stl.Buffer   // 接受缓存池
+	recvBuff   *Stl.Buffer   // 接受缓存池
 	sendBuff   *Stl.Buffer   // 缓存池
 	chClose    chan struct{} // 关闭客户端(先通知接受协程结束，接受协程通知发送协程)
 	sendMutex  sync.RWMutex  // 发送数据锁
@@ -62,10 +58,13 @@ func (c *Client) Close() {
 }
 
 func (c *Client) SendMsg(data []byte) {
+	//if _, err := c.conn.Write(data); err != nil {
+	//	Log.ErrorLog("Failed to conn.write, err = %v, data = %v, clientId = %v", err, data, c.GetId())
+	//}
 	c.sendMutex.Lock()
 	c.sendBuff.Write(data)
 	c.sendMutex.Unlock()
-	if c.sendBuff.Len() >= bestTcpPackageSize {
+	if c.sendBuff.Len() >= c.getSendPackageSize() {
 		c.send(0)
 	} else {
 		if atomic.LoadInt64(&c.timerId) == 0 {
@@ -104,8 +103,8 @@ func (c *Client) revMsg() {
 		default:
 			n, err := c.conn.Read(buf)
 			if err == nil && n > 0 {
-				c.revBuff.Write(buf[:n])
-				buff := c.revBuff.Bytes()
+				c.recvBuff.Write(buf[:n])
+				buff := c.recvBuff.Bytes()
 				i := 0
 				for i = 0; i < len(buff); {
 					if data, offSize := c.onParseProtocol(buff[i:]); offSize > 0 {
@@ -118,10 +117,10 @@ func (c *Client) revMsg() {
 					}
 				}
 				if i > 0 {
-					c.revBuff.OffSize(i)
+					c.recvBuff.OffSize(i)
 				}
-				if c.revBuff.Len() > c.getPackageMaxSize() {
-					Log.ErrorLog("rev buff to long, size = %v", c.revBuff.Len())
+				if c.recvBuff.Len() > c.getRecvPackageLimit() {
+					Log.ErrorLog("rev buff to long, size = %v", c.recvBuff.Len())
 					return
 				}
 			} else {

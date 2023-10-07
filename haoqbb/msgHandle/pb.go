@@ -31,7 +31,7 @@ func (d *PBDispatcher) DispatchMsg(clientId uint64, userId int, cmdId int32, dat
 				UserId:   userId,
 				Data:     info.msg,
 			})
-			cost.PrintCost(10, true, "DispatchMsg info.fun, clientId = %v, userId = %v, cmdId = %v, info.Msg = %v", clientId, userId, cmdId, info.msg)
+			cost.PrintCost(warnningTime, true, "DispatchMsg info.fun, clientId = %v, userId = %v, cmdId = %v, info.Msg = %v", clientId, userId, cmdId, info.msg)
 		}
 	}
 }

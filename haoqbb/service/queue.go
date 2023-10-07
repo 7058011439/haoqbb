@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	warningTime = 16.0 // 单次执行报警时间
+	warningTime = 16000.0 // 单次执行报警时间(us)
 )
 
 type msgType = int
@@ -25,6 +25,23 @@ const (
 	typeDiscoverService
 	typeLoseService
 )
+
+var msgDesc = map[msgType]string{
+	typeTcpMsg:          "客户端消息",
+	typeServiceMsg:      "服务间消息",
+	typeMongoMsg:        "Mongo数据",
+	typeHttpMsg:         "Http数据",
+	typeTimer:           "处理定时器",
+	typeDiscoverService: "发现服务",
+	typeLoseService:     "丢失服务",
+}
+
+func getMsgDesc(eType msgType) string {
+	if ret, ok := msgDesc[eType]; ok {
+		return ret
+	}
+	return "未知消息"
+}
 
 type queueData struct {
 	eType msgType
@@ -98,16 +115,52 @@ func (t *perform) update(costTime float64) {
 }
 
 func (t perform) String() string {
-	return fmt.Sprintf("count = %v, cost = %vms, argv = %vms", t.msgCount, t.costTime, t.costTime/float64(t.msgCount))
+	return fmt.Sprintf("%v - %.3f(ms) - %.3f(ms)", t.msgCount, t.costTime/1000, t.costTime/float64(t.msgCount)/1000)
+}
+
+type performance struct {
+	lastTime time.Time
+	data     map[int]*perform
+}
+
+func newPerform() *performance {
+	return &performance{
+		lastTime: time.Now(),
+		data:     map[int]*perform{},
+	}
+}
+
+func (p *performance) update(eType int, cost float64) {
+	if p.data[eType] != nil {
+		p.data[eType].update(cost)
+	} else {
+		p.data[eType] = &perform{
+			msgCount: 1,
+			costTime: cost,
+		}
+	}
+}
+
+func (p *performance) reset() {
+	p.data = map[int]*perform{}
+	p.lastTime = time.Now()
+}
+
+func (p performance) String() string {
+	ret := ""
+	for k, v := range p.data {
+		ret += fmt.Sprintf("%v：%v; ", getMsgDesc(k), v)
+	}
+	return ret
 }
 
 func (q *queue) run() {
-	cost := Timer.NewTiming(Timer.Millisecond)
-	lastTime := time.Now()
-	performance := map[int]*perform{}
+	cost := Timer.NewTiming(Timer.Microsecond)
+	p := newPerform()
 	for {
 		select {
 		case msg := <-q.chanAll:
+			cost.ReStart()
 			switch msg.eType {
 			case typeTcpMsg:
 				data := msg.data.(*tcpMsgData)
@@ -148,20 +201,12 @@ func (q *queue) run() {
 					q.loseServiceHandle[data.serviceName](data.serviceId)
 				}
 			}
-			if performance[msg.eType] != nil {
-				performance[msg.eType].update(cost.GetCost())
-			} else {
-				performance[msg.eType] = &perform{
-					msgCount: 1,
-					costTime: cost.GetCost(),
-				}
+			p.update(msg.eType, cost.GetCost())
+			if gaps := time.Now().Sub(p.lastTime).Seconds(); gaps > 1 {
+				Log.Log("queue run cost 1 second, name = %v, gaps = %vs, info = %v, wait deal = %v", q.name, gaps, p, len(q.chanAll))
+				p.reset()
 			}
-			if gaps := time.Now().Sub(lastTime).Seconds(); gaps > 1 {
-				Log.Debug("queue run cost 1 second, name = %v, gaps = %vs, info = %v", q.name, gaps, performance)
-				lastTime = time.Now()
-				performance = map[int]*perform{}
-			}
-			cost.PrintCost(warningTime, true, "%v(%v) callFun timeout", q.name, msg.eType)
+			cost.PrintCost(warningTime, false, "%v(%v) callFun timeout", q.name, getMsgDesc(msg.eType))
 		}
 	}
 }

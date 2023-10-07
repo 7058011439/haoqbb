@@ -70,9 +70,10 @@ func (m *Mgr) GetUserId(clientId uint64) int {
 }
 
 func (m *Mgr) Login(clientId uint64, userId int) {
+	// todo
+	m.DoubleMap.Add(clientId, userId)
 	m.ShareDataMgr.GetDataAndDo(userId, userId, func(data interface{}, args ...interface{}) {
 		clientId := args[0].(uint64)
-		m.DoubleMap.Add(clientId, userId)
 		Log.Log("Login success userId = %v, clientId = %v, total player = %v", userId, clientId, m.DoubleMap.Len())
 		event.PublicGameEvent(event.GameServerLogin, userId)
 	}, clientId)

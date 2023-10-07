@@ -3,7 +3,6 @@ module github.com/7058011439/haoqbb
 go 1.16
 
 require (
-	github.com/StackExchange/wmi v1.2.1
 	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
 	github.com/beevik/etree v1.1.0
@@ -28,6 +27,5 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	go.mongodb.org/mongo-driver v1.8.2
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20220111092808-5a964db01320
 	google.golang.org/protobuf v1.27.1 // indirect
 )
