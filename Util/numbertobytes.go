@@ -1,6 +1,9 @@
 package Util
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"math"
+)
 
 var littleEndian = true
 
@@ -54,6 +57,26 @@ func Uint64ToBytes(data uint64) []byte {
 	return ret
 }
 
+func Float32ToBytes(data float32) []byte {
+	ret := make([]byte, 4)
+	if littleEndian {
+		binary.LittleEndian.PutUint32(ret, math.Float32bits(data))
+	} else {
+		binary.BigEndian.PutUint32(ret, math.Float32bits(data))
+	}
+	return ret
+}
+
+func Float64ToBytes(data float64) []byte {
+	ret := make([]byte, 8)
+	if littleEndian {
+		binary.LittleEndian.PutUint64(ret, math.Float64bits(data))
+	} else {
+		binary.BigEndian.PutUint64(ret, math.Float64bits(data))
+	}
+	return ret
+}
+
 func Int16(data []byte) int16 {
 	return int16(Uint16(data))
 }
@@ -95,5 +118,21 @@ func Uint64(data []byte) uint64 {
 		return binary.LittleEndian.Uint64(data)
 	} else {
 		return binary.BigEndian.Uint64(data)
+	}
+}
+
+func Float32(data []byte) float32 {
+	if littleEndian {
+		return math.Float32frombits(binary.LittleEndian.Uint32(data))
+	} else {
+		return math.Float32frombits(binary.BigEndian.Uint32(data))
+	}
+}
+
+func Float64(data []byte) float64 {
+	if littleEndian {
+		return math.Float64frombits(binary.LittleEndian.Uint64(data))
+	} else {
+		return math.Float64frombits(binary.BigEndian.Uint64(data))
 	}
 }

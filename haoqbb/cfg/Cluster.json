@@ -1,11 +1,11 @@
 {
-  "CenterAddr": "127.0.0.1:1000",
+  "CenterAddr": "8.222.162.23:1000",
   "Sign": "59d997cf3c8e640b0192b719afd65f6d",
-  "NodeId": 4,
+  "PerformLog": false,
+  "NodeId": 1,
   "NodeList": {
     "1": {
       "NodeName": "All",
-      "ListenAddr": "127.0.0.1:1001",
       "ServiceList": [
         "GateWay",
         "Dispatcher",
@@ -19,7 +19,6 @@
     },
     "2": {
       "NodeName": "Dispatcher",
-      "ListenAddr": "127.0.0.1:1002",
       "ServiceList": [
         "Dispatcher"
       ],
@@ -29,7 +28,6 @@
     },
     "3": {
       "NodeName": "GateWay",
-      "ListenAddr": "127.0.0.1:1003",
       "ServiceList": [
         "GateWay"
       ],
@@ -40,12 +38,17 @@
     },
     "4": {
       "NodeName": "LoginSrv",
-      "ListenAddr": "127.0.0.1:1004",
       "ServiceList": [
         "LoginSrv"
       ],
       "NeedService": [
         "GateWay"
+      ]
+    },
+    "5" : {
+      "NodeName": "Client",
+      "ServiceList" : [
+
       ]
     }
   }

@@ -3,10 +3,13 @@ package login
 import (
 	"encoding/json"
 	"github.com/7058011439/haoqbb/Log"
+	"github.com/7058011439/haoqbb/Util"
 	"github.com/7058011439/haoqbb/haoqbb/server/common"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/net"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/player"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/service"
+	IRedis "github.com/7058011439/haoqbb/haoqbb/service/interface/redis"
 	"time"
 )
 
@@ -22,10 +25,17 @@ func Login(_ int, data []byte) {
 		Log.ErrorLog("处理登录结果错误, err = %v", err)
 		return
 	}
-	if ret.UserId != 0 {
-		player.Login(ret.ClientId, ret.UserId)
+	userId := 0
+	if ret.OpenId != "" {
+		userId = Util.StrToInt(IRedis.GetRedisSync(service.GetServiceName(), redisOpenUserIdKey, ret.OpenId))
+		if userId == 0 {
+			userId = int(IRedis.IncRedisSyn(service.GetServiceName(), redisGlobalVarKey, redisGlobalVarFieldUserId, 1))
+			IRedis.SetRedisSync(service.GetServiceName(), redisOpenUserIdKey, ret.OpenId, userId)
+		}
+
+		player.Login(ret.ClientId, userId)
 	}
-	sendLoginRet(ret.ClientId, ret.Msg, ret.UserId != 0)
+	sendLoginRet(ret.ClientId, ret.Msg, userId != 0)
 }
 
 // 发送登录结果

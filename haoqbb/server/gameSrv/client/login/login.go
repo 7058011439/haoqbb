@@ -6,6 +6,7 @@ import (
 	"github.com/7058011439/haoqbb/haoqbb/msgHandle"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/interface"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/player"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/test"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
 )
 
@@ -17,7 +18,7 @@ const (
 var phone = 13996434474
 var offset = 0
 
-// 匿名登录，只需要currPhone
+// C2SLogin 匿名登录，只需要currPhone
 func C2SLogin(clientId uint64) {
 	offset += 1
 	currPhone := fmt.Sprintf("%v", phone+offset)
@@ -68,6 +69,7 @@ func S2CLogin(msg *msgHandle.ClientMsg) {
 	if data.Success == true {
 		p := player.GetPlayerByClientId(msg.ClientId)
 		p.UpdateData(player.User{})
+		p.SetTestModule(test.GetRandomModule())
 		Log.Log("Login success total player = %v", player.Count())
 	} else {
 		Log.ErrorLog("Login Failed, err = %v", data.Err)

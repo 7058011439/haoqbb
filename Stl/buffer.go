@@ -55,6 +55,14 @@ func (b *Buffer) WriteUInt64(data uint64) {
 	b.Write(Util.Uint64ToBytes(data))
 }
 
+func (b *Buffer) WriteFloat32(data float32) {
+	b.Write(Util.Float32ToBytes(data))
+}
+
+func (b *Buffer) WriteFloat64(data float64) {
+	b.Write(Util.Float64ToBytes(data))
+}
+
 func (b *Buffer) WriteByte(data byte) {
 	b.checkCap(1)
 	b.cs = append(b.cs, data)

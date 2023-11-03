@@ -12,7 +12,6 @@ import (
 type nodeCfg struct {
 	NodeId      int `json:"-"`
 	NodeName    string
-	ListenAddr  string
 	ServiceList []string
 	NeedService []string
 }
@@ -20,6 +19,7 @@ type nodeCfg struct {
 type clusterCfg struct {
 	CenterAddr string
 	Sign       string
+	PerformLog bool
 	NodeId     int
 	NodeList   map[int]*nodeCfg
 }
@@ -74,14 +74,6 @@ func GetNodeConfig() *nodeCfg {
 	return clusterConfig.NodeList[clusterConfig.NodeId]
 }
 
-// GetListenAddr 获取当前节点监听地址
-func GetListenAddr() string {
-	if clusterConfig.NodeList[clusterConfig.NodeId] != nil {
-		return clusterConfig.NodeList[clusterConfig.NodeId].ListenAddr
-	}
-	return ""
-}
-
 // GetNeedService 获取该节点服务所需其他服务列表
 func GetNeedService() []string {
 	if clusterConfig.NodeList[clusterConfig.NodeId] != nil {
@@ -103,4 +95,8 @@ func GetSign() string {
 // IsCenterNode 是否中心节点
 func IsCenterNode() bool {
 	return clusterConfig.NodeId == 0
+}
+
+func IsPerformLog() bool {
+	return clusterConfig.PerformLog
 }

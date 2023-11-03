@@ -1,6 +1,7 @@
 package node
 
 import (
+	"fmt"
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Net"
 	"github.com/7058011439/haoqbb/haoqbb/config"
@@ -40,7 +41,7 @@ func connectCenterNode(client Net.IClient) {
 	client.SendMsg(encodeMsg(&protocol.NodeInfo{
 		NodeId:      int32(nodeConfig.NodeId),
 		NodeName:    nodeConfig.NodeName,
-		Addr:        nodeConfig.ListenAddr,
+		Addr:        fmt.Sprintf("%v:%v", Net.GetInputBoundIP(), 1000+config.GetNodeID()),
 		ServiceList: nodeConfig.ServiceList,
 		NeedService: nodeConfig.NeedService,
 	}))

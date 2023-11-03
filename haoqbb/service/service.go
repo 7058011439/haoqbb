@@ -2,15 +2,19 @@ package service
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/7058011439/haoqbb/DataBase"
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Net"
 	"github.com/7058011439/haoqbb/haoqbb/msgHandle"
 	"github.com/7058011439/haoqbb/haoqbb/node"
+	"github.com/7058011439/haoqbb/haoqbb/server/common"
 	"github.com/7058011439/haoqbb/haoqbb/service/interface/http"
 	"github.com/7058011439/haoqbb/haoqbb/service/interface/mongo"
 	"github.com/7058011439/haoqbb/haoqbb/service/interface/redis"
 	"github.com/7058011439/haoqbb/haoqbb/service/interface/timer"
+	"github.com/jinzhu/gorm"
+	"time"
 )
 
 type configRedis struct {
@@ -90,6 +94,21 @@ func (s *Service) setAgent() {
 		s.RedisDB = DataBase.NewRedisDB(cfg.Ip, cfg.Port, cfg.PassWord, cfg.Index)
 		IRedis.SetRedisAgent(s)
 	}
+	if s.ServiceCfg.Mysql != nil {
+		cfg := s.ServiceCfg.Mysql
+		connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local", cfg.UserName, cfg.PassWord, cfg.Ip, cfg.Port, cfg.DBName)
+		var err error
+		if s.MysqlDB, err = gorm.Open("mysql", connStr); err != nil {
+			panic(err)
+		} else {
+			s.MysqlDB.DB().SetMaxOpenConns(20)
+			s.MysqlDB.DB().SetMaxIdleConns(10)
+			s.MysqlDB.DB().SetConnMaxLifetime(time.Second * 300)
+			if err = s.MysqlDB.DB().Ping(); err != nil {
+				panic(err)
+			}
+		}
+	}
 
 	ITimer.SetTimerAgent(s)
 	IHttp.SetHttpAgent(s)
@@ -121,16 +140,21 @@ func (s *Service) RegeditLoseService(serviceName string, fun func(int)) {
 	s.loseServiceHandle[serviceName] = fun
 }
 
-func (s *Service) PublicEventByName(serviceName string, eventType int, data interface{}) {
+func (s *Service) SendMsgToServiceByName(serviceName string, msgType int, data interface{}) {
 	sendData, _ := json.Marshal(data)
-	s.SendMsgToServiceByName(serviceName, eventType, sendData)
+	node.SendMsgByName(s.GetId(), serviceName, msgType, sendData)
 }
 
-func (s *Service) PublicEventById(serviceId int, eventType int, data interface{}) {
+func (s *Service) SendMsgToServiceById(serviceId int, msgType int, data interface{}) {
 	sendData, _ := json.Marshal(data)
-	s.SendMsgToServiceById(serviceId, eventType, sendData)
+	node.SendMsgById(s.GetId(), serviceId, msgType, sendData)
 }
 
+func (s *Service) SendMsgToServiceByIdNew(serviceId int, msgType int, msg common.ServiceMsg) {
+	node.SendMsgById(s.GetId(), serviceId, msgType, msg.Marshal())
+}
+
+/*
 func (s *Service) SendMsgToServiceByName(serviceName string, msgType int, data []byte) {
 	node.SendMsgByName(s.GetId(), serviceName, msgType, data)
 }
@@ -138,3 +162,4 @@ func (s *Service) SendMsgToServiceByName(serviceName string, msgType int, data [
 func (s *Service) SendMsgToServiceById(serviceId int, msgType int, data []byte) {
 	node.SendMsgById(s.GetId(), serviceId, msgType, data)
 }
+*/

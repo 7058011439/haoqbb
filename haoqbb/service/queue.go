@@ -7,6 +7,9 @@ import (
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Net"
 	"github.com/7058011439/haoqbb/Timer"
+	"github.com/7058011439/haoqbb/haoqbb/config"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"time"
 )
 
@@ -27,7 +30,7 @@ const (
 )
 
 var msgDesc = map[msgType]string{
-	typeTcpMsg:          "客户端消息",
+	typeTcpMsg:          "TCP网络消息",
 	typeServiceMsg:      "服务间消息",
 	typeMongoMsg:        "Mongo数据",
 	typeHttpMsg:         "Http数据",
@@ -84,10 +87,12 @@ type serviceData struct {
 }
 
 type queue struct {
+	*performance
 	name                  string
 	chanAll               chan *queueData
 	MongoDB               *DataBase.MongoDB
 	RedisDB               *DataBase.RedisDB
+	MysqlDB               *gorm.DB
 	tcpMsgHandler         func(uint64, []byte)
 	serviceMsgHandle      map[int]func(srcServiceId int, data []byte)
 	discoverServiceHandle map[string]func(int)
@@ -115,7 +120,7 @@ func (t *perform) update(costTime float64) {
 }
 
 func (t perform) String() string {
-	return fmt.Sprintf("%v - %.3f(ms) - %.3f(ms)", t.msgCount, t.costTime/1000, t.costTime/float64(t.msgCount)/1000)
+	return fmt.Sprintf("%v_%.1fms_%.5fms", t.msgCount, t.costTime/1000, t.costTime/float64(t.msgCount)/1000)
 }
 
 type performance struct {
@@ -156,7 +161,10 @@ func (p performance) String() string {
 
 func (q *queue) run() {
 	cost := Timer.NewTiming(Timer.Microsecond)
-	p := newPerform()
+	if config.IsPerformLog() {
+		q.SetRepeatTimer(1000, q.printPerformLog)
+		q.performance = newPerform()
+	}
 	for {
 		select {
 		case msg := <-q.chanAll:
@@ -201,14 +209,17 @@ func (q *queue) run() {
 					q.loseServiceHandle[data.serviceName](data.serviceId)
 				}
 			}
-			p.update(msg.eType, cost.GetCost())
-			if gaps := time.Now().Sub(p.lastTime).Seconds(); gaps > 1 {
-				Log.Log("queue run cost 1 second, name = %v, gaps = %vs, info = %v, wait deal = %v", q.name, gaps, p, len(q.chanAll))
-				p.reset()
+			if config.IsPerformLog() {
+				q.performance.update(msg.eType, cost.GetCost())
 			}
-			cost.PrintCost(warningTime, false, "%v(%v) callFun timeout", q.name, getMsgDesc(msg.eType))
+			cost.PrintCost(warningTime, false, "%v(%v) 处理超时", q.name, getMsgDesc(msg.eType))
 		}
 	}
+}
+
+func (q *queue) printPerformLog(Timer.TimerID, ...interface{}) {
+	Log.Log("每秒数据: 服务名 = %-10s 间隔 = %.2fs, 详情 = %v, 待处理任务 = %v", q.name, time.Now().Sub(q.lastTime).Seconds(), q.performance, len(q.chanAll))
+	q.reset()
 }
 
 // NewServiceMsg 收到其他服务消息

@@ -25,6 +25,7 @@ type GateWay struct {
 	Config     *gateConfig             // 网关配置
 	ClientList map[int]map[uint64]bool // map[gameServerId]map[clientId]
 	addr       string                  // 对外的地址端口
+	MsgHandle  func(clientId uint64, data []byte)
 }
 
 func (g *GateWay) Init() error {
@@ -32,11 +33,17 @@ func (g *GateWay) Init() error {
 		Log.ErrorLog("Failed to parse gateway Config, err = %v", err)
 	}
 	g.ClientList = make(map[int]map[uint64]bool, 2)
+	if g.MsgHandle == nil {
+		g.MsgHandle = g.HandleClientMsg
+	}
+	g.InitTcpServer(g.Config.Port, g.OnConnect, g.OnDisConnect, g.ParseProtocol, g.MsgHandle)
 	return nil
 }
 
 func (g *GateWay) Start() {
-	g.addr = fmt.Sprintf("%v:%v", Net.GetOutBoundIP(), g.Config.Port)
+	g.StartServer()
+	// todo
+	g.addr = fmt.Sprintf("%v:%v", Net.GetInputBoundIP(), g.Config.Port)
 	g.uploadStatus(0)
 	ITimer.SetRepeatTimer(g.GetName(), 1000, g.uploadStatus)
 }
@@ -51,31 +58,28 @@ func (g *GateWay) InitMsg() {
 func (g *GateWay) RecvMsgFromSrv(serverId int, data []byte) {
 	// 这个地方有点绕, 如果其他服有指定发送给具体的客户端，那就发送给指定客户端，如果没指定，那就是区服广播
 	revMsg := common.GwForwardSrvToClTag{}
-	if err := json.Unmarshal(data, &revMsg); err == nil {
-		if revMsg.ClientId == nil {
-			if game, ok := g.ClientList[serverId]; ok && game != nil {
-				for clientId := range game {
-					g.SendToClient(clientId, common.EncodeSendMsg(int16(serverId), 0, int16(revMsg.CmdId), revMsg.Data))
-				}
-			}
-		} else {
-			for _, clientId := range revMsg.ClientId {
-				g.SendToClient(clientId, common.EncodeSendMsg(0, 0, int16(revMsg.CmdId), revMsg.Data))
+	revMsg.Unmarshal(data)
+	if revMsg.ClientId == nil {
+		if game, ok := g.ClientList[serverId]; ok && game != nil {
+			for clientId := range game {
+				g.SendToClient(clientId, common.EncodeSendMsg(int16(serverId), 0, int16(revMsg.CmdId), revMsg.Data))
 			}
 		}
 	} else {
-		Log.ErrorLog("Failed to Unmarshal GwForwardSrvToClTag, data = %v", string(data))
+		for _, clientId := range revMsg.ClientId {
+			g.SendToClient(clientId, common.EncodeSendMsg(0, 0, int16(revMsg.CmdId), revMsg.Data))
+		}
 	}
 }
 
 func (g *GateWay) OnConnect(client Net.IClient) {
 	Log.Log("new client connect, addr = %v, clientId = %v, have connect = %v", client.GetIp(), client.GetId(), g.GetClientCount())
-	g.PublicEventByName("", common.GwClConnect, client.GetId())
+	g.SendMsgToServiceByName("", common.GwClConnect, client.GetId())
 }
 
 func (g *GateWay) OnDisConnect(client Net.IClient) {
 	Log.Log("client disconnect, addr = %v, clientId = %v, have connect = %v", client.GetIp(), client.GetId(), g.GetClientCount())
-	g.PublicEventByName("", common.GwClDisconnect, client.GetId())
+	g.SendMsgToServiceByName("", common.GwClDisconnect, client.GetId())
 }
 
 // ParseProtocol 解析数据流, 请配合HandleClientMsg 使用
@@ -123,7 +127,7 @@ func (g *GateWay) HandleClientMsg(clientId uint64, data []byte) {
 }
 
 func (g *GateWay) ForwardClMsgToSrv(serverId int, clientId uint64, cmdId int, data []byte) {
-	g.PublicEventById(serverId, common.GwForwardClToSrv, &common.GwForwardClToSrvTag{
+	g.SendMsgToServiceByIdNew(serverId, common.GwForwardClToSrv, &common.GwForwardClToSrvTag{
 		ClientId: clientId,
 		CmdId:    cmdId,
 		Data:     data,
@@ -140,7 +144,7 @@ func (g *GateWay) uploadStatus(_ Timer.TimerID, _ ...interface{}) {
 			NetRate:      System.GetNetRate(),
 			ConnectCount: g.GetClientCount(),
 		}
-		g.PublicEventByName(common.Dispatcher, common.GwToDsStatus, data)
+		g.SendMsgToServiceByName(common.Dispatcher, common.GwToDsStatus, data)
 	}()
 }
 

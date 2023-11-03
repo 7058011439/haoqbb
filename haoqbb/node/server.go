@@ -1,29 +1,19 @@
 package node
 
 import (
-	"fmt"
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Net"
-	"github.com/7058011439/haoqbb/Util"
 	"github.com/7058011439/haoqbb/haoqbb/config"
 	"github.com/7058011439/haoqbb/haoqbb/protocol"
 	"github.com/golang/protobuf/proto"
-	"net/http"
-	"strings"
 )
 
 func StartServer() {
-	tcpAddr := config.GetListenAddr()
-	if tcpAddr != "" {
-		params := strings.Split(tcpAddr, ":")
-		if len(params) != 2 {
-			Log.ErrorLog("Failed to Start node server, ListenAddr error, try ***.***.***.***:****")
-			return
-		}
-		tcpServer := Net.NewTcpServer(Util.StrToInt(params[1]), newConnectServer, disConnectServer, parseProtocol, msgHandleServer)
-		tcpServer.StartServer()
-		go http.ListenAndServe(fmt.Sprintf("0.0.0.0:1%v", params[1]), nil)
-	}
+	port := config.GetNodeID() + 1000
+	tcpServer := Net.NewTcpServer(port, newConnectServer, disConnectServer, parseProtocol, msgHandleServer)
+	tcpServer.StartServer()
+	// todo
+	// go http.ListenAndServe(fmt.Sprintf("0.0.0.0:1%v", port), nil)
 }
 
 func newConnectServer(client Net.IClient) {

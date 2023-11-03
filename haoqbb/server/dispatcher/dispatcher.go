@@ -2,12 +2,15 @@ package dispatcher
 
 import (
 	"encoding/json"
+	"github.com/7058011439/haoqbb/Http"
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Net"
 	"github.com/7058011439/haoqbb/haoqbb/server/common"
 	"github.com/7058011439/haoqbb/haoqbb/server/dispatcher/Interface"
 	"github.com/7058011439/haoqbb/haoqbb/service"
+	"github.com/gin-gonic/gin"
 	"github.com/mitchellh/mapstructure"
+	"sync"
 )
 
 type hitType = int
@@ -27,17 +30,20 @@ type dispatcherConfig struct {
 }
 
 type Dispatcher struct {
+	*Http.Server
 	service.Service
 	mapOptimalGate map[hitType]*common.GsInfoTag // 最优网关
 	mapAllGate     map[int]*common.GsInfoTag     // 所有网关
 	config         *dispatcherConfig
+	mutex          sync.Mutex
 }
 
 func (d *Dispatcher) Init() error {
 	if err := mapstructure.Decode(d.ServiceCfg.Other, &d.config); err != nil {
 		Log.ErrorLog("Failed to parse dispatcher Config, err = %v", err)
 	}
-	d.INetPool = Net.NewTcpServer(d.config.Port, d.connect, nil, nil, nil, Net.WithPoolId(d.GetId()))
+	//d.INetPool = Net.NewTcpServer(d.config.Port, d.connect, nil, nil, nil, Net.WithPoolId(d.GetId()))
+	d.Server = Http.NewHttpServer("release")
 	d.mapOptimalGate = map[hitType]*common.GsInfoTag{}
 	d.mapAllGate = map[int]*common.GsInfoTag{}
 	Interface.SetServiceAgent(d)
@@ -45,12 +51,13 @@ func (d *Dispatcher) Init() error {
 }
 
 func (d *Dispatcher) Start() {
-	d.StartServer()
+	d.Server.Start(d.config.Port)
 	d.RegeditLoseService(common.GateWay, d.loseGateWay)
 }
 
 func (d *Dispatcher) InitMsg() {
 	d.RegeditServiceMsg(common.GwToDsStatus, d.gateWayRegedit)
+	d.Server.RegeditApi(Http.TypeGet, "getgw", d.getGw)
 }
 
 func (d *Dispatcher) connect(client Net.IClient) {
@@ -65,7 +72,20 @@ func (d *Dispatcher) connect(client Net.IClient) {
 	//Log.Debug("Client request gateway, ip = %v, return = %v", client.GetAddr(), data)
 }
 
+func (d *Dispatcher) getGw(c *gin.Context) {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+	ret := Http.NewResult(c)
+	if gate, ok := d.mapOptimalGate[d.config.HitType]; ok {
+		ret.Success("ok", gate.Addr)
+	} else {
+		ret.Fail("", nil)
+	}
+}
+
 func (d *Dispatcher) gateWayRegedit(srcServiceId int, data []byte) {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
 	var newGate = &common.GsInfoTag{}
 	if err := json.Unmarshal(data, newGate); err != nil {
 		Log.ErrorLog("Failed to json.Unmarshal on gateWayRegedit, err = %v, data = %v", err, data)
@@ -106,6 +126,8 @@ func (d *Dispatcher) refreshOptimalGate(gate *common.GsInfoTag) {
 }
 
 func (d *Dispatcher) loseGateWay(gateWayId int) {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
 	delete(d.mapAllGate, gateWayId)
 	d.mapOptimalGate = map[int]*common.GsInfoTag{}
 	Log.Log("有网关丢失, gateWayId = %v, 剩余网关数量 = %v", gateWayId, len(d.mapAllGate))

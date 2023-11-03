@@ -49,6 +49,10 @@ func InsertTestModule(id int, entrance bool, fun testFun, randRate int, nextModu
 	}
 }
 
+func GetRandomModule() int {
+	return listEntranceModule[rand.Intn(len(listEntranceModule))]
+}
+
 func Run(_ Timer.TimerID, args ...interface{}) {
 	clientId := args[0].(uint64)
 	player := player.GetPlayerByClientId(clientId)
@@ -58,7 +62,7 @@ func Run(_ Timer.TimerID, args ...interface{}) {
 				nextModuleId := 0
 				if rand.Intn(100) < module.randRate {
 					if len(listEntranceModule) > 0 {
-						nextModuleId = listEntranceModule[rand.Intn(len(listEntranceModule))]
+						nextModuleId = GetRandomModule()
 					}
 				} else {
 					nextModuleId = weight.Value(module.id)

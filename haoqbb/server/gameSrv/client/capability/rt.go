@@ -9,8 +9,8 @@ import (
 )
 
 var index int64
-var count int
-var allCost float64
+var count int64
+var allCost int64
 var beginTime = map[int64]time.Time{}
 
 func C2SRT(player player.IPlayer) bool {
@@ -27,12 +27,13 @@ func C2SRT(player player.IPlayer) bool {
 func S2CRT(msg *msgHandle.ClientMsg) {
 	count++
 	data := msg.Data.(*protocol.S2C_Test_RT)
-	cost := time.Now().Sub(beginTime[data.Index]).Seconds()
+	cost := time.Now().Sub(beginTime[data.Index]).Milliseconds()
 	allCost += cost
-	//Log.Debug("Recv rt index = %v, time = %v", data.Index, time.Now().UnixNano() / int64(time.Millisecond))
-	if cost > 0.1 {
-		Log.WarningLog("rt index = %v, argCost = %v, currCost = %v", data.Index, allCost/float64(count), cost)
+	// Log.Debug("Recv rt index = %v, time = %v", data.Index, time.Now().UnixNano() / int64(time.Millisecond))
+	if cost > 30 {
+		Log.WarningLog("rt index = %v, argCost = %vms, currCost = %vms", data.Index, allCost/count, cost)
 	} else {
-		Log.Debug("rt index = %v, argCost = %v, currCost = %v", data.Index, allCost/float64(count), cost)
+		Log.Debug("rt index = %v, argCost = %vms, currCost = %vms", data.Index, allCost/count, cost)
 	}
+	delete(beginTime, data.Index)
 }

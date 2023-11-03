@@ -13,6 +13,7 @@ import (
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/module/bag"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/module/login"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/module/player"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/other"
 	"github.com/7058011439/haoqbb/haoqbb/service"
 )
 
@@ -42,20 +43,18 @@ func (g *GameSrv) InitMsg() {
 
 	g.IDispatcher = msgHandle.NewPBDispatcher()
 	g.RegeditMsgHandle(cProtocol.SCmd_C2S_RT, &cProtocol.C2S_Test_RT{}, capability.NetC2SRT)
+	g.RegeditMsgHandle(cProtocol.SCmd_C2S_Nothing_WithReply, &cProtocol.C2S_Test_RT{}, other.NetNothingWithBack)
+	g.RegeditMsgHandle(cProtocol.SCmd_C2S_Nothing_WithOutReply, &cProtocol.C2S_Test_RT{}, other.NetNothingWithOutBack)
 }
 
 func (g *GameSrv) revMsgFromGateWay(_ int, data []byte) {
 	msg := &common.GwForwardClToSrvTag{}
-	if err := json.Unmarshal(data, msg); err != nil {
-		Log.ErrorLog("Failed to Unmarshal S2S, data = %v", data)
+	msg.Unmarshal(data)
+	if userId := iPlayer.GetUserId(msg.ClientId); userId != 0 {
+		g.DispatchMsg(msg.ClientId, userId, int32(msg.CmdId), msg.Data)
 	} else {
-		g.DispatchMsg(msg.ClientId, iPlayer.GetUserId(msg.ClientId), int32(msg.CmdId), msg.Data)
-		if userId := iPlayer.GetUserId(msg.ClientId); userId != 0 {
-			g.DispatchMsg(msg.ClientId, userId, int32(msg.CmdId), msg.Data)
-		} else {
-			Log.WarningLog("没有找到对应的userId, clientId = %v", msg.ClientId)
-			net.PublicEventByName(common.GateWay, common.SrvPlayerOffLine, msg.ClientId)
-		}
+		Log.WarningLog("没有找到对应的userId, clientId = %v", msg.ClientId)
+		net.PublicEventByName(common.GateWay, common.SrvPlayerOffLine, msg.ClientId)
 	}
 }
 
@@ -74,7 +73,7 @@ func (g *GameSrv) BroadCastMsgToClient(clientIds []uint64, cmdId int32, data []b
 			CmdId:    int(cmdId),
 			Data:     data,
 		}
-		g.PublicEventById(0, common.GwForwardSrvToCl, sendMsg)
+		g.SendMsgToServiceByIdNew(0, common.GwForwardSrvToCl, sendMsg)
 	}
 	serverIds := map[int][]uint64{}
 	for _, clientId := range clientIds {
@@ -90,7 +89,7 @@ func (g *GameSrv) BroadCastMsgToClient(clientIds []uint64, cmdId int32, data []b
 			CmdId:    int(cmdId),
 			Data:     data,
 		}
-		g.PublicEventById(serverId, common.GwForwardSrvToCl, sendMsg)
+		g.SendMsgToServiceByIdNew(serverId, common.GwForwardSrvToCl, sendMsg)
 	}
 }
 

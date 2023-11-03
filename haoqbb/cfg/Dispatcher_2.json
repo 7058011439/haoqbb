@@ -1,6 +1,12 @@
 {
   "Remark":"建议id 2000 + N",
   "Id": 2002,
+  "Http": {
+    "Port": 2000
+  },
+  "TCP" : {
+    "Port": 1000
+  },
   "Other" : {
     "Port": 2002,
     "HitType":2

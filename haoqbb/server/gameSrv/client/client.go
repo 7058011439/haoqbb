@@ -1,7 +1,8 @@
 package client
 
 import (
-	"fmt"
+	"encoding/json"
+	"github.com/7058011439/haoqbb/Http"
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Net"
 	"github.com/7058011439/haoqbb/Timer"
@@ -10,6 +11,7 @@ import (
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/capability"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/interface"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/login"
+	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/other"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/player"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/test"
 	cProtocol "github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
@@ -20,10 +22,8 @@ import (
 )
 
 type clientConfig struct {
-	DispatcherIp   string
-	DispatcherPort int
-	GateWayIp      string
-	GateWayPort    int
+	DispatcherAddr string
+	GateWayAddr    string
 	StartID        int
 	MaxConn        int
 }
@@ -53,43 +53,42 @@ func (g *GameClient) InitMsg() {
 	g.IDispatcher = msgHandle.NewPBDispatcher()
 	g.RegeditMsgHandle(cProtocol.SCmd_S2C_Login, &cProtocol.S2C_GameLoginResult{}, login.S2CLogin)
 	g.RegeditMsgHandle(cProtocol.SCmd_S2C_RT, &cProtocol.S2C_Test_RT{}, capability.S2CRT)
+	g.RegeditMsgHandle(cProtocol.SCmd_S2C_Nothing_WithReply, &cProtocol.S2C_Test_RT{}, other.S2CNothingWithReply)
 }
 
 func (g *GameClient) msgHandle(clientId uint64, data []byte) {
 	cmdId := Util.Int16(data[2:4])
-	g.DispatchMsg(clientId, 0, int32(cmdId), data[6:])
+	// todo
+	if cmdId == cProtocol.SCmd_S2C_Login || cmdId == cProtocol.SCmd_S2C_RT {
+		g.DispatchMsg(clientId, 0, int32(cmdId), data[6:])
+	}
 }
 
 func (g *GameClient) NewClient(Timer.TimerID, ...interface{}) {
 	if Interface.GetPlayerCount() >= g.config.MaxConn {
 		return
 	}
-	if g.config.DispatcherIp != "" {
-		conn, err := net.Dial("tcp", fmt.Sprintf("%v:%v", g.config.DispatcherIp, g.config.DispatcherPort))
-		if err != nil {
-			Log.ErrorLog("Failed to allPlayer dispatcher, err = %v", err)
-			return
-		}
-		defer conn.Close()
-		buff := make([]byte, 1024)
-		if n, err := conn.Read(buff); err != nil || n < 10 {
-			Log.ErrorLog("Failed to get data from dispatcher, err = %v, n = %v", err, n)
-			return
-		} else {
-			if newConn, err := net.Dial("tcp", string(buff[0:n])); err != nil {
-				Log.ErrorLog("Failed to connect gateway, err = %v", err)
-				return
+	gateWayAddr := g.config.GateWayAddr
+	if g.config.DispatcherAddr != "" {
+		if data, err := Http.GetHttpSync(g.config.DispatcherAddr, nil, nil); err == nil {
+			mapData := map[string]interface{}{}
+			json.Unmarshal(data, &mapData)
+			if mapData["code"].(float64) == 200 {
+				gateWayAddr = mapData["data"].(string)
 			} else {
-				Interface.NewClient(newConn)
+				Log.ErrorLog("获取网关信息失败, err = %v", mapData["msg"].(string))
 			}
-		}
-	} else {
-		if newConn, err := net.Dial("tcp", fmt.Sprintf("%v:%v", g.config.GateWayIp, g.config.GateWayPort)); err != nil {
-			Log.ErrorLog("Failed to connect gateway, err = %v", err)
-			return
 		} else {
-			Interface.NewClient(newConn)
+			Log.ErrorLog("获取网关信息失败, err = %v", err)
+			return
 		}
+	}
+
+	if newConn, err := net.Dial("tcp", gateWayAddr); err != nil {
+		Log.ErrorLog("连接网关失败, err = %v", err)
+		return
+	} else {
+		Interface.NewClient(newConn)
 	}
 }
 

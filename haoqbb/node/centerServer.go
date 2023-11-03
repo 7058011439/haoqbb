@@ -18,8 +18,8 @@ const (
 	errorTimes = 3
 )
 
-var nodeInfo sync.Map // 节点信息 map[Net.IClient]*NodeInfo
-var signInfo sync.Map // 签名信息 map[Ip]int
+var nodeInfo sync.Map // 节点信息 map[Net.IClient]*NodeInfo map<节点连接>节点信息
+var signInfo sync.Map // 签名信息 map[string]int map<ip>签名失败次数
 
 func StartCenterServer() {
 	tcpAddr := config.GetCenterAddr()
@@ -35,12 +35,17 @@ func StartCenterServer() {
 	}
 }
 
-// 新节点连接, 告知新节点现有节点信息
+// 新节点连接, 判定是否黑名单ip，如果是黑名单ip，关闭连接
 func newConnectCenterServer(client Net.IClient) {
-	if info, ok := signInfo.Load(client.GetIp()); ok && info.(int) >= errorTimes {
-		Log.ErrorLog("黑名单连接, ip = %v", client.GetIp())
-		client.Close()
+	ip := client.GetIp()
+	if info, ok := signInfo.Load(ip); ok {
+		// 该节点多次连接中心节点, 而且都认证失败, 认为该节点有问题, 需要关闭连接
+		if info.(int) >= errorTimes {
+			Log.ErrorLog("黑名单连接, ip = %v", ip)
+			client.Close()
+		}
 	} else {
+		// 该节点没有被连接过，设置值
 		signInfo.Store(client.GetIp(), 0)
 	}
 }
