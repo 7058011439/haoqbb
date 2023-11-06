@@ -38,12 +38,32 @@ type configMysql struct {
 	PassWord string
 }
 
+type configPerform struct {
+	Open    bool
+	Perform map[msgType]bool
+}
+
+func (c *configPerform) isNeedUpdate(eType msgType) bool {
+	if c != nil && c.Open {
+		if ret, ok := c.Perform[eType]; ok {
+			return ret
+		}
+		return false
+	}
+	return false
+}
+
+func (c *configPerform) isOpen() bool {
+	return c != nil && c.Open
+}
+
 type serviceCfg struct {
-	Redis *configRedis
-	Mongo *configMongo
-	Mysql *configMysql
-	Id    int
-	Other interface{}
+	Redis   *configRedis
+	Mongo   *configMongo
+	Mysql   *configMysql
+	Perform *configPerform
+	Id      int
+	Other   interface{}
 }
 
 type Service struct {
@@ -55,7 +75,7 @@ type Service struct {
 }
 
 func (s *Service) run() {
-	s.queue.run()
+	s.queue.run(s.ServiceCfg.Perform)
 }
 
 func (s *Service) SetName(name string) {
@@ -140,17 +160,11 @@ func (s *Service) RegeditLoseService(serviceName string, fun func(int)) {
 	s.loseServiceHandle[serviceName] = fun
 }
 
-func (s *Service) SendMsgToServiceByName(serviceName string, msgType int, data interface{}) {
-	sendData, _ := json.Marshal(data)
-	node.SendMsgByName(s.GetId(), serviceName, msgType, sendData)
+func (s *Service) SendMsgToServiceByName(serviceName string, msgType int, msg common.ServiceMsg) {
+	node.SendMsgByName(s.GetId(), serviceName, msgType, msg.Marshal())
 }
 
-func (s *Service) SendMsgToServiceById(serviceId int, msgType int, data interface{}) {
-	sendData, _ := json.Marshal(data)
-	node.SendMsgById(s.GetId(), serviceId, msgType, sendData)
-}
-
-func (s *Service) SendMsgToServiceByIdNew(serviceId int, msgType int, msg common.ServiceMsg) {
+func (s *Service) SendMsgToServiceById(serviceId int, msgType int, msg common.ServiceMsg) {
 	node.SendMsgById(s.GetId(), serviceId, msgType, msg.Marshal())
 }
 

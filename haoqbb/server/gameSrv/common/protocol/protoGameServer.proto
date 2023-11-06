@@ -9,6 +9,21 @@ message S2C_Test_RT {
 	int64          index = 1; // id
 }
 
+message C2S_Test_Nothing_WithReply {
+	int64  index = 1;  // 整形数据
+	string msg   = 2;  // 字符串数据
+}
+
+message S2C_Test_Nothing_WithReply {
+	int64  index = 1;  // 整形数据
+	string msg   = 2;  // 字符串数据
+}
+
+message C2S_Test_Nothing_WithOutReply {
+	int64  index = 1;  // 整形数据
+	string msg   = 2;  // 字符串数据
+}
+
 //通过TOKEN登陆游戏服务器,machineId,token,srvid必须要
 message C2S_LoginWithToken {
 	string machineId     = 1; // 机器序列

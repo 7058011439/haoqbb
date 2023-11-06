@@ -58,10 +58,7 @@ func (g *GameClient) InitMsg() {
 
 func (g *GameClient) msgHandle(clientId uint64, data []byte) {
 	cmdId := Util.Int16(data[2:4])
-	// todo
-	if cmdId == cProtocol.SCmd_S2C_Login || cmdId == cProtocol.SCmd_S2C_RT {
-		g.DispatchMsg(clientId, 0, int32(cmdId), data[6:])
-	}
+	g.DispatchMsg(clientId, 0, int32(cmdId), data[6:])
 }
 
 func (g *GameClient) NewClient(Timer.TimerID, ...interface{}) {

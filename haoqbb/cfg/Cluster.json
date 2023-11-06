@@ -1,7 +1,6 @@
 {
-  "CenterAddr": "8.222.162.23:1000",
+  "CenterAddr": "192.168.201.146:1000",
   "Sign": "59d997cf3c8e640b0192b719afd65f6d",
-  "PerformLog": false,
   "NodeId": 1,
   "NodeList": {
     "1": {
@@ -14,7 +13,7 @@
       "NeedService": [
         "GateWay",
         "Dispatcher",
-        "LoginSrv"
+        "BuJiDaoS"
       ]
     },
     "2": {
@@ -48,7 +47,6 @@
     "5" : {
       "NodeName": "Client",
       "ServiceList" : [
-
       ]
     }
   }

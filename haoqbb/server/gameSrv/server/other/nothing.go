@@ -7,7 +7,7 @@ import (
 )
 
 func NetNothingWithBack(msg *msgHandle.ClientMsg) {
-	net.SendMsgToClient(msg.ClientId, protocol.SCmd_S2C_Nothing_WithReply, &protocol.C2S_Test_RT{})
+	net.SendMsgToClient(msg.ClientId, protocol.SCmd_S2C_Nothing_WithReply, msg.Data.(*protocol.C2S_Test_Nothing_WithReply))
 }
 
 func NetNothingWithOutBack(msg *msgHandle.ClientMsg) {

@@ -87,6 +87,6 @@ func (m *Mgr) LogOut(clientId uint64, userId int) {
 		m.DoubleMap.RemoveByValue(userId)
 	}
 	Log.Log("player offline, userId = %v, clientId = %v, total player = %v", userId, clientId, m.DoubleMap.Len())
-	net.PublicEventByName(common.GateWay, common.SrvPlayerOffLine, clientId)
+	net.PublicEventByName(common.GateWay, common.SrvPlayerOffLine, &common.Uint64{Data: clientId})
 	m.ShareDataMgr.LogOut(userId)
 }

@@ -1,7 +1,6 @@
 package dispatcher
 
 import (
-	"encoding/json"
 	"github.com/7058011439/haoqbb/Http"
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Net"
@@ -87,52 +86,46 @@ func (d *Dispatcher) gateWayRegedit(srcServiceId int, data []byte) {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
 	var newGate = &common.GsInfoTag{}
-	if err := json.Unmarshal(data, newGate); err != nil {
-		Log.ErrorLog("Failed to json.Unmarshal on gateWayRegedit, err = %v, data = %v", err, data)
-		return
-	}
+	newGate.Unmarshal(data)
 	d.mapAllGate[srcServiceId] = newGate
-	d.refreshOptimalGate(newGate)
-}
-
-func (d *Dispatcher) refreshOptimalGate(gate *common.GsInfoTag) {
-	for t := random; t < max; t++ {
-		oldGate := d.mapOptimalGate[t]
-		if oldGate == nil {
-			d.mapOptimalGate[t] = gate
-		} else {
-			switch t {
-			case random:
-				d.mapOptimalGate[t] = gate
-			case cpuRate:
-				if oldGate.CpuRate > gate.CpuRate {
-					d.mapOptimalGate[t] = gate
-				}
-			case memRate:
-				if oldGate.MemRate > gate.MemRate {
-					d.mapOptimalGate[t] = gate
-				}
-			case netRate:
-				if oldGate.NetRate > gate.NetRate {
-					d.mapOptimalGate[t] = gate
-				}
-			case connectCount:
-				if oldGate.ConnectCount > gate.ConnectCount {
-					d.mapOptimalGate[t] = gate
-				}
-			}
-		}
-	}
+	d.refreshOptimalGate()
 }
 
 func (d *Dispatcher) loseGateWay(gateWayId int) {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
 	delete(d.mapAllGate, gateWayId)
-	d.mapOptimalGate = map[int]*common.GsInfoTag{}
 	Log.Log("有网关丢失, gateWayId = %v, 剩余网关数量 = %v", gateWayId, len(d.mapAllGate))
+	d.refreshOptimalGate()
+}
 
+func (d *Dispatcher) refreshOptimalGate() {
+	d.mapOptimalGate = map[int]*common.GsInfoTag{}
+	if len(d.mapAllGate) < 1 {
+		return
+	}
 	for _, gate := range d.mapAllGate {
-		d.refreshOptimalGate(gate)
+		d.mapOptimalGate[random] = gate
+		break
+	}
+	for _, gate := range d.mapAllGate {
+		if oldGate := d.mapOptimalGate[cpuRate]; oldGate == nil || oldGate.CpuRate > gate.CpuRate {
+			d.mapOptimalGate[cpuRate] = gate
+		}
+	}
+	for _, gate := range d.mapAllGate {
+		if oldGate := d.mapOptimalGate[memRate]; oldGate == nil || oldGate.MemRate > gate.MemRate {
+			d.mapOptimalGate[memRate] = gate
+		}
+	}
+	for _, gate := range d.mapAllGate {
+		if oldGate := d.mapOptimalGate[netRate]; oldGate == nil || oldGate.NetRate > gate.NetRate {
+			d.mapOptimalGate[netRate] = gate
+		}
+	}
+	for _, gate := range d.mapAllGate {
+		if oldGate := d.mapOptimalGate[connectCount]; oldGate == nil || oldGate.ConnectCount > gate.ConnectCount {
+			d.mapOptimalGate[connectCount] = gate
+		}
 	}
 }

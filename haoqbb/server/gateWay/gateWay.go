@@ -1,7 +1,6 @@
 package gateWay
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Net"
@@ -74,12 +73,12 @@ func (g *GateWay) RecvMsgFromSrv(serverId int, data []byte) {
 
 func (g *GateWay) OnConnect(client Net.IClient) {
 	Log.Log("new client connect, addr = %v, clientId = %v, have connect = %v", client.GetIp(), client.GetId(), g.GetClientCount())
-	g.SendMsgToServiceByName("", common.GwClConnect, client.GetId())
+	g.SendMsgToServiceByName("", common.GwClConnect, &common.Uint64{Data: client.GetId()})
 }
 
 func (g *GateWay) OnDisConnect(client Net.IClient) {
 	Log.Log("client disconnect, addr = %v, clientId = %v, have connect = %v", client.GetIp(), client.GetId(), g.GetClientCount())
-	g.SendMsgToServiceByName("", common.GwClDisconnect, client.GetId())
+	g.SendMsgToServiceByName("", common.GwClDisconnect, &common.Uint64{Data: client.GetId()})
 }
 
 // ParseProtocol 解析数据流, 请配合HandleClientMsg 使用
@@ -127,7 +126,7 @@ func (g *GateWay) HandleClientMsg(clientId uint64, data []byte) {
 }
 
 func (g *GateWay) ForwardClMsgToSrv(serverId int, clientId uint64, cmdId int, data []byte) {
-	g.SendMsgToServiceByIdNew(serverId, common.GwForwardClToSrv, &common.GwForwardClToSrvTag{
+	g.SendMsgToServiceById(serverId, common.GwForwardClToSrv, &common.GwForwardClToSrvTag{
 		ClientId: clientId,
 		CmdId:    cmdId,
 		Data:     data,
@@ -149,27 +148,32 @@ func (g *GateWay) uploadStatus(_ Timer.TimerID, _ ...interface{}) {
 }
 
 func (g *GateWay) PlayerOnLine(gameServerId int, data []byte) {
-	var clientId uint64
-	if err := json.Unmarshal(data, &clientId); err != nil {
-		Log.ErrorLog("Failed to json.Unmarshal on PlayerOnLine, err = %v, data = %v", err, data)
-		return
-	}
+	clientId := &common.Uint64{}
+	clientId.Unmarshal(data)
 	if _, ok := g.ClientList[gameServerId]; !ok {
 		g.ClientList[gameServerId] = make(map[uint64]bool, 64)
 	}
-	g.ClientList[gameServerId][clientId] = true
+	g.ClientList[gameServerId][clientId.Data] = true
 }
 
 func (g *GateWay) PlayerOffLine(gameServerId int, data []byte) {
-	var clientId uint64
-	if err := json.Unmarshal(data, &clientId); err != nil {
-		Log.ErrorLog("Failed to json.Unmarshal on PlayerOffLine, err = %v, data = %v", err, data)
-		return
-	}
-	if client := g.GetClientByID(clientId); client != nil {
+	clientId := &common.Uint64{}
+	clientId.Unmarshal(data)
+	if client := g.GetClientByID(clientId.Data); client != nil {
 		client.Close()
 	}
 	if game, ok := g.ClientList[gameServerId]; ok {
-		delete(game, clientId)
+		delete(game, clientId.Data)
+	}
+}
+
+func (g *GateWay) LoseGameSrv(serverId int) {
+	if server, ok := g.ClientList[serverId]; ok {
+		for clientId, _ := range server {
+			if client := g.GetClientByID(clientId); client != nil {
+				client.Close()
+			}
+		}
+		delete(g.ClientList, serverId)
 	}
 }

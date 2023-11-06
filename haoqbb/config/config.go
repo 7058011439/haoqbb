@@ -96,7 +96,3 @@ func GetSign() string {
 func IsCenterNode() bool {
 	return clusterConfig.NodeId == 0
 }
-
-func IsPerformLog() bool {
-	return clusterConfig.PerformLog
-}

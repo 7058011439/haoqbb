@@ -7,7 +7,6 @@ import (
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Net"
 	"github.com/7058011439/haoqbb/Timer"
-	"github.com/7058011439/haoqbb/haoqbb/config"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"time"
@@ -27,6 +26,7 @@ const (
 	typeTimer
 	typeDiscoverService
 	typeLoseService
+	typeMax
 )
 
 var msgDesc = map[msgType]string{
@@ -37,6 +37,7 @@ var msgDesc = map[msgType]string{
 	typeTimer:           "处理定时器",
 	typeDiscoverService: "发现服务",
 	typeLoseService:     "丢失服务",
+	typeMax:             "未知",
 }
 
 func getMsgDesc(eType msgType) string {
@@ -153,15 +154,20 @@ func (p *performance) reset() {
 
 func (p performance) String() string {
 	ret := ""
-	for k, v := range p.data {
-		ret += fmt.Sprintf("%v：%v; ", getMsgDesc(k), v)
+	for msgType := typeTcpMsg; msgType < typeMax; msgType++ {
+		if data, ok := p.data[msgType]; ok {
+			ret += fmt.Sprintf("%v:%v;", getMsgDesc(msgType), data)
+		}
+	}
+	if len(ret) > 0 {
+		ret = ret[0 : len(ret)-1]
 	}
 	return ret
 }
 
-func (q *queue) run() {
+func (q *queue) run(perform *configPerform) {
 	cost := Timer.NewTiming(Timer.Microsecond)
-	if config.IsPerformLog() {
+	if perform.isOpen() {
 		q.SetRepeatTimer(1000, q.printPerformLog)
 		q.performance = newPerform()
 	}
@@ -209,7 +215,7 @@ func (q *queue) run() {
 					q.loseServiceHandle[data.serviceName](data.serviceId)
 				}
 			}
-			if config.IsPerformLog() {
+			if perform.isNeedUpdate(msg.eType) {
 				q.performance.update(msg.eType, cost.GetCost())
 			}
 			cost.PrintCost(warningTime, false, "%v(%v) 处理超时", q.name, getMsgDesc(msg.eType))

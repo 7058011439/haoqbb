@@ -25,8 +25,8 @@ const (
 	SrvPlayerOnLine  // 其他服(大厅、游戏等)玩家在线
 	SrvPlayerOffLine // 其他服(大厅、游戏等)玩家离线
 
-	GwClConnect    // 网关有客户端连接，全域广播
-	GwClDisconnect // 网关客户端断开连接，全域广播
+	GwClConnect    // 网关有客户端连接，全域广播, 对应结构 Uint64
+	GwClDisconnect // 网关客户端断开连接，全域广播, 对应结构 Uint64
 
 	EventLoginSrvLogin // 登录(发送验证结果)到指定游戏服，对应结构 LoginSrvToGameSrv
 	MsgMax
@@ -141,4 +141,16 @@ func (l *LoginSrvToGameSrv) Marshal() []byte {
 func (l *LoginSrvToGameSrv) Unmarshal(data []byte) {
 	// 这里偷个懒，直接用Json库
 	json.Unmarshal(data, l)
+}
+
+type Uint64 struct {
+	Data uint64
+}
+
+func (u *Uint64) Marshal() []byte {
+	return Util.Uint64ToBytes(u.Data)
+}
+
+func (u *Uint64) Unmarshal(data []byte) {
+	u.Data = Util.Uint64(data)
 }

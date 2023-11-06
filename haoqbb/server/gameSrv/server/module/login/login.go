@@ -1,8 +1,6 @@
 package login
 
 import (
-	"encoding/json"
-	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Util"
 	"github.com/7058011439/haoqbb/haoqbb/server/common"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
@@ -21,10 +19,7 @@ const (
 
 func Login(_ int, data []byte) {
 	ret := &common.LoginSrvToGameSrv{}
-	if err := json.Unmarshal(data, ret); err != nil {
-		Log.ErrorLog("处理登录结果错误, err = %v", err)
-		return
-	}
+	ret.Unmarshal(data)
 	userId := 0
 	if ret.OpenId != "" {
 		userId = Util.StrToInt(IRedis.GetRedisSync(service.GetServiceName(), redisOpenUserIdKey, ret.OpenId))
@@ -47,8 +42,8 @@ func sendLoginRet(clientId uint64, err string, ret bool) {
 	}
 	net.SendMsgToClient(clientId, protocol.SCmd_S2C_Login, sendMsg)
 	if ret {
-		net.PublicEventByName(common.GateWay, common.SrvPlayerOnLine, clientId)
+		net.PublicEventByName(common.GateWay, common.SrvPlayerOnLine, &common.Uint64{Data: clientId})
 	} else {
-		net.PublicEventByName(common.GateWay, common.SrvPlayerOffLine, clientId)
+		net.PublicEventByName(common.GateWay, common.SrvPlayerOffLine, &common.Uint64{Data: clientId})
 	}
 }
