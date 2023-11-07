@@ -1,11 +1,8 @@
 package node
 
 import (
-	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Net"
 	"github.com/7058011439/haoqbb/haoqbb/config"
-	"github.com/7058011439/haoqbb/haoqbb/protocol"
-	"github.com/golang/protobuf/proto"
 )
 
 func StartServer() {
@@ -17,15 +14,14 @@ func StartServer() {
 }
 
 func newConnectServer(client Net.IClient) {
-	//Log.Log("new node connect, ip = %v", client.GetIp())
-	sendMsg := protocol.N2NRegedit{}
+	sendMsg := &N2NRegedit{}
 	for serviceId, service := range localNodeService {
-		sendMsg.ServiceList = append(sendMsg.ServiceList, &protocol.ServiceInfo{
+		sendMsg.ServiceList = append(sendMsg.ServiceList, &ServiceInfo{
 			ServiceName: service.GetName(),
-			ServiceId:   int32(serviceId),
+			ServiceId:   serviceId,
 		})
 	}
-	client.SendMsg(encodeMsg(&sendMsg))
+	client.SendMsg(encodeMsg(sendMsg))
 }
 
 func disConnectServer(client Net.IClient) {
@@ -33,12 +29,9 @@ func disConnectServer(client Net.IClient) {
 }
 
 func msgHandleServer(client Net.IClient, data []byte) {
-	msg := protocol.N2NMsg{}
-	if err := proto.Unmarshal(data, &msg); err != nil {
-		Log.ErrorLog("Failed to parse N2NMsg, err = %v", err)
-		return
-	}
-	revMsg(int(msg.SrcServerId), int(msg.DestServiceId), int(msg.MsgType), msg.Data)
+	ret := &N2NMsg{}
+	ret.Unmarshal(data)
+	revMsg(ret.SrcServerId, ret.DestServiceId, ret.MsgType, ret.Data)
 }
 
 func revMsg(srcServiceId int, destServiceId int, msgType int, data []byte) {

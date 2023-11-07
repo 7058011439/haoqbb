@@ -58,9 +58,6 @@ func (c *Client) Close() {
 }
 
 func (c *Client) SendMsg(data []byte) {
-	//if _, err := c.conn.Write(data); err != nil {
-	//	Log.ErrorLog("Failed to conn.write, err = %v, data = %v, clientId = %v", err, data, c.GetId())
-	//}
 	c.sendMutex.Lock()
 	c.sendBuff.Write(data)
 	c.sendMutex.Unlock()

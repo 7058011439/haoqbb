@@ -3,7 +3,6 @@ package node
 import (
 	"github.com/7058011439/haoqbb/Stl"
 	"github.com/7058011439/haoqbb/Util"
-	"github.com/golang/protobuf/proto"
 )
 
 const (
@@ -44,9 +43,8 @@ func parseProtocol(data []byte) (rdata []byte, offset int) {
 	return nil, 0
 }
 
-func encodeMsg(message proto.Message) []byte {
-	sendData, _ := proto.Marshal(message)
-	return encodeMsgOrigin(sendData)
+func encodeMsg(data INodeMsg) []byte {
+	return encodeMsgOrigin(data.Marshal())
 }
 
 func encodeMsgOrigin(data []byte) []byte {

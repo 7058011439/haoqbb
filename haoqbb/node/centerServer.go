@@ -6,8 +6,6 @@ import (
 	"github.com/7058011439/haoqbb/Net"
 	"github.com/7058011439/haoqbb/Util"
 	"github.com/7058011439/haoqbb/haoqbb/config"
-	"github.com/7058011439/haoqbb/haoqbb/protocol"
-	"github.com/golang/protobuf/proto"
 	"net/http"
 	"strings"
 	"sync"
@@ -73,15 +71,15 @@ func haveCombine(data1 []string, data2 []string) bool {
 
 // 告诉新节点, 其他节点信息
 func sendNodeInfo(client Net.IClient, needService []string) {
-	sendMsg := protocol.NodeList{}
+	sendMsg := &NodeList{}
 	nodeInfo.Range(func(key, value interface{}) bool {
-		info, _ := value.(*protocol.NodeInfo)
+		info, _ := value.(*NodeInfo)
 		if haveCombine(info.ServiceList, needService) {
 			sendMsg.NodeList = append(sendMsg.NodeList, info)
 		}
 		return true
 	})
-	client.SendMsg(encodeMsg(&sendMsg))
+	client.SendMsg(encodeMsg(sendMsg))
 }
 
 // 新节点上报节点信息
@@ -98,16 +96,13 @@ func msgHandleCenterServer(client Net.IClient, data []byte) {
 		return
 	}
 
-	msg := protocol.NodeInfo{}
-	if err := proto.Unmarshal(data, &msg); err != nil {
-		Log.ErrorLog("Failed to parse NodeInfo, err = %v", err)
-		return
-	}
+	nInfo := &NodeInfo{}
+	nInfo.Unmarshal(data)
 
 	bExist := false
 	nodeInfo.Range(func(key, value interface{}) bool {
-		if value.(*protocol.NodeInfo).NodeId == msg.NodeId {
-			Log.ErrorLog("发现重复节点, id = %v", msg.NodeId)
+		if value.(*NodeInfo).NodeId == nInfo.NodeId {
+			Log.ErrorLog("发现重复节点, id = %v", nInfo.NodeId)
 			bExist = true
 			return false
 		}
@@ -117,23 +112,22 @@ func msgHandleCenterServer(client Net.IClient, data []byte) {
 	if bExist {
 		return
 	}
-	sendNodeInfo(client, msg.NeedService)
-	client.SetCustomData(msg.NodeId)
-	Log.Log("发现新节点, id = %v, name = %v, addr = %v", msg.NodeId, msg.NodeName, msg.Addr)
+	sendNodeInfo(client, nInfo.NeedService)
+	client.SetCustomData(nInfo.NodeId)
+	Log.Log("发现新节点, id = %v, name = %v, addr = %v", nInfo.NodeId, nInfo.NodeName, nInfo.Addr)
 
 	// 告知现有节点, 有新节点上线
-	sendMsg := protocol.NodeList{
-		NodeList: []*protocol.NodeInfo{&msg},
-	}
-	sendData := encodeMsg(&sendMsg)
+	sendData := encodeMsg(&NodeList{
+		NodeList: []*NodeInfo{nInfo},
+	})
 	nodeInfo.Range(func(key, value interface{}) bool {
 		c, _ := key.(Net.IClient)
-		if haveCombine(value.(*protocol.NodeInfo).NeedService, msg.GetServiceList()) {
+		if haveCombine(value.(*NodeInfo).NeedService, nInfo.ServiceList) {
 			c.SendMsg(sendData)
 		}
 		return true
 	})
 
 	// 新节点添加到列表
-	nodeInfo.Store(client, &msg)
+	nodeInfo.Store(client, nInfo)
 }

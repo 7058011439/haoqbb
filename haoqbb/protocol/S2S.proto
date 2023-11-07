@@ -1,35 +1,35 @@
 ﻿syntax = "proto3";
 package protocol;
 
-// 节点到节点消息
-message N2NMsg {
-  int32  destServiceId = 1;
-  int32  srcServerId = 2;
-  int32  msgType = 3;
-  bytes  data = 4;
-}
+//// 节点到节点消息
+//message N2NMsg {
+//  int32  destServiceId = 1;
+//  int32  srcServerId = 2;
+//  int32  msgType = 3;
+//  bytes  data = 4;
+//}
 
-// 服务信息
-message ServiceInfo {
-  string serviceName = 1;
-  int32 serviceId = 2;
-}
+//// 服务信息
+// message ServiceInfo {
+//   string serviceName = 1;
+//   int32 serviceId = 2;
+// }
+//
+// // 节点注册
+// message N2NRegedit {
+//   repeated ServiceInfo serviceList = 2;
+// }
 
-// 节点注册
-message N2NRegedit {
-  repeated ServiceInfo serviceList = 2;
-}
-
-// 节点信息
-message NodeInfo {
-  int32 nodeId = 1; // 节点id
-  string nodeName = 2; // 节点名(无鸟用)
-  string addr = 3; // 节点监听地址
-  repeated string needService = 4; // 需要的服务列表
-  repeated string serviceList = 5; // 该节点提供的服务列表
-}
-
-// 节点列表
-message NodeList {
-  repeated NodeInfo nodeList = 1;
-}
+//// 节点信息
+//message NodeInfo {
+//  int32 nodeId = 1; // 节点id
+//  string nodeName = 2; // 节点名(无鸟用)
+//  string addr = 3; // 节点监听地址
+//  repeated string needService = 4; // 需要的服务列表
+//  repeated string serviceList = 5; // 该节点提供的服务列表
+//}
+//
+//// 节点列表
+//message NodeList {
+//  repeated NodeInfo nodeList = 1;
+//}

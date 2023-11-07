@@ -5,8 +5,6 @@ import (
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Net"
 	"github.com/7058011439/haoqbb/haoqbb/config"
-	"github.com/7058011439/haoqbb/haoqbb/protocol"
-	"github.com/golang/protobuf/proto"
 	"net"
 	"sync"
 	"time"
@@ -38,7 +36,7 @@ func connectCenterNode(client Net.IClient) {
 
 	// 上报自己节点信息
 	nodeConfig := config.GetNodeConfig()
-	client.SendMsg(encodeMsg(&protocol.NodeInfo{
+	client.SendMsg(encodeMsg(&NodeInfo{
 		NodeId:      int32(nodeConfig.NodeId),
 		NodeName:    nodeConfig.NodeName,
 		Addr:        fmt.Sprintf("%v:%v", Net.GetInputBoundIP(), 1000+config.GetNodeID()),
@@ -71,20 +69,17 @@ func disConnectClient(client Net.IClient) {
 func msgHandleClient(client Net.IClient, data []byte) {
 	defer mutex.Unlock()
 	mutex.Lock()
-	msg := protocol.N2NRegedit{}
-	if err := proto.Unmarshal(data, &msg); err != nil {
-		Log.ErrorLog("Failed to parse N2NRegedit, err = %v", err)
-		return
-	}
+	msg := &N2NRegedit{}
+	msg.Unmarshal(data)
 	for _, info := range msg.ServiceList {
-		remoteServiceConn[int(info.ServiceId)] = client
+		remoteServiceConn[info.ServiceId] = client
 		if remoteServiceList[info.ServiceName] == nil {
 			remoteServiceList[info.ServiceName] = map[int]bool{}
 		}
-		remoteServiceList[info.ServiceName][int(info.ServiceId)] = true
+		remoteServiceList[info.ServiceName][info.ServiceId] = true
 		Log.Log("connect to other node, nodeId = %v, serviceName = %v, serviceId = %v", client.CustomData(), info.ServiceName, info.ServiceId)
 		for _, service := range localNodeService {
-			service.DiscoverService(info.ServiceName, int(info.ServiceId))
+			service.DiscoverService(info.ServiceName, info.ServiceId)
 		}
 	}
 }
@@ -93,12 +88,9 @@ func msgHandleClient(client Net.IClient, data []byte) {
 func msgHandleCenterClient(client Net.IClient, data []byte) {
 	defer mutex.Unlock()
 	mutex.Lock()
-	msg := protocol.NodeList{}
-	if err := proto.Unmarshal(data, &msg); err != nil {
-		Log.ErrorLog("Failed to parse NodeList, err = %v", err)
-		return
-	}
-	for _, info := range msg.NodeList {
+	nodeList := &NodeList{}
+	nodeList.Unmarshal(data)
+	for _, info := range nodeList.NodeList {
 		Log.Log("发现新节点, id = %v, name = %v, addr = %v", info.NodeId, info.NodeName, info.Addr)
 		if conn, err := net.DialTimeout("tcp", info.Addr, time.Second*5); err == nil {
 			nodeConnPool.NewConnect(conn, info.NodeId)
@@ -109,13 +101,12 @@ func msgHandleCenterClient(client Net.IClient, data []byte) {
 }
 
 func sendMsg(srcServiceId, destServiceId int, msgType int, data []byte) {
-	msg := protocol.N2NMsg{
-		SrcServerId:   int32(srcServiceId),
-		DestServiceId: int32(destServiceId),
-		MsgType:       int32(msgType),
+	sendData := encodeMsg(&N2NMsg{
+		SrcServerId:   srcServiceId,
+		DestServiceId: destServiceId,
+		MsgType:       msgType,
 		Data:          data,
-	}
-	sendData := encodeMsg(&msg)
+	})
 	if destServiceId == 0 {
 		nodeConnPool.Range(func(client Net.IClient) {
 			client.SendMsg(sendData)

@@ -94,7 +94,7 @@ func (t *tcpConnPool) SendToClient(Id uint64, data []byte) {
 	if client != nil {
 		client.SendMsg(data)
 	} else {
-		Log.ErrorLog("Failed to SendToClient, client is nil, id = %v", Id)
+		//Log.ErrorLog("Failed to SendToClient, client is nil, id = %v", Id)
 	}
 }
 
