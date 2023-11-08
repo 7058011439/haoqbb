@@ -20,7 +20,7 @@ var mutex sync.Mutex
 var newTimerId = TimerID(100000)
 var mapTimerWheel = make(map[TimeWheel][]*timer) // map[nextTick]list(Timer)
 var mapTimerId = make(map[TimerID]TimeWheel)     // map[timeId]nextTick
-var currTick = TimeWheel(time.Now().UnixNano()) / TimeWheel(time.Millisecond)
+var currTick = time.Now().UnixNano() / TimeWheel(time.Millisecond)
 
 type timer struct {
 	timeId   TimerID
@@ -31,6 +31,7 @@ type timer struct {
 }
 
 func init() {
+	setTimerResolution(1)
 	go doSomething()
 }
 
@@ -62,6 +63,7 @@ func doSomething() {
 	}
 }
 
+// AddRepeatTimer
 // 添加一次循环定时器
 // duration-时间间隔(毫秒)
 // funcName-回调函数
@@ -72,7 +74,6 @@ func AddRepeatTimer(duration TimeWheel, funcName TimerFun, args ...interface{}) 
 	if duration < 1 {
 		return -1
 	}
-
 	newTimerId++
 	addTime(&timer{timeId: newTimerId, duration: duration, funcName: funcName, args: args, eType: Repeat})
 	return newTimerId
@@ -81,11 +82,9 @@ func AddRepeatTimer(duration TimeWheel, funcName TimerFun, args ...interface{}) 
 func AddOnceTimer(duration TimeWheel, funcName TimerFun, args ...interface{}) TimerID {
 	mutex.Lock()
 	defer mutex.Unlock()
-
 	if duration < 1 {
 		return -1
 	}
-
 	newTimerId++
 	addTime(&timer{timeId: newTimerId, duration: duration, funcName: funcName, args: args, eType: Once})
 	return newTimerId
