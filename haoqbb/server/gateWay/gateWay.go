@@ -21,10 +21,12 @@ type gateConfig struct {
 
 type GateWay struct {
 	service.Service
-	Config     *gateConfig             // 网关配置
-	ClientList map[int]map[uint64]bool // map[gameServerId]map[clientId]
-	addr       string                  // 对外的地址端口
-	MsgHandle  func(clientId uint64, data []byte)
+	Config         *gateConfig             // 网关配置
+	ClientList     map[int]map[uint64]bool // map[gameServerId]map[clientId]
+	addr           string                  // 对外的地址端口
+	MsgHandle      func(clientId uint64, data []byte)
+	ParseProtocol  func(data []byte) (rdata []byte, offset int)
+	RecvMsgFromSrv func(serverId int, data []byte)
 }
 
 func (g *GateWay) Init() error {
@@ -33,7 +35,13 @@ func (g *GateWay) Init() error {
 	}
 	g.ClientList = make(map[int]map[uint64]bool, 2)
 	if g.MsgHandle == nil {
-		g.MsgHandle = g.HandleClientMsg
+		g.MsgHandle = g.handleMsg
+	}
+	if g.ParseProtocol == nil {
+		g.ParseProtocol = g.parseProtocol
+	}
+	if g.RecvMsgFromSrv == nil {
+		g.RecvMsgFromSrv = g.recvMsgFromSrv
 	}
 	g.InitTcpServer(g.Config.Port, g.OnConnect, g.OnDisConnect, g.ParseProtocol, g.MsgHandle)
 	return nil
@@ -54,7 +62,7 @@ func (g *GateWay) InitMsg() {
 	g.RegeditServiceMsg(common.SrvPlayerOffLine, g.PlayerOffLine)
 }
 
-func (g *GateWay) RecvMsgFromSrv(serverId int, data []byte) {
+func (g *GateWay) recvMsgFromSrv(serverId int, data []byte) {
 	// 这个地方有点绕, 如果其他服有指定发送给具体的客户端，那就发送给指定客户端，如果没指定，那就是区服广播
 	revMsg := common.GwForwardSrvToClTag{}
 	revMsg.Unmarshal(data)
@@ -98,7 +106,7 @@ func (g *GateWay) OnDisConnect(client Net.IClient) {
 协议尾1个字节:
 0: 固定 0xEE
 这个地方就要了 协议头部分(主命令号开始) + 数据 */
-func (g *GateWay) ParseProtocol(data []byte) (rdata []byte, offset int) {
+func (g *GateWay) parseProtocol(data []byte) (rdata []byte, offset int) {
 	if len(data) < 12 {
 		return nil, 0
 	}
@@ -115,12 +123,11 @@ func (g *GateWay) ParseProtocol(data []byte) (rdata []byte, offset int) {
 0-1: 主命令(暂时无用)
 2-4: 子命令
 5-6: 服务id
-
 数据:
 */
-func (g *GateWay) HandleClientMsg(clientId uint64, data []byte) {
+func (g *GateWay) handleMsg(clientId uint64, data []byte) {
 	if len(data) < 6 {
-		Log.ErrorLog("failed to HandleClientMsg, data too shoot, data = %v", data)
+		Log.ErrorLog("failed to handleMsg, data too shoot, data = %v", data)
 		return
 	}
 

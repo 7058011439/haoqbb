@@ -2,6 +2,7 @@ package node
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/7058011439/haoqbb/Stl"
 	"github.com/7058011439/haoqbb/Util"
 )
@@ -33,6 +34,10 @@ func (n *N2NMsg) Unmarshal(data []byte) {
 	n.MsgType = Util.Int(data[8:12])
 	n.Data = make([]byte, len(data)-12)
 	copy(n.Data, data[12:])
+}
+
+func (n N2NMsg) String() string {
+	return fmt.Sprintf("destServiceId:%v srcServerId:%v msgType:%v data:\"%v\"", n.DestServiceId, n.SrcServerId, n.MsgType, string(n.Data))
 }
 
 // NodeInfo 节点信息
