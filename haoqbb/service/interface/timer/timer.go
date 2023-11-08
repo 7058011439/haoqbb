@@ -2,7 +2,6 @@ package ITimer
 
 import (
 	"github.com/7058011439/haoqbb/Timer"
-	"runtime"
 )
 
 type ITimer interface {
@@ -24,22 +23,10 @@ func SetTimerAgent(d ITimer) {
 }
 
 func SetRepeatTimer(serviceName string, duration Timer.TimeWheel, funcName Timer.TimerFun, args ...interface{}) Timer.TimerID {
-	if runtime.GOOS == "windows" {
-		duration /= 1
-		if duration < 1 {
-			duration = 1
-		}
-	}
 	return timer.i[serviceName].SetRepeatTimer(duration, funcName, args...)
 }
 
 func SetOnceTimer(serviceName string, duration Timer.TimeWheel, funcName Timer.TimerFun, args ...interface{}) Timer.TimerID {
-	if runtime.GOOS == "windows" {
-		duration /= 1
-		if duration < 1 {
-			duration = 1
-		}
-	}
 	return timer.i[serviceName].SetOnceTimer(duration, funcName, args...)
 }
 

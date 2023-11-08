@@ -45,7 +45,7 @@ func (g *GameClient) Init() error {
 
 func (g *GameClient) Start() {
 	Interface.NewConnManager(g.newConnect, g.disConnect, g.parseProtocol, g.NewTcpMsg)
-	ITimer.SetRepeatTimer(Interface.GetServiceName(), 20, g.NewClient)
+	ITimer.SetRepeatTimer(Interface.GetServiceName(), 50, g.NewClient)
 }
 
 func (g *GameClient) InitMsg() {
@@ -95,7 +95,7 @@ func (g *GameClient) newConnect(client Net.IClient) {
 	if Interface.GetPlayerCount() == 1 {
 		player.SetTimerId(ITimer.SetRepeatTimer(Interface.GetServiceName(), 1000, capability.Main, clientId))
 	} else {
-		player.SetTimerId(ITimer.SetRepeatTimer(Interface.GetServiceName(), 5, test.Run, clientId))
+		player.SetTimerId(ITimer.SetRepeatTimer(Interface.GetServiceName(), 1000, test.Run, clientId))
 	}
 	login.C2SLogin(clientId)
 }

@@ -39,8 +39,9 @@ type configMysql struct {
 }
 
 type configPerform struct {
-	Open    bool
-	Perform map[msgType]bool
+	Open    bool             // 是否开放
+	Gap     int              // 统计间隔(毫秒)
+	Perform map[msgType]bool // 统计类型
 }
 
 func (c *configPerform) isNeedUpdate(eType msgType) bool {
@@ -55,6 +56,14 @@ func (c *configPerform) isNeedUpdate(eType msgType) bool {
 
 func (c *configPerform) isOpen() bool {
 	return c != nil && c.Open
+}
+
+func (c *configPerform) getGap() int {
+	if c.Gap < 1000 {
+		return 5000
+	} else {
+		return c.Gap
+	}
 }
 
 type serviceCfg struct {

@@ -168,7 +168,7 @@ func (p performance) String() string {
 func (q *queue) run(perform *configPerform) {
 	cost := Timer.NewTiming(Timer.Microsecond)
 	if perform.isOpen() {
-		q.SetRepeatTimer(1000, q.printPerformLog)
+		q.SetRepeatTimer(Timer.TimeWheel(perform.getGap()), q.printPerformLog)
 		q.performance = newPerform()
 	}
 	for {
@@ -224,7 +224,7 @@ func (q *queue) run(perform *configPerform) {
 }
 
 func (q *queue) printPerformLog(Timer.TimerID, ...interface{}) {
-	Log.Log("每秒数据: 服务名 = %-10s 间隔 = %.2fs, 详情 = %v, 待处理任务 = %v", q.name, time.Now().Sub(q.lastTime).Seconds(), q.performance, len(q.chanAll))
+	Log.Log("性能数据: 服务名 = %-10s 间隔 = %.2fs, 详情 = %v, 待处理任务 = %v", q.name, time.Now().Sub(q.lastTime).Seconds(), q.performance, len(q.chanAll))
 	q.reset()
 }
 

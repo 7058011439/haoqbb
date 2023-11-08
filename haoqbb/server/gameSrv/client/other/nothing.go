@@ -13,7 +13,7 @@ func C2SNothingWithReply(player player.IPlayer) bool {
 		Index: rand.Int63(),
 		Msg:   String.RandStr(32),
 	}
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 100; i++ {
 		player.SendMsgToServer(protocol.SCmd_C2S_Nothing_WithReply, sendData)
 	}
 	return true
@@ -24,7 +24,7 @@ func C2SNothingWithOutReply(player player.IPlayer) bool {
 		Index: rand.Int63(),
 		Msg:   String.RandStr(32),
 	}
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 100; i++ {
 		player.SendMsgToServer(protocol.SCmd_C2S_Nothing_WithOutReply, sendData)
 	}
 	return true
@@ -32,4 +32,8 @@ func C2SNothingWithOutReply(player player.IPlayer) bool {
 
 func S2CNothingWithReply(msg *msgHandle.ClientMsg) {
 
+}
+
+func DoNothing(_ player.IPlayer) bool {
+	return true
 }
