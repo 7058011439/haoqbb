@@ -9,6 +9,7 @@ type INetGameSrv interface {
 	SendMsgToUser(userId int, cmdId int32, data []byte)
 	SendMsgToClient(clientId uint64, cmdId int32, data []byte)
 	SendMsgToServiceByName(serviceName string, eventType int, msg common.ServiceMsg)
+	SendMsgToServiceById(serviceId int, msgType int, msg common.ServiceMsg)
 	BroadCastMsgToClient(clientIds []uint64, cmdId int32, data []byte)
 	BroadCastMsgToUser(userIds []int, cmdId int32, data []byte)
 }
@@ -45,4 +46,8 @@ func BroadCastMsgToUser(userIds []int, cmdId int32, msg proto.Message) {
 
 func PublicEventByName(serviceName string, eventType int, msg common.ServiceMsg) {
 	net.SendMsgToServiceByName(serviceName, eventType, msg)
+}
+
+func SendMsgToServiceById(serviceId int, msgType int, msg common.ServiceMsg) {
+	net.SendMsgToServiceById(serviceId, msgType, msg)
 }

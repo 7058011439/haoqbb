@@ -3,6 +3,7 @@ package service
 type IService interface {
 	GetName() string // 无需重写
 	GetId() int      // 无需重写
+	GetLoginSrvId() int
 }
 
 type service struct {
@@ -21,4 +22,8 @@ func GetServiceName() string {
 
 func GetServiceId() int {
 	return s.GetId()
+}
+
+func GetLoginSrvId() int {
+	return s.GetLoginSrvId()
 }

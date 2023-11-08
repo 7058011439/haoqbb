@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/7058011439/haoqbb/Stl"
 	"github.com/7058011439/haoqbb/Util"
+	cProtocol "github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
 )
 
 /* 简写描述
@@ -29,6 +30,7 @@ const (
 	GwClDisconnect // 网关客户端断开连接，全域广播, 对应结构 Uint64
 
 	EventLoginSrvLogin // 登录(发送验证结果)到指定游戏服，对应结构 LoginSrvToGameSrv
+	EventGameSrvLogin  // 登录(游戏服务器请求登录服务器验证登录)
 	MsgMax
 )
 
@@ -141,6 +143,20 @@ func (l *LoginSrvToGameSrv) Marshal() []byte {
 func (l *LoginSrvToGameSrv) Unmarshal(data []byte) {
 	// 这里偷个懒，直接用Json库
 	json.Unmarshal(data, l)
+}
+
+type GameSrvToLoginSrv struct {
+	ClientId uint64                        `json:"c"`
+	Data     *cProtocol.C2S_LoginWithToken `json:"d"`
+}
+
+func (g *GameSrvToLoginSrv) Marshal() []byte {
+	data, _ := json.Marshal(g)
+	return data
+}
+
+func (g *GameSrvToLoginSrv) Unmarshal(data []byte) {
+	json.Unmarshal(data, g)
 }
 
 type Uint64 struct {

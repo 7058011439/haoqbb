@@ -2,6 +2,7 @@ package login
 
 import (
 	"github.com/7058011439/haoqbb/Util"
+	"github.com/7058011439/haoqbb/haoqbb/msgHandle"
 	"github.com/7058011439/haoqbb/haoqbb/server/common"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/net"
@@ -17,7 +18,25 @@ const (
 	redisGlobalVarFieldUserId = "UserId"
 )
 
-func Login(_ int, data []byte) {
+func WithToken(msg *msgHandle.ClientMsg) {
+	data := msg.Data.(*protocol.C2S_LoginWithToken)
+	if userId := player.GetUserId(msg.ClientId); userId != 0 {
+		sendLoginRet(msg.ClientId, "重复登录", false)
+		return
+	}
+	if loginSrvId := service.GetLoginSrvId(); loginSrvId != 0 {
+		sendData := &common.GameSrvToLoginSrv{
+			ClientId: msg.ClientId,
+			Data:     data,
+		}
+		net.SendMsgToServiceById(loginSrvId, common.EventGameSrvLogin, sendData)
+	} else {
+		sendLoginRet(msg.ClientId, "服务器准备中...", false)
+		return
+	}
+}
+
+func Ret(_ int, data []byte) {
 	ret := &common.LoginSrvToGameSrv{}
 	ret.Unmarshal(data)
 	userId := 0

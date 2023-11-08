@@ -19,37 +19,43 @@ import (
 type GameSrv struct {
 	service.Service
 	mapClientSenderId map[uint64]int // map[clientId]GateWayId
+	loginSrv          map[int]bool   // map[loginSrvId]bool
 }
 
 func (g *GameSrv) Init() error {
 	g.mapClientSenderId = make(map[uint64]int, 2048) // map[clientId]GateWayId
+	g.loginSrv = make(map[int]bool, 2)               // map[loginSrvId]bool
 	net.SetNetAgent(g)
 	iService.SetServiceAgent(g)
 	return nil
 }
 
-func (g *GameSrv) Start() {
-	g.RegeditLoseService(common.GateWay, g.lostGateWay)
-	bag.Init()
-	player.Init()
-}
-
 func (g *GameSrv) InitMsg() {
+	g.RegeditLoseService(common.GateWay, g.lostGateWay)
+	g.RegeditDiscoverService(common.LoginSrv, g.discoverLoginSrv)
+	g.RegeditLoseService(common.LoginSrv, g.loseLoginSrv)
+
 	g.RegeditServiceMsg(common.GwForwardClToSrv, g.revMsgFromGateWay)
 	g.RegeditServiceMsg(common.GwClConnect, g.clientConnect)
 	g.RegeditServiceMsg(common.GwClDisconnect, g.clientDisconnect)
-	g.RegeditServiceMsg(common.EventLoginSrvLogin, login.Login)
+	g.RegeditServiceMsg(common.EventLoginSrvLogin, login.Ret)
 
 	g.IDispatcher = msgHandle.NewPBDispatcher()
+	g.RegeditMsgHandle(cProtocol.SCmd_C2S_Login, &cProtocol.C2S_LoginWithToken{}, login.WithToken)
 	g.RegeditMsgHandle(cProtocol.SCmd_C2S_RT, &cProtocol.C2S_Test_RT{}, capability.NetC2SRT)
 	g.RegeditMsgHandle(cProtocol.SCmd_C2S_Nothing_WithReply, &cProtocol.C2S_Test_Nothing_WithReply{}, other.NetNothingWithBack)
 	g.RegeditMsgHandle(cProtocol.SCmd_C2S_Nothing_WithOutReply, &cProtocol.C2S_Test_Nothing_WithOutReply{}, other.NetNothingWithOutBack)
 }
 
+func (g *GameSrv) Start() {
+	bag.Init()
+	player.Init()
+}
+
 func (g *GameSrv) revMsgFromGateWay(_ int, data []byte) {
 	msg := &common.GwForwardClToSrvTag{}
 	msg.Unmarshal(data)
-	if userId := iPlayer.GetUserId(msg.ClientId); userId != 0 {
+	if userId := iPlayer.GetUserId(msg.ClientId); userId != 0 || msg.CmdId == cProtocol.SCmd_C2S_Login {
 		g.DispatchMsg(msg.ClientId, userId, int32(msg.CmdId), msg.Data)
 	} else {
 		Log.WarningLog("没有找到对应的userId, clientId = %v", msg.ClientId)
@@ -103,6 +109,13 @@ func (g *GameSrv) BroadCastMsgToUser(userIds []int, cmdId int32, data []byte) {
 	g.BroadCastMsgToClient(clientIds, cmdId, data)
 }
 
+func (g *GameSrv) GetLoginSrvId() int {
+	for id := range g.loginSrv {
+		return id
+	}
+	return 0
+}
+
 func (g *GameSrv) clientConnect(srcServiceId int, data []byte) {
 	clientId := &common.Uint64{}
 	clientId.Unmarshal(data)
@@ -125,4 +138,14 @@ func (g *GameSrv) lostGateWay(serviceId int) {
 			iPlayer.Kick(userId)
 		}
 	}
+}
+
+func (g *GameSrv) loseLoginSrv(serverId int) {
+	delete(g.loginSrv, serverId)
+	Log.Log("登录服务器断开连接, serverId = %v, 剩余登录服务器 = %v", serverId, len(g.loginSrv))
+}
+
+func (g *GameSrv) discoverLoginSrv(serverId int) {
+	g.loginSrv[serverId] = true
+	Log.Log("新登录服务器连接, serverId = %v, 总计登录服务器 = %v", serverId, len(g.loginSrv))
 }

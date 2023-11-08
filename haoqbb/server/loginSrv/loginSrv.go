@@ -2,7 +2,6 @@ package gateWay
 
 import (
 	"fmt"
-	"github.com/7058011439/haoqbb/haoqbb/msgHandle"
 	"github.com/7058011439/haoqbb/haoqbb/server/common"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
 	"github.com/7058011439/haoqbb/haoqbb/service"
@@ -28,25 +27,16 @@ func (l *LoginSrv) Init() error {
 }
 
 func (l *LoginSrv) InitMsg() {
-	l.RegeditServiceMsg(common.GwForwardClToSrv, l.revMsgFromGateWay)
-
-	l.IDispatcher = msgHandle.NewPBDispatcher()
-	l.RegeditMsgHandle(protocol.SCmd_C2S_Login, &protocol.C2S_LoginWithToken{}, l.loginWithToken)
+	l.RegeditServiceMsg(common.EventGameSrvLogin, l.login)
 }
 
-func (l *LoginSrv) revMsgFromGateWay(_ int, data []byte) {
-	msg := &common.GwForwardClToSrvTag{}
-	msg.Unmarshal(data)
-	l.DispatchMsg(msg.ClientId, 0, int32(msg.CmdId), msg.Data)
-}
-
-func (l *LoginSrv) loginWithToken(msg *msgHandle.ClientMsg) {
-	data := msg.Data.(*protocol.C2S_LoginWithToken)
-
-	if fun, ok := l.loginFun[int(data.Channel)]; ok {
-		fun(data, msg.ClientId)
+func (l *LoginSrv) login(_ int, data []byte) {
+	ret := &common.GameSrvToLoginSrv{}
+	ret.Unmarshal(data)
+	if fun, ok := l.loginFun[int(ret.Data.Channel)]; ok {
+		fun(ret.Data, ret.ClientId)
 	} else {
-		l.noticeLoginRet(data.Channel, data.SrvId, msg.ClientId, "未知渠道", "")
+		l.noticeLoginRet(ret.Data.Channel, ret.Data.SrvId, ret.ClientId, "未知渠道", "")
 	}
 }
 

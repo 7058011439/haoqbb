@@ -177,6 +177,10 @@ func (s *Service) SendMsgToServiceById(serviceId int, msgType int, msg common.Se
 	node.SendMsgById(s.GetId(), serviceId, msgType, msg.Marshal())
 }
 
+func (s *Service) HaveServerId(serverId int) bool {
+	return node.HaveServerId(serverId)
+}
+
 /*
 func (s *Service) SendMsgToServiceByName(serviceName string, msgType int, data []byte) {
 	node.SendMsgByName(s.GetId(), serviceName, msgType, data)

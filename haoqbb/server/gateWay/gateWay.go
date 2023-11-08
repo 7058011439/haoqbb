@@ -58,15 +58,16 @@ func (g *GateWay) RecvMsgFromSrv(serverId int, data []byte) {
 	// 这个地方有点绕, 如果其他服有指定发送给具体的客户端，那就发送给指定客户端，如果没指定，那就是区服广播
 	revMsg := common.GwForwardSrvToClTag{}
 	revMsg.Unmarshal(data)
+
 	if revMsg.ClientId == nil {
 		if game, ok := g.ClientList[serverId]; ok && game != nil {
 			for clientId := range game {
-				g.SendToClient(clientId, common.EncodeSendMsg(int16(serverId), 0, int16(revMsg.CmdId), revMsg.Data))
+				g.SendToClient(clientId, revMsg.Data)
 			}
 		}
 	} else {
 		for _, clientId := range revMsg.ClientId {
-			g.SendToClient(clientId, common.EncodeSendMsg(0, 0, int16(revMsg.CmdId), revMsg.Data))
+			g.SendToClient(clientId, revMsg.Data)
 		}
 	}
 }
@@ -122,6 +123,7 @@ func (g *GateWay) HandleClientMsg(clientId uint64, data []byte) {
 		Log.ErrorLog("failed to HandleClientMsg, data too shoot, data = %v", data)
 		return
 	}
+
 	g.ForwardClMsgToSrv(int(Util.Int16(data[4:6])), clientId, int(Util.Int16(data[2:4])), data[6:])
 }
 
