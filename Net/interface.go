@@ -83,6 +83,7 @@ func (s *TcpService) StartServer() bool {
 type INetPool interface {
 	StartServer() bool
 	GetClientByID(Id uint64) IClient
+	Close(Id uint64)
 	GetClientByData(data interface{}) IClient
 	SendToClient(Id uint64, data []byte)
 	GetClientCount() int

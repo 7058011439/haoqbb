@@ -83,3 +83,40 @@ func TestClient_SendMsg(t *testing.T) {
 	}
 	select {}
 }
+
+var tcpServer INetPool
+var tcpClient INetPool
+
+func timerClose(id Timer.TimerID, args ...interface{}) {
+	clientId := args[0].(uint64)
+	if client := tcpServer.GetClientByID(clientId); client != nil {
+		client.Close()
+	}
+}
+
+func TestClient_Close(t *testing.T) {
+	tcpServer = NewTcpServer(6666, func(client IClient) {
+		Log.Debug("新连接 = %v, 总计连接 = %v", client.GetId(), tcpServer.GetClientCount())
+		Timer.AddOnceTimer(500, timerClose, client.GetId())
+	}, func(client IClient) {
+		Log.Debug("断开连接 = %v, 总计连接 = %v", client.GetId(), tcpServer.GetClientCount())
+	}, parseProtocol, msgHandle)
+	tcpServer.StartServer()
+
+	tcpClient = NewTcpClient(func(client IClient) {
+		Log.Debug("连接到服务器, 总计连接 = %v", tcpClient.GetClientCount())
+	}, nil, parseProtocol, msgHandle, WithSendPackageSize(1024*1024))
+
+	for {
+		if tcpClient.GetClientCount() < 10 {
+			if conn, err := net.DialTimeout("tcp", "127.0.0.1:6666", time.Second*5); err == nil {
+				tcpClient.NewConnect(conn, nil)
+			} else {
+				Log.ErrorLog("连接到新节点失败, err = %v", err)
+				//break
+			}
+		}
+		time.Sleep(time.Second)
+	}
+	select {}
+}

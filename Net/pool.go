@@ -112,6 +112,12 @@ func (t *tcpConnPool) Range(fun func(client IClient)) {
 	}
 }
 
+func (t *tcpConnPool) Close(clientId uint64) {
+	if client := t.GetClientByID(clientId); client != nil {
+		client.Close()
+	}
+}
+
 func (t *tcpConnPool) onParseProtocol(data []byte) ([]byte, int) {
 	return t.parseProtocol(data)
 }
@@ -141,7 +147,6 @@ func (t *tcpConnPool) NewConnect(conn net.Conn, data interface{}) IClient {
 		customData: data,
 		recvBuff:   Stl.NewBuffer(revCacheSize),
 		sendBuff:   Stl.NewBuffer(defaultSendPackageMaxSize),
-		chClose:    make(chan struct{}, 1),
 		INetPool:   t,
 	}
 	//client.conn.(*net.TCPConn).SetNoDelay(true)
