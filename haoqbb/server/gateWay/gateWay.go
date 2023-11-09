@@ -83,11 +83,35 @@ func (g *GateWay) recvMsgFromSrv(serverId int, data []byte) {
 func (g *GateWay) OnConnect(client Net.IClient) {
 	Log.Log("new client connect, addr = %v, clientId = %v, have connect = %v", client.GetIp(), client.GetId(), g.GetClientCount())
 	g.SendMsgToServiceByName("", common.GwClConnect, &common.Uint64{Data: client.GetId()})
+	// 60秒后看收否有游戏服承认该链接，如果没有，则认为该连接非法(连接上之后并未登录)
+	ITimer.SetOnceTimer(g.GetName(), 6000, g.checkConnect, client.GetId())
 }
 
 func (g *GateWay) OnDisConnect(client Net.IClient) {
 	Log.Log("client disconnect, addr = %v, clientId = %v, have connect = %v", client.GetIp(), client.GetId(), g.GetClientCount())
 	g.SendMsgToServiceByName("", common.GwClDisconnect, &common.Uint64{Data: client.GetId()})
+}
+
+func (g *GateWay) checkConnect(_ Timer.TimerID, args ...interface{}) {
+	bOk := false
+	clientId := args[0].(uint64)
+	for _, gameSrv := range g.ClientList {
+		if _, ok := gameSrv[clientId]; ok {
+			bOk = true
+			break
+		}
+	}
+	if !bOk {
+		g.Close(clientId)
+		Log.Debug("空连接, clientId = %v", clientId)
+		/*
+			if client := g.GetClientByID(clientId); client != nil {
+				Log.Debug("空连接, clientId = %v", clientId)
+				client.SendMsg([]byte("连接超时"))
+				client.Close()
+			}
+		*/
+	}
 }
 
 // ParseProtocol 解析数据流, 请配合HandleClientMsg 使用
@@ -168,9 +192,7 @@ func (g *GateWay) PlayerOnLine(gameServerId int, data []byte) {
 func (g *GateWay) PlayerOffLine(gameServerId int, data []byte) {
 	clientId := &common.Uint64{}
 	clientId.Unmarshal(data)
-	if client := g.GetClientByID(clientId.Data); client != nil {
-		client.Close()
-	}
+	g.Close(clientId.Data)
 	if game, ok := g.ClientList[gameServerId]; ok {
 		delete(game, clientId.Data)
 	}
