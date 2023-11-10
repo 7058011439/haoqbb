@@ -59,7 +59,7 @@ func NewMongoDB(ip string, port int, dbName string, username string, password st
 		return nil
 	}
 	if queueCount < 1 {
-		queueCount = 200
+		queueCount = 20
 	}
 	ret := &MongoDB{
 		client:     client,
