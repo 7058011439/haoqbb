@@ -152,9 +152,9 @@ func (s *ShareDataMgr) updateRun(Timer.TimerID, ...interface{}) {
 	for hostId, value := range s.updateData {
 		data := s.GetData(hostId, hostId).(IDBData)
 		if len(value) == 0 {
-			IMongo.UpdateOne(service.GetServiceName(), s.collectName, data.Condition(), data, hostId)
+			IMongo.UpdateOne(service.GetServiceName(), s.collectName, data.Condition(), data, hostId, nil)
 		} else {
-			IMongo.UpdateOne(service.GetServiceName(), s.collectName, value, nil, hostId)
+			IMongo.UpdateOne(service.GetServiceName(), s.collectName, value, nil, hostId, nil)
 		}
 	}
 	s.updateData = make(map[int]map[string]interface{})

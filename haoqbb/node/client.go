@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var nodeConnPool = Net.NewTcpClient(func(client Net.IClient) {}, disConnectClient, parseProtocol, msgHandleClient, Net.WithCustomData(compareData), Net.WithSendPackageSize(1024*1024))
+var nodeConnPool = Net.NewTcpClient(func(client Net.IClient) {}, disConnectClient, parseProtocol, msgHandleClient, Net.WithCustomData(compareData), Net.WithSendPackageSize(1024*32))
 
 var nodeConnPoolCenterClient = Net.NewTcpClient(connectCenterNode, func(client Net.IClient) {}, parseProtocol, msgHandleCenterClient)
 

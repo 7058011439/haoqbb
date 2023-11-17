@@ -9,9 +9,7 @@ import (
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/net"
 	iPlayer "github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/player"
 	iService "github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/service"
-	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/module/bag"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/module/login"
-	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/module/player"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/other"
 	"github.com/7058011439/haoqbb/haoqbb/service"
 )
@@ -48,8 +46,8 @@ func (g *GameSrv) InitMsg() {
 }
 
 func (g *GameSrv) Start() {
-	bag.Init()
-	player.Init()
+	//bag.Init()
+	//player.Init()
 }
 
 func (g *GameSrv) revMsgFromGateWay(_ int, data []byte) {

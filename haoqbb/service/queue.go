@@ -348,6 +348,10 @@ func (q *queue) GetTimerCount() int {
 	return Timer.Count()
 }
 
+func (q *queue) GetMongoSync(tabName string, condition interface{}, getData interface{}) {
+	q.MongoDB.FindOneSync(tabName, condition, getData)
+}
+
 func (q *queue) GetMongoAsync(tabName string, condition interface{}, getData interface{}, index int, fun DataBase.FunFindCallBack, callbackData ...interface{}) {
 	cost := Timer.NewTiming(Timer.Millisecond)
 	q.MongoDB.FindOne(tabName, condition, getData, index, func(getData interface{}, callbackData ...interface{}) {

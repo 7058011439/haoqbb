@@ -58,17 +58,18 @@ func Run(_ Timer.TimerID, args ...interface{}) {
 	player := player.GetPlayerByClientId(clientId)
 	if player != nil && player.IsLogin() {
 		if module := mapTestModule[player.TestModule()]; module != nil {
-			if module.fun(player) {
-				nextModuleId := 0
-				if rand.Intn(100) < module.randRate {
-					if len(listEntranceModule) > 0 {
-						nextModuleId = GetRandomModule()
-					}
-				} else {
-					nextModuleId = weight.Value(module.id)
-				}
-				player.SetTestModule(nextModuleId)
+			for i := 0; i < 50; i++ {
+				module.fun(player)
 			}
+			nextModuleId := 0
+			if rand.Intn(100) < module.randRate {
+				if len(listEntranceModule) > 0 {
+					nextModuleId = GetRandomModule()
+				}
+			} else {
+				nextModuleId = weight.Value(module.id)
+			}
+			player.SetTestModule(nextModuleId)
 		} else {
 			Log.ErrorLog("Failed to Run, test module is nil, id = %v", player.TestModule())
 		}
