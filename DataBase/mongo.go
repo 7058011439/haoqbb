@@ -149,6 +149,10 @@ func (m *MongoDB) FindOne(tabName string, condition interface{}, getData interfa
 	m.putToQueue(&MongoMessage{tabName: tabName, condition: condition, newData: getData, callbackData: callbackData, funFind: fun, operate: operateFindOne}, index)
 }
 
+func (m *MongoDB) FindOneSync(tabName string, condition interface{}, getData interface{}) {
+	m.findOne(tabName, condition, getData, nil, nil)
+}
+
 func (m *MongoDB) InsertMany(tabName string, newData []interface{}, index int, fun FunUpdateCallBack, callbackData ...interface{}) {
 	m.putToQueue(&MongoMessage{tabName: tabName, newData: newData, callbackData: callbackData, funUpdate: fun, operate: operateInsertMany}, index)
 }
