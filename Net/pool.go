@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	defaultSendPackageMaxSize = 1024  // 默认发送缓存区大小
-	defaultPackageMaxSize     = 65535 // 默认最大包长度(超过该包长度丢弃包，防止恶意包攻击)
-	revCacheSize              = 1024
+	defaultSendCacheSize  = 1024  // 默认发送缓存区大小
+	defaultRevCacheSize   = 1024  // 默认接受缓存区大小
+	defaultPackageMaxSize = 65535 // 默认最大包长度(超过该包长度丢弃包，防止恶意包攻击)
 )
 
 func getPoolId() int {
@@ -29,8 +29,9 @@ func newTcpConnPool(connect ConnectHandle, disconnect ConnectHandle, parse Parse
 	ret := &tcpConnPool{
 		id:               getPoolId(),
 		mapClient:        make(map[uint64]IClient, 1024),
+		recvPackageSize:  defaultRevCacheSize,
 		recvPackageLimit: defaultPackageMaxSize,
-		sendPackageSize:  defaultSendPackageMaxSize,
+		sendPackageSize:  defaultSendCacheSize,
 		connectHandle:    connect,
 		disconnectHandle: disconnect,
 		parseProtocol:    parse,
@@ -56,6 +57,7 @@ type tcpConnPool struct {
 	compareData       CompareCustomData            // 自定义数据比较函数
 	heartbeatInterval time.Duration                // 心跳间隔(秒)
 	heartbeatHandle   HeartBeatHandle              // 心跳处理函数
+	recvPackageSize   int                          // 每次读取包大小
 	recvPackageLimit  int                          // 接收包最大长度(防止乱报攻击)
 	sendPackageSize   int                          // 发送包最大长度
 	sendTaskPool      *GoroutinePool.GoRoutinePool // 发送任务协程池
@@ -136,18 +138,22 @@ func (t *tcpConnPool) getRecvPackageLimit() int {
 	return t.recvPackageLimit
 }
 
+func (t *tcpConnPool) getRecvPackageSize() int {
+	return t.recvPackageSize
+}
+
 func (t *tcpConnPool) getSendPackageSize() int {
 	return t.sendPackageSize
 }
 
 func (t *tcpConnPool) NewConnect(conn net.Conn, data interface{}) IClient {
 	client := &Client{
-		id:         t.getClientId(),
-		conn:       conn,
-		customData: data,
-		recvBuff:   Stl.NewBuffer(revCacheSize),
-		sendBuff:   Stl.NewBuffer(defaultSendPackageMaxSize),
-		INetPool:   t,
+		id:          t.getClientId(),
+		conn:        conn,
+		customData:  data,
+		recvBuff:    Stl.NewBuffer(t.recvPackageSize),
+		sendBuff:    Stl.NewBuffer(t.sendPackageSize),
+		tcpConnPool: t,
 	}
 	//client.conn.(*net.TCPConn).SetNoDelay(true)
 	if client != nil {

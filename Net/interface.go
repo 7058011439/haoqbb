@@ -50,6 +50,12 @@ func WithSendPackageSize(size int) Options {
 	}
 }
 
+func WithRecvPackageSize(size int) Options {
+	return func(pool *tcpConnPool) {
+		pool.recvPackageSize = size
+	}
+}
+
 type TcpClient struct {
 	*tcpConnPool
 }
@@ -89,11 +95,6 @@ type INetPool interface {
 	GetClientCount() int
 	NewConnect(conn net.Conn, data interface{}) IClient
 	Range(fun func(client IClient))
-	onParseProtocol(data []byte) ([]byte, int)
-	onHandleMsg(client IClient, msg []byte)
-	onDisconnect(client IClient)
-	getRecvPackageLimit() int
-	getSendPackageSize() int
 }
 
 type IClient interface {

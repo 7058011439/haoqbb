@@ -18,7 +18,7 @@ type Client struct {
 	sendBuff   *Stl.Buffer   // 缓存池
 	sendMutex  sync.RWMutex  // 发送数据锁
 	timerId    Timer.TimerID // 延时发送定时器ID
-	INetPool
+	*tcpConnPool
 }
 
 func (c *Client) GetId() uint64 {
@@ -90,7 +90,7 @@ func (c *Client) revMsg() {
 	defer func() {
 		c.onDisconnect(c)
 	}()
-	buf := make([]byte, revCacheSize)
+	buf := make([]byte, c.getRecvPackageSize())
 	for {
 		n, err := c.conn.Read(buf)
 		if err == nil && n > 0 {

@@ -60,7 +60,7 @@ func msgHandle(client IClient, data []byte) {
 }
 
 func TestClient_SendMsg(t *testing.T) {
-	tcpServer := NewTcpServer(6666, nil, nil, parseProtocol, msgHandle)
+	tcpServer := NewTcpServer(6666, nil, nil, parseProtocol, msgHandle, WithRecvPackageSize(1024*8))
 	tcpServer.StartServer()
 
 	tcpClient := NewTcpClient(func(client IClient) {
