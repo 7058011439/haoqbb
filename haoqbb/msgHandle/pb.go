@@ -2,7 +2,6 @@ package msgHandle
 
 import (
 	"github.com/7058011439/haoqbb/Log"
-	"github.com/7058011439/haoqbb/Timer"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -25,13 +24,11 @@ func (d *PBDispatcher) DispatchMsg(clientId uint64, userId int, cmdId int32, dat
 			Log.ErrorLog("Failed to DispatchMsg, proto.Unmarshal error, cmdId = %v, error = %v", cmdId, err.Error())
 			return
 		} else {
-			cost := Timer.NewTiming(Timer.Millisecond)
 			info.fun(&ClientMsg{
 				ClientId: clientId,
 				UserId:   userId,
 				Data:     info.msg,
 			})
-			cost.PrintCost(warnningTime, true, "DispatchMsg info.fun, clientId = %v, userId = %v, cmdId = %v, info.Msg = %v", clientId, userId, cmdId, info.msg)
 		}
 	}
 }

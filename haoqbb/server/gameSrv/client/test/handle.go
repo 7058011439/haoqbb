@@ -5,13 +5,15 @@ import (
 	"github.com/7058011439/haoqbb/Probability"
 	"github.com/7058011439/haoqbb/Timer"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/client/player"
-	"math/rand"
+)
+
+const (
+	randModuleId = 0
 )
 
 type testModule struct {
 	id         int         // id
 	fun        testFun     // 具体执行内容
-	randRate   int         // 完全随机概率 N%
 	nextModule map[int]int // map[模块id]权重
 }
 
@@ -20,29 +22,40 @@ type testFun func(player.IPlayer) bool
 var mapTestModule = make(map[int]*testModule)
 var listEntranceModule []int
 var weight = Probability.NewWeights()
+var mapTestFun = make(map[int]testFun)
 
-func OnInitOver() {
+func InitFunc(id int, fun testFun) {
+	mapTestFun[id] = fun
+}
+
+func InitOver() {
 	for id, module := range mapTestModule {
+		if len(module.nextModule) == 0 {
+			weight.AddWeight(id, 0, 1)
+		}
 		for v, w := range module.nextModule {
-			weight.AddWeight(id, v, w)
-			if _, ok := mapTestModule[v]; !ok {
-				Log.ErrorLog("Failed to init, next module not exist, id = %v", id)
-				return
+			if _, ok := mapTestModule[v]; !ok && v != randModuleId {
+				Log.WarningLog("Failed to init the test module, next module not exist, id = %v", id)
+			} else {
+				weight.AddWeight(id, v, w)
 			}
 		}
 	}
 }
 
-func InsertTestModule(id int, entrance bool, fun testFun, randRate int, nextModule map[int]int) {
+func InsertTestModule(id int, entrance int, nextModule map[int]int) {
 	if module := mapTestModule[id]; module == nil {
-		mapTestModule[id] = &testModule{
-			id:         id,
-			fun:        fun,
-			randRate:   randRate,
-			nextModule: nextModule,
-		}
-		if entrance {
-			listEntranceModule = append(listEntranceModule, id)
+		if fun, ok := mapTestFun[id]; ok {
+			mapTestModule[id] = &testModule{
+				id:         id,
+				fun:        fun,
+				nextModule: nextModule,
+			}
+			if entrance > 0 {
+				weight.AddWeight(randModuleId, id, entrance)
+			}
+		} else {
+			Log.ErrorLog("Failed to InsertTestModule, no exec func", id)
 		}
 	} else {
 		Log.ErrorLog("Failed to InsertTestModule, id repeated = %v", id)
@@ -50,7 +63,7 @@ func InsertTestModule(id int, entrance bool, fun testFun, randRate int, nextModu
 }
 
 func GetRandomModule() int {
-	return listEntranceModule[rand.Intn(len(listEntranceModule))]
+	return weight.Value(randModuleId)
 }
 
 func Run(_ Timer.TimerID, args ...interface{}) {
@@ -61,13 +74,9 @@ func Run(_ Timer.TimerID, args ...interface{}) {
 			for i := 0; i < 50; i++ {
 				module.fun(player)
 			}
-			nextModuleId := 0
-			if rand.Intn(100) < module.randRate {
-				if len(listEntranceModule) > 0 {
-					nextModuleId = GetRandomModule()
-				}
-			} else {
-				nextModuleId = weight.Value(module.id)
+			nextModuleId := weight.Value(module.id)
+			if nextModuleId == 0 {
+				nextModuleId = weight.Value(randModuleId)
 			}
 			player.SetTestModule(nextModuleId)
 		} else {

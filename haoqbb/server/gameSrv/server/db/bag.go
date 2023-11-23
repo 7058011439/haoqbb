@@ -43,5 +43,9 @@ func (b *Bag) TakeItem(itemId int, itemCount int) {
 }
 
 func (b *Bag) CheckItem(itemId int, itemCount int) bool {
-	return b.ItemList[itemId] >= itemCount
+	if count, ok := b.ItemList[itemId]; ok {
+		return count >= itemCount
+	} else {
+		return false
+	}
 }

@@ -56,7 +56,7 @@ func Start() {
 		Log.Log("启动中心节点完成")
 	} else {
 		if node := config.GetNodeConfig(); node != nil {
-			System.SetTitle(node.NodeName)
+			System.SetTitle(fmt.Sprintf("%v_%v", node.NodeName, node.NodeId))
 			for _, startServerName := range node.ServiceList {
 				if s, ok := preSetupService[startServerName]; ok {
 					s.Regedit(config.GetServiceConfig(startServerName))

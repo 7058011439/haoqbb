@@ -1,16 +1,19 @@
 package node
 
 import (
+	"fmt"
 	"github.com/7058011439/haoqbb/Net"
 	"github.com/7058011439/haoqbb/haoqbb/config"
+	"net/http"
+	_ "net/http/pprof"
 )
 
 func StartServer() {
 	port := config.GetNodeID() + 1000
-	tcpServer := Net.NewTcpServer(port, newConnectServer, disConnectServer, parseProtocol, msgHandleServer)
+	tcpServer := Net.NewTcpServer(port, newConnectServer, disConnectServer, parseProtocol, msgHandleServer, Net.WithRecvPackageSize(1024*8))
 	tcpServer.StartServer()
 	// todo
-	// go http.ListenAndServe(fmt.Sprintf("0.0.0.0:1%v", port), nil)
+	go http.ListenAndServe(fmt.Sprintf("0.0.0.0:1%v", port), nil)
 }
 
 func newConnectServer(client Net.IClient) {

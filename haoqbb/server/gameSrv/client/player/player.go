@@ -33,6 +33,9 @@ func (p *Player) IsLogin() bool {
 }
 
 func (p *Player) SetTestModule(id int) {
+	if id == 3 {
+		id = 3
+	}
 	p.testModule = id
 }
 

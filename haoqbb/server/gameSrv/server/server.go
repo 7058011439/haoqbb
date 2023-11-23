@@ -46,8 +46,7 @@ func (g *GameSrv) InitMsg() {
 }
 
 func (g *GameSrv) Start() {
-	//bag.Init()
-	//player.Init()
+
 }
 
 func (g *GameSrv) revMsgFromGateWay(_ int, data []byte) {

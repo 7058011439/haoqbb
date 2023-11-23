@@ -17,15 +17,22 @@ import (
 	cProtocol "github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/protocol"
 	"github.com/7058011439/haoqbb/haoqbb/service"
 	"github.com/7058011439/haoqbb/haoqbb/service/interface/timer"
-	"github.com/mitchellh/mapstructure"
+	_ "github.com/mitchellh/mapstructure"
 	"net"
 )
+
+type testConfig struct {
+	Open       bool        // 测试用例是否生效
+	Entrance   int         // 直接进入该模块权重
+	NextModule map[int]int // 指定下一模块权重
+}
 
 type clientConfig struct {
 	DispatcherAddr string
 	GateWayAddr    string
 	StartID        int
 	MaxConn        int
+	Test           map[int]*testConfig
 }
 
 type GameClient struct {
@@ -33,11 +40,20 @@ type GameClient struct {
 	config *clientConfig
 }
 
+func interfaceToStruct(data interface{}, data1 interface{}) {
+	d, _ := json.Marshal(data)
+	json.Unmarshal(d, data1)
+}
+
 func (g *GameClient) Init() error {
-	if err := mapstructure.Decode(g.ServiceCfg.Other, &g.config); err != nil {
-		Log.ErrorLog("Failed to parse client Config, err = %v", err)
-		return err
+	d, _ := json.Marshal(g.ServiceCfg.Other)
+	json.Unmarshal(d, &g.config)
+	for id, t := range g.config.Test {
+		if t.Open {
+			test.InsertTestModule(id, t.Entrance, t.NextModule)
+		}
 	}
+	test.InitOver()
 	login.SetStartID(g.config.StartID)
 	Interface.SetServiceAgent(g)
 	return nil

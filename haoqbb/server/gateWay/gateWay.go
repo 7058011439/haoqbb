@@ -84,12 +84,13 @@ func (g *GateWay) OnConnect(client Net.IClient) {
 	Log.Log("new client connect, addr = %v, clientId = %v, have connect = %v", client.GetIp(), client.GetId(), g.GetClientCount())
 	g.SendMsgToServiceByName("", common.GwClConnect, &common.Uint64{Data: client.GetId()})
 	// 60秒后看收否有游戏服承认该链接，如果没有，则认为该连接非法(连接上之后并未登录)
-	ITimer.SetOnceTimer(g.GetName(), 60000, g.checkConnect, client.GetId())
+	client.SetCustomData(ITimer.SetOnceTimer(g.GetName(), 60000, g.checkConnect, client.GetId()))
 }
 
 func (g *GateWay) OnDisConnect(client Net.IClient) {
 	Log.Log("client disconnect, addr = %v, clientId = %v, have connect = %v", client.GetIp(), client.GetId(), g.GetClientCount())
 	g.SendMsgToServiceByName("", common.GwClDisconnect, &common.Uint64{Data: client.GetId()})
+	Timer.CloseTimer(client.CustomData().(Timer.TimerID))
 }
 
 func (g *GateWay) checkConnect(_ Timer.TimerID, args ...interface{}) {
