@@ -21,9 +21,9 @@ type GoRoutinePool struct {
 
 func NewPool(count int) *GoRoutinePool {
 	ret := &GoRoutinePool{
-		chNewTask:          make(chan *task),
+		chNewTask:          make(chan *task, count),
 		chWorkGoroutine:    make(chan *task, count),
-		chIdleGoroutine:    make(chan struct{}),
+		chIdleGoroutine:    make(chan struct{}, count),
 		workGoroutineCount: int32(count),
 		idleGoroutineCount: int32(count),
 		taskList:           list.New(),
