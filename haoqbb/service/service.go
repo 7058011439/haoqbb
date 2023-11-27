@@ -84,7 +84,8 @@ type Service struct {
 }
 
 func (s *Service) run() {
-	s.queue.run(s.ServiceCfg.Perform)
+	go s.queue.run(s.ServiceCfg.Perform)
+	go s.queue.runSendMsg()
 }
 
 func (s *Service) SetName(name string) {
@@ -103,9 +104,9 @@ func (s *Service) Regedit(serviceCfg string) {
 	if err := json.Unmarshal([]byte(serviceCfg), &s.ServiceCfg); err != nil {
 		Log.ErrorLog("Failed to json.Unmarshal on RegeditApi, err = %v", err)
 	}
-	s.queue = NewQueue(s.name)
+	s.queue = NewQueue(s.GetName(), s.GetId())
 	s.setAgent()
-	go s.run()
+	s.run()
 }
 
 func (s *Service) Init() error {
@@ -170,23 +171,23 @@ func (s *Service) RegeditLoseService(serviceName string, fun func(int)) {
 }
 
 func (s *Service) SendMsgToServiceByName(serviceName string, msgType int, msg common.ServiceMsg) {
-	node.SendMsgByName(s.GetId(), serviceName, msgType, msg.Marshal())
+	s.chanSend <- &queueMsgData{
+		sendType:   1,
+		serverName: serviceName,
+		msgType:    msgType,
+		data:       msg,
+	}
 }
 
 func (s *Service) SendMsgToServiceById(serviceId int, msgType int, msg common.ServiceMsg) {
-	node.SendMsgById(s.GetId(), serviceId, msgType, msg.Marshal())
+	s.chanSend <- &queueMsgData{
+		sendType: 0,
+		serverId: serviceId,
+		msgType:  msgType,
+		data:     msg,
+	}
 }
 
 func (s *Service) HaveServerId(serverId int) bool {
 	return node.HaveServerId(serverId)
 }
-
-/*
-func (s *Service) SendMsgToServiceByName(serviceName string, msgType int, data []byte) {
-	node.SendMsgByName(s.GetId(), serviceName, msgType, data)
-}
-
-func (s *Service) SendMsgToServiceById(serviceId int, msgType int, data []byte) {
-	node.SendMsgById(s.GetId(), serviceId, msgType, data)
-}
-*/

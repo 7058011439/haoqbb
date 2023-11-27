@@ -7,6 +7,8 @@ import (
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Net"
 	"github.com/7058011439/haoqbb/Timer"
+	"github.com/7058011439/haoqbb/haoqbb/node"
+	"github.com/7058011439/haoqbb/haoqbb/server/common"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"time"
@@ -52,6 +54,14 @@ type queueData struct {
 	data  interface{}
 }
 
+type queueMsgData struct {
+	sendType   int
+	msgType    int
+	serverId   int
+	serverName string
+	data       common.ServiceMsg
+}
+
 type timerData struct {
 	timeId   Timer.TimerID
 	backData []interface{}
@@ -90,7 +100,9 @@ type serviceData struct {
 type queue struct {
 	*performance
 	name                  string
+	id                    int
 	chanAll               chan *queueData
+	chanSend              chan *queueMsgData
 	MongoDB               *DataBase.MongoDB
 	RedisDB               *DataBase.RedisDB
 	MysqlDB               *gorm.DB
@@ -100,10 +112,12 @@ type queue struct {
 	loseServiceHandle     map[string]func(int)
 }
 
-func NewQueue(name string) *queue {
+func NewQueue(name string, id int) *queue {
 	return &queue{
 		name:                  name,
+		id:                    id,
 		chanAll:               make(chan *queueData, 65535*64),
+		chanSend:              make(chan *queueMsgData, 65535*16),
 		serviceMsgHandle:      map[int]func(srcServiceId int, data []byte){},
 		discoverServiceHandle: map[string]func(int){},
 		loseServiceHandle:     map[string]func(int){},
@@ -178,14 +192,10 @@ func (q *queue) run(perform *configPerform) {
 			switch msg.eType {
 			case typeTcpMsg:
 				data := msg.data.(*tcpMsgData)
-				if q.tcpMsgHandler != nil {
-					q.tcpMsgHandler(data.clientId, data.data)
-				}
+				q.tcpMsgHandler(data.clientId, data.data)
 			case typeServiceMsg:
 				data := msg.data.(*serviceMsgData)
-				if q.serviceMsgHandle[data.msgType] != nil {
-					q.serviceMsgHandle[data.msgType](data.srcServiceId, data.data)
-				}
+				q.serviceMsgHandle[data.msgType](data.srcServiceId, data.data)
 			case typeMongoMsg:
 				data := msg.data.(*mongoData)
 				if data.callFunGet != nil {
@@ -206,19 +216,29 @@ func (q *queue) run(perform *configPerform) {
 				}
 			case typeDiscoverService:
 				data := msg.data.(*serviceData)
-				if q.discoverServiceHandle[data.serviceName] != nil {
-					q.discoverServiceHandle[data.serviceName](data.serviceId)
-				}
+				q.discoverServiceHandle[data.serviceName](data.serviceId)
 			case typeLoseService:
 				data := msg.data.(*serviceData)
-				if q.loseServiceHandle[data.serviceName] != nil {
-					q.loseServiceHandle[data.serviceName](data.serviceId)
-				}
+				q.loseServiceHandle[data.serviceName](data.serviceId)
 			}
 			if perform.isNeedUpdate(msg.eType) {
 				q.performance.update(msg.eType, cost.GetCost())
 			}
 			cost.PrintCost(warningTime, false, "%v(%v) 处理超时", q.name, getMsgDesc(msg.eType))
+		}
+	}
+}
+
+func (q *queue) runSendMsg() {
+	for {
+		select {
+		case msg := <-q.chanSend:
+			switch msg.sendType {
+			case 0:
+				node.SendMsgById(q.id, msg.serverId, msg.msgType, msg.data.Marshal())
+			case 1:
+				node.SendMsgByName(q.id, msg.serverName, msg.msgType, msg.data.Marshal())
+			}
 		}
 	}
 }
