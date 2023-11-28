@@ -23,12 +23,17 @@ var mapTestModule = make(map[int]*testModule)
 var listEntranceModule []int
 var weight = Probability.NewWeights()
 var mapTestFun = make(map[int]testFun)
+var qps = 0
 
 func InitFunc(id int, fun testFun) {
 	mapTestFun[id] = fun
 }
 
-func InitOver() {
+func InitOver(q int) {
+	qps = q
+	if qps < 1 {
+		qps = 1
+	}
 	for id, module := range mapTestModule {
 		if len(module.nextModule) == 0 {
 			weight.AddWeight(id, 0, 1)
@@ -71,7 +76,7 @@ func Run(_ Timer.TimerID, args ...interface{}) {
 	player := player.GetPlayerByClientId(clientId)
 	if player != nil && player.IsLogin() {
 		if module := mapTestModule[player.TestModule()]; module != nil {
-			for i := 0; i < 50; i++ {
+			for i := 0; i < qps; i++ {
 				module.fun(player)
 			}
 			nextModuleId := weight.Value(module.id)

@@ -32,6 +32,7 @@ type clientConfig struct {
 	GateWayAddr    string
 	StartID        int
 	MaxConn        int
+	Qps            int
 	Test           map[int]*testConfig
 }
 
@@ -53,7 +54,7 @@ func (g *GameClient) Init() error {
 			test.InsertTestModule(id, t.Entrance, t.NextModule)
 		}
 	}
-	test.InitOver()
+	test.InitOver(g.config.Qps)
 	login.SetStartID(g.config.StartID)
 	Interface.SetServiceAgent(g)
 	return nil
