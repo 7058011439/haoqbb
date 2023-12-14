@@ -4,29 +4,39 @@ import (
 	"fmt"
 	"github.com/7058011439/haoqbb/String"
 	"math/rand"
+	"reflect"
 	"testing"
 	"time"
+	"unsafe"
 )
 
 /*
 这里主要做了性能测试，测试结果，封装后的 NewBuffer 比 原生 切片要高20%性能
 */
 
-var testData = map[int]string{}
+var testData = make([]string, 100)
+var index = 0
 
 func init() {
-	for i := 10; i < 100; i++ {
+	for i := 0; i < 100; i++ {
 		testData[i] = String.RandStr(i)
 	}
 }
 
 // 这里一个奇怪的现象, 通过循环返回第一个元素的效率比下标获取要高
+var strData = "abcdefghijklnmoqprstuvwxyzabcdefghijklnmoqprstuvwxyzabcdefghijklnmoqprstuvwxyz"
+
 func getRandomData() string {
-	//return testData[rand.Intn(90) + 10]
-	for _, v := range testData {
-		return v
-	}
-	return ""
+	return strData
+	/*
+		defer func(){
+			index++
+			if index >= 100 {
+				index = 0
+			}
+		}()
+		return testData[index]
+	*/
 }
 
 func BenchmarkBuffer_Write1(b *testing.B) {
@@ -49,18 +59,44 @@ func BenchmarkBuffer_Write2(b *testing.B) {
 	}
 }
 
+func print(desc string, data []byte) {
+	fmt.Println(desc+":", len(data), cap(data), (*reflect.SliceHeader)(unsafe.Pointer(&data)).Data, string(data))
+}
+
+func getPtr(data []byte) uintptr {
+	return (*reflect.SliceHeader)(unsafe.Pointer(&data)).Data
+}
+
+func TestBuffer_Bytes(t *testing.T) {
+	ids1 := []byte("abcdefg")
+	print("ids1", ids1)
+	copy(ids1[0:4], ids1[3:])
+	print("ids1", ids1)
+
+	/*
+		buff := NewBuffer(2)
+		buff.WriteString("ab")
+		buff.WriteString("cd")
+		buff.OffSize(3)
+		/*
+		buff := NewBuffer(6)
+		buff.WriteString("abcde")
+		buff.OffSize(3)
+	*/
+}
+
 func TestBuffer_Write1(t *testing.T) {
 	buff := NewBuffer(1024)
 	timeStart := time.Now()
-	oldCap := buff.Cap()
+	oldPtr := getPtr(buff.cs)
 	capTimes := 0
 	for i := 0; i < 500000000; i++ {
 		buff.WriteString(getRandomData())
-		if oldCap != buff.Cap() {
+		if oldPtr != getPtr(buff.cs) {
 			capTimes++
-			oldCap = buff.Cap()
+			oldPtr = getPtr(buff.cs)
 		}
-		if rand.Intn(2)%5 == 0 {
+		if rand.Intn(2) == 0 {
 			buff.OffSize(rand.Intn(buff.Len()))
 		}
 	}
@@ -68,17 +104,17 @@ func TestBuffer_Write1(t *testing.T) {
 }
 
 func TestBuffer_Write2(t *testing.T) {
-	buff := make([]byte, 1024)
+	buff := make([]byte, 0, 1024)
 	timeStart := time.Now()
-	oldCap := cap(buff)
+	oldPtr := getPtr(buff)
 	capTimes := 0
 	for i := 0; i < 500000000; i++ {
 		buff = append(buff, []byte(getRandomData())...)
-		if oldCap != cap(buff) {
+		if oldPtr != getPtr(buff) {
 			capTimes++
-			oldCap = cap(buff)
+			oldPtr = getPtr(buff)
 		}
-		if rand.Intn(2)%5 == 0 {
+		if rand.Intn(2) == 0 {
 			buff = buff[rand.Intn(len(buff)):]
 		}
 	}

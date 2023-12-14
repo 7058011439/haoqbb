@@ -39,11 +39,11 @@ func WithToken(msg *msgHandle.ClientMsg) {
 func Ret(_ int, data []byte) {
 	ret := &common.LoginSrvToGameSrv{}
 	ret.Unmarshal(data)
-	userId := 0
+	var userId int64
 	if ret.OpenId != "" {
-		userId = Util.StrToInt(IRedis.GetRedisSync(service.GetServiceName(), redisOpenUserIdKey, ret.OpenId))
+		userId = Util.StrToInt64(IRedis.GetRedisSync(service.GetServiceName(), redisOpenUserIdKey, ret.OpenId))
 		if userId == 0 {
-			userId = int(IRedis.IncRedisSyn(service.GetServiceName(), redisGlobalVarKey, redisGlobalVarFieldUserId, 1))
+			userId = IRedis.IncRedisSyn(service.GetServiceName(), redisGlobalVarKey, redisGlobalVarFieldUserId, 1)
 			IRedis.SetRedisSync(service.GetServiceName(), redisOpenUserIdKey, ret.OpenId, userId)
 		}
 

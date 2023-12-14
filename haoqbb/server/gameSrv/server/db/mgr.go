@@ -4,7 +4,6 @@ import (
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Stl"
 	"github.com/7058011439/haoqbb/haoqbb/server/common"
-	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/common/event"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/net"
 	"github.com/7058011439/haoqbb/haoqbb/server/gameSrv/server/interface/player"
 )
@@ -32,12 +31,20 @@ type IDBTool interface {
 	NewCondition(userId int64) map[string]interface{}
 }
 
+type SDBTool struct{}
+
+func (s *SDBTool) NewCondition(userId int64) map[string]interface{} {
+	return map[string]interface{}{
+		"user.userid": userId,
+	}
+}
+
 type Mgr struct {
 	*Stl.DoubleMap
 	*ShareDataMgrSync
 }
 
-func (m *Mgr) Kick(userId int) {
+func (m *Mgr) Kick(userId int64) {
 	if userId == 0 {
 		return
 	}
@@ -45,7 +52,7 @@ func (m *Mgr) Kick(userId int) {
 	m.LogOut(clientId, userId)
 }
 
-func (m *Mgr) GetClientId(userId int) uint64 {
+func (m *Mgr) GetClientId(userId int64) uint64 {
 	if data := m.DoubleMap.GetKey(userId); data != nil {
 		return data.(uint64)
 	} else {
@@ -53,23 +60,21 @@ func (m *Mgr) GetClientId(userId int) uint64 {
 	}
 }
 
-func (m *Mgr) GetUserId(clientId uint64) int {
+func (m *Mgr) GetUserId(clientId uint64) int64 {
 	if data := m.DoubleMap.GetValue(clientId); data != nil {
-		return data.(int)
+		return data.(int64)
 	} else {
 		return 0
 	}
 }
 
-func (m *Mgr) Login(clientId uint64, userId int) {
-	// todo
+func (m *Mgr) Login(clientId uint64, userId int64) {
 	m.DoubleMap.Add(clientId, userId)
-	m.GetData(int64(userId), int64(userId))
+	m.GetData(userId, userId)
 	Log.Log("Login success userId = %v, clientId = %v, total player = %v", userId, clientId, m.DoubleMap.Len())
-	event.PublicGameEvent(event.GameServerLogin, userId)
 }
 
-func (m *Mgr) LogOut(clientId uint64, userId int) {
+func (m *Mgr) LogOut(clientId uint64, userId int64) {
 	if clientId != 0 {
 		m.DoubleMap.RemoveByKey(clientId)
 	}
@@ -78,5 +83,5 @@ func (m *Mgr) LogOut(clientId uint64, userId int) {
 	}
 	Log.Log("player offline, userId = %v, clientId = %v, total player = %v", userId, clientId, m.DoubleMap.Len())
 	net.PublicEventByName(common.GateWay, common.SrvPlayerOffLine, &common.Uint64{Data: clientId})
-	m.ShareDataMgrSync.LogOut(int64(userId))
+	m.ShareDataMgrSync.LogOut(userId)
 }

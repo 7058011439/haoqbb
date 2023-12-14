@@ -21,12 +21,14 @@ type gateConfig struct {
 
 type GateWay struct {
 	service.Service
-	Config         *gateConfig             // 网关配置
-	ClientList     map[int]map[uint64]bool // map[gameServerId]map[clientId]
-	addr           string                  // 对外的地址端口
-	MsgHandle      func(clientId uint64, data []byte)
-	ParseProtocol  func(data []byte) (rdata []byte, offset int)
-	RecvMsgFromSrv func(serverId int, data []byte)
+	Config          *gateConfig             // 网关配置
+	ClientList      map[int]map[uint64]bool // map[gameServerId]map[clientId]
+	addr            string                  // 对外的地址端口
+	IOnConnect      func(client Net.IClient)
+	IOnDisConnect   func(client Net.IClient)
+	IParseProtocol  func(data []byte) (rdata []byte, offset int)
+	IHandleMsg      func(clientId uint64, data []byte)
+	IRecvMsgFromSrv func(serverId int, data []byte)
 }
 
 func (g *GateWay) Init() error {
@@ -34,16 +36,22 @@ func (g *GateWay) Init() error {
 		Log.ErrorLog("Failed to parse gateway Config, err = %v", err)
 	}
 	g.ClientList = make(map[int]map[uint64]bool, 2)
-	if g.MsgHandle == nil {
-		g.MsgHandle = g.handleMsg
+	if g.IOnConnect == nil {
+		g.IOnConnect = g.OnConnect
 	}
-	if g.ParseProtocol == nil {
-		g.ParseProtocol = g.parseProtocol
+	if g.IOnDisConnect == nil {
+		g.IOnDisConnect = g.OnDisConnect
 	}
-	if g.RecvMsgFromSrv == nil {
-		g.RecvMsgFromSrv = g.recvMsgFromSrv
+	if g.IParseProtocol == nil {
+		g.IParseProtocol = g.ParseProtocol
 	}
-	g.InitTcpServer(g.Config.Port, g.OnConnect, g.OnDisConnect, g.ParseProtocol, g.MsgHandle)
+	if g.IHandleMsg == nil {
+		g.IHandleMsg = g.HandleMsg
+	}
+	if g.IRecvMsgFromSrv == nil {
+		g.IRecvMsgFromSrv = g.RecvMsgFromSrv
+	}
+	g.InitTcpServer(g.Config.Port, g.IOnConnect, g.IOnDisConnect, g.IParseProtocol, g.IHandleMsg)
 	return nil
 }
 
@@ -56,13 +64,13 @@ func (g *GateWay) Start() {
 }
 
 func (g *GateWay) InitMsg() {
-	g.RegeditServiceMsg(common.GwForwardSrvToCl, g.RecvMsgFromSrv)
+	g.RegeditServiceMsg(common.GwForwardSrvToCl, g.IRecvMsgFromSrv)
 
 	g.RegeditServiceMsg(common.SrvPlayerOnLine, g.PlayerOnLine)
 	g.RegeditServiceMsg(common.SrvPlayerOffLine, g.PlayerOffLine)
 }
 
-func (g *GateWay) recvMsgFromSrv(serverId int, data []byte) {
+func (g *GateWay) RecvMsgFromSrv(serverId int, data []byte) {
 	// 这个地方有点绕, 如果其他服有指定发送给具体的客户端，那就发送给指定客户端，如果没指定，那就是区服广播
 	revMsg := common.GwForwardSrvToClTag{}
 	revMsg.Unmarshal(data)
@@ -93,21 +101,6 @@ func (g *GateWay) OnDisConnect(client Net.IClient) {
 	Timer.CloseTimer(client.CustomData().(Timer.TimerID))
 }
 
-func (g *GateWay) checkConnect(_ Timer.TimerID, args ...interface{}) {
-	bOk := false
-	clientId := args[0].(uint64)
-	for _, gameSrv := range g.ClientList {
-		if _, ok := gameSrv[clientId]; ok {
-			bOk = true
-			break
-		}
-	}
-	if !bOk {
-		g.Close(clientId)
-		Log.Debug("空连接, clientId = %v", clientId)
-	}
-}
-
 // ParseProtocol 解析数据流, 请配合HandleClientMsg 使用
 /* 这是第一个奇葩的协议, 分为 协议头 + 数据 + 协议尾
 协议头11个字节，分别为:
@@ -124,7 +117,7 @@ func (g *GateWay) checkConnect(_ Timer.TimerID, args ...interface{}) {
 协议尾1个字节:
 0: 固定 0xEE
 这个地方就要了 协议头部分(主命令号开始) + 数据 */
-func (g *GateWay) parseProtocol(data []byte) (rdata []byte, offset int) {
+func (g *GateWay) ParseProtocol(data []byte) (rdata []byte, offset int) {
 	if len(data) < 12 {
 		return nil, 0
 	}
@@ -143,7 +136,7 @@ func (g *GateWay) parseProtocol(data []byte) (rdata []byte, offset int) {
 5-6: 服务id
 数据:
 */
-func (g *GateWay) handleMsg(clientId uint64, data []byte) {
+func (g *GateWay) HandleMsg(clientId uint64, data []byte) {
 	if len(data) < 6 {
 		Log.ErrorLog("failed to handleMsg, data too shoot, data = %v", data)
 		return
@@ -158,20 +151,6 @@ func (g *GateWay) ForwardClMsgToSrv(serverId int, clientId uint64, cmdId int, da
 		CmdId:    cmdId,
 		Data:     data,
 	})
-}
-
-func (g *GateWay) uploadStatus(_ Timer.TimerID, _ ...interface{}) {
-	// 原则上该框架不应该拉起其他协程，但是该操作因为要读取硬件信息，极为耗时，会阻塞主协程，所以特别go了一下
-	go func() {
-		data := &common.GsInfoTag{
-			Addr:         g.addr,
-			MemRate:      System.GetMemPercent(),
-			CpuRate:      System.GetCpuPercent(),
-			NetRate:      System.GetNetRate(),
-			ConnectCount: g.GetClientCount(),
-		}
-		g.SendMsgToServiceByName(common.Dispatcher, common.GwToDsStatus, data)
-	}()
 }
 
 func (g *GateWay) PlayerOnLine(gameServerId int, data []byte) {
@@ -201,4 +180,33 @@ func (g *GateWay) LoseGameSrv(serverId int) {
 		}
 		delete(g.ClientList, serverId)
 	}
+}
+
+func (g *GateWay) checkConnect(_ Timer.TimerID, args ...interface{}) {
+	bOk := false
+	clientId := args[0].(uint64)
+	for _, gameSrv := range g.ClientList {
+		if _, ok := gameSrv[clientId]; ok {
+			bOk = true
+			break
+		}
+	}
+	if !bOk {
+		g.Close(clientId)
+		Log.Debug("空连接, clientId = %v", clientId)
+	}
+}
+
+func (g *GateWay) uploadStatus(_ Timer.TimerID, _ ...interface{}) {
+	// 原则上该框架不应该拉起其他协程，但是该操作因为要读取硬件信息，极为耗时，会阻塞主协程，所以特别go了一下
+	go func() {
+		data := &common.GsInfoTag{
+			Addr:         g.addr,
+			MemRate:      System.GetMemPercent(),
+			CpuRate:      System.GetCpuPercent(),
+			NetRate:      System.GetNetRate(),
+			ConnectCount: g.GetClientCount(),
+		}
+		g.SendMsgToServiceByName(common.Dispatcher, common.GwToDsStatus, data)
+	}()
 }

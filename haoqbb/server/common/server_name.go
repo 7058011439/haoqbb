@@ -6,8 +6,3 @@ const (
 	LoginSrv   = "LoginSrv"
 	GameSrv    = "GameSrv"
 )
-
-const (
-	GameServerBuJiDao = "BuJiDaoS"
-	GameClientBuJiDao = "BuJiDaoC"
-)

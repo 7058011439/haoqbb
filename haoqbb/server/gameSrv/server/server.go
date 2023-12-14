@@ -64,7 +64,7 @@ func (g *GameSrv) SendMsgToClient(clientId uint64, cmdId int32, data []byte) {
 	g.BroadCastMsgToClient([]uint64{clientId}, cmdId, data)
 }
 
-func (g *GameSrv) SendMsgToUser(userId int, cmdId int32, data []byte) {
+func (g *GameSrv) SendMsgToUser(userId int64, cmdId int32, data []byte) {
 	g.SendMsgToClient(iPlayer.GetClientId(userId), cmdId, data)
 }
 
@@ -95,7 +95,7 @@ func (g *GameSrv) BroadCastMsgToClient(clientIds []uint64, cmdId int32, data []b
 	}
 }
 
-func (g *GameSrv) BroadCastMsgToUser(userIds []int, cmdId int32, data []byte) {
+func (g *GameSrv) BroadCastMsgToUser(userIds []int64, cmdId int32, data []byte) {
 	if userIds == nil {
 		g.BroadCastMsgToClient(nil, cmdId, data)
 	}

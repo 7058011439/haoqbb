@@ -16,7 +16,7 @@ type JsonDispatcher struct {
 	msgRoute map[int32]*msgHandle // map[子命令]消息处理器
 }
 
-func (d *JsonDispatcher) DispatchMsg(clientId uint64, userId int, cmdId int32, data []byte) {
+func (d *JsonDispatcher) DispatchMsg(clientId uint64, userId int64, cmdId int32, data []byte) {
 	if info, ok := d.msgRoute[cmdId]; !ok {
 		Log.ErrorLog("Failed to DispatchMsg, unknown cmdId, cmdId = %v", cmdId)
 		return

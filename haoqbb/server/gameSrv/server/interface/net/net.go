@@ -6,12 +6,12 @@ import (
 )
 
 type INetGameSrv interface {
-	SendMsgToUser(userId int, cmdId int32, data []byte)
+	SendMsgToUser(userId int64, cmdId int32, data []byte)
 	SendMsgToClient(clientId uint64, cmdId int32, data []byte)
 	SendMsgToServiceByName(serviceName string, eventType int, msg common.ServiceMsg)
 	SendMsgToServiceById(serviceId int, msgType int, msg common.ServiceMsg)
 	BroadCastMsgToClient(clientIds []uint64, cmdId int32, data []byte)
-	BroadCastMsgToUser(userIds []int, cmdId int32, data []byte)
+	BroadCastMsgToUser(userIds []int64, cmdId int32, data []byte)
 }
 
 type Net struct {
@@ -29,7 +29,7 @@ func SendMsgToClient(clientId uint64, cmdId int32, msg proto.Message) {
 	net.SendMsgToClient(clientId, cmdId, data)
 }
 
-func SendMsgToUser(userId int, cmdId int32, msg proto.Message) {
+func SendMsgToUser(userId int64, cmdId int32, msg proto.Message) {
 	data, _ := proto.Marshal(msg)
 	net.SendMsgToUser(userId, cmdId, data)
 }
@@ -39,7 +39,7 @@ func BroadCastMsgToClient(clientIds []uint64, cmdId int32, msg proto.Message) {
 	net.BroadCastMsgToClient(clientIds, cmdId, data)
 }
 
-func BroadCastMsgToUser(userIds []int, cmdId int32, msg proto.Message) {
+func BroadCastMsgToUser(userIds []int64, cmdId int32, msg proto.Message) {
 	data, _ := proto.Marshal(msg)
 	net.BroadCastMsgToUser(userIds, cmdId, data)
 }
