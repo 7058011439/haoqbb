@@ -124,11 +124,11 @@ func (s *ShareDataMgrSync) updateRun(Timer.TimerID, ...interface{}) {
 			if obj != nil {
 				IMongo.UpdateOne(service.GetServiceName(), s.collectName, s.operate.NewCondition(hostId), s.shareDataMap[hostId].Data(), int(hostId), nil)
 			}
+			delete(s.updateData, hostId)
 		}
 	}
 	s.dbIndex++
 	if s.dbIndex >= interval {
 		s.dbIndex = 0
 	}
-	s.updateData = make(map[int64]bool)
 }
