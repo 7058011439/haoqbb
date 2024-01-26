@@ -29,7 +29,7 @@ const (
 
 type logInfo struct {
 	desc     string
-	color    color.Attribute
+	color    *color.Color
 	fileName string
 }
 
@@ -39,10 +39,10 @@ type logData struct {
 }
 
 var mapLogInfo = map[int]*logInfo{
-	LevelDebug:   {desc: "Debug", color: 34},
-	LevelLog:     {desc: "Log", color: 32},
-	LevelWarning: {desc: "Warning", color: 33},
-	LevelError:   {desc: "Error", color: 31},
+	LevelDebug:   {desc: "Debug", color: color.New(color.FgBlue)},
+	LevelLog:     {desc: "Log", color: color.New(color.FgGreen)},
+	LevelWarning: {desc: "Warning", color: color.New(color.FgYellow)},
+	LevelError:   {desc: "Error", color: color.New(color.FgRed)},
 }
 
 var queue = Stl.NewQueue()
@@ -104,6 +104,13 @@ func runPrint() {
 				if msg.eType != LevelLog {
 					typeData[LevelLog] = append(typeData[LevelLog], msg.data)
 				}
+				if msg.eType >= printLevel || msg.eType == LevelDebug {
+					info := mapLogInfo[msg.eType]
+					info.color.EnableColor()
+					info.color.Set()
+					fmt.Println(msg.data)
+					info.color.DisableColor()
+				}
 			}
 			for eType, dataList := range typeData {
 				info := getLogInfo(eType)
@@ -136,11 +143,6 @@ func printLogger(str string, logLevel int) {
 			eType: logLevel,
 			data:  str,
 		})
-	}
-	if logLevel >= printLevel || logLevel == LevelDebug {
-		color.Set(info.color)
-		fmt.Println(str)
-		color.Unset()
 	}
 }
 
