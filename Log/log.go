@@ -92,6 +92,14 @@ func newFileName(eType int) string {
 	return fmt.Sprintf("%v_%v_%v.zLog", info.desc, getNowTimeStr("2006_01_02"), maxIndex+1)
 }
 
+func print(level logLevel, data string) {
+	info := mapLogInfo[level]
+	info.color.EnableColor()
+	info.color.Set()
+	fmt.Println(data)
+	info.color.DisableColor()
+}
+
 func runPrint() {
 	for true {
 		if queue.Head() != nil {
@@ -104,12 +112,8 @@ func runPrint() {
 				if msg.eType != LevelLog {
 					typeData[LevelLog] = append(typeData[LevelLog], msg.data)
 				}
-				if msg.eType >= printLevel || msg.eType == LevelDebug {
-					info := mapLogInfo[msg.eType]
-					info.color.EnableColor()
-					info.color.Set()
-					fmt.Println(msg.data)
-					info.color.DisableColor()
+				if msg.eType >= printLevel {
+					print(msg.eType, msg.data)
 				}
 			}
 			for eType, dataList := range typeData {
@@ -143,6 +147,8 @@ func printLogger(str string, logLevel int) {
 			eType: logLevel,
 			data:  str,
 		})
+	} else {
+		print(LevelDebug, str)
 	}
 }
 
