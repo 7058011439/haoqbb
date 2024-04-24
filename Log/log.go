@@ -112,9 +112,6 @@ func runPrint() {
 				if msg.eType != LevelLog {
 					typeData[LevelLog] = append(typeData[LevelLog], msg.data)
 				}
-				if msg.eType >= printLevel {
-					print(msg.eType, msg.data)
-				}
 			}
 			for eType, dataList := range typeData {
 				info := getLogInfo(eType)
@@ -142,11 +139,15 @@ func printLogger(str string, logLevel int) {
 	}
 	info := getLogInfo(logLevel)
 	str = fmt.Sprintf("[%s] [%s] %s", getNowTimeStr(""), info.desc, str)
+	// debug类型日志不存档
 	if logLevel != LevelDebug {
 		queue.Enqueue(&logData{
 			eType: logLevel,
 			data:  str,
 		})
+		if logLevel >= printLevel {
+			print(logLevel, str)
+		}
 	} else {
 		print(LevelDebug, str)
 	}
