@@ -7,6 +7,21 @@ import (
 	"time"
 )
 
+func TestPrint(t *testing.T) {
+
+	Debug("debug info")
+	fmt.Println("after debug info")
+
+	Log("log info")
+	fmt.Println("after log info")
+
+	WarningLog("warning info")
+	fmt.Println("after warning info")
+
+	ErrorLog("error info")
+	fmt.Println("after error info")
+}
+
 func TestAll(t *testing.T) {
 	times := 100000
 	runTimes := int32(0)

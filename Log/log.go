@@ -5,7 +5,7 @@ import (
 	"github.com/7058011439/haoqbb/File"
 	"github.com/7058011439/haoqbb/Stl"
 	"github.com/7058011439/haoqbb/Util"
-	"github.com/fatih/color"
+	"github.com/gookit/color"
 	"os"
 	"runtime"
 	"strconv"
@@ -29,7 +29,7 @@ const (
 
 type logInfo struct {
 	desc     string
-	color    *color.Color
+	color    color.Color
 	fileName string
 }
 
@@ -39,10 +39,10 @@ type logData struct {
 }
 
 var mapLogInfo = map[int]*logInfo{
-	LevelDebug:   {desc: "Debug", color: color.New(color.FgBlue)},
-	LevelLog:     {desc: "Log", color: color.New(color.FgGreen)},
-	LevelWarning: {desc: "Warning", color: color.New(color.FgYellow)},
-	LevelError:   {desc: "Error", color: color.New(color.FgRed)},
+	LevelDebug:   {desc: "Debug", color: color.Blue},
+	LevelLog:     {desc: "Log", color: color.Green},
+	LevelWarning: {desc: "Warning", color: color.Yellow},
+	LevelError:   {desc: "Error", color: color.Red},
 }
 
 var queue = Stl.NewQueue()
@@ -94,10 +94,7 @@ func newFileName(eType int) string {
 
 func print(level logLevel, data string) {
 	info := mapLogInfo[level]
-	info.color.EnableColor()
-	info.color.Set()
-	fmt.Println(data)
-	info.color.DisableColor()
+	info.color.Println(data)
 }
 
 func runPrint() {
