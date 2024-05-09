@@ -49,10 +49,10 @@ func (s *Server) RegeditApi(reType string, uri string, fun func(c *gin.Context),
 	return nil
 }
 
-func NewHttpServer(mode ServerMode) *Server {
+func NewHttpServer(mode ServerMode, log bool) *Server {
 	gin.SetMode(mode)
 	en := gin.New()
-	if mode != ServerModeRelease {
+	if log {
 		en.Use(gin.Logger())
 	}
 	en.Use(gin.Recovery(), statusMiddleware, options)

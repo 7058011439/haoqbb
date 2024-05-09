@@ -53,7 +53,7 @@ func (t *testApi) regedit(ctx *gin.Context) {
 }
 
 func TestNewHttpServer(t *testing.T) {
-	server := NewHttpServer(ServerModeDebug)
+	server := NewHttpServer(ServerModeDebug, true)
 	account := server.RegeditGroup("/account", &testApi{}).(*testApi)
 
 	account.RegeditApi(TypeGet, "/login", account.login)

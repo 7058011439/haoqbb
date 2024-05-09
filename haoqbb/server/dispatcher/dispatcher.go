@@ -42,7 +42,7 @@ func (d *Dispatcher) Init() error {
 		Log.ErrorLog("Failed to parse dispatcher Config, err = %v", err)
 	}
 	//d.INetPool = Net.NewTcpServer(d.config.Port, d.connect, nil, nil, nil, Net.WithPoolId(d.GetId()))
-	d.Server = Http.NewHttpServer("release")
+	d.Server = Http.NewHttpServer("release", true)
 	d.mapOptimalGate = map[hitType]*common.GsInfoTag{}
 	d.mapAllGate = map[int]*common.GsInfoTag{}
 	Interface.SetServiceAgent(d)

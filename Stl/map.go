@@ -38,8 +38,8 @@ func (d *DoubleMap) RemoveByKey(key interface{}) {
 }
 
 func (d *DoubleMap) RemoveByValue(value interface{}) {
-	d.mutex.RLock()
-	defer d.mutex.RUnlock()
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
 	key := d.mapValueKey[value]
 	delete(d.mapKeyValue, key)
 	delete(d.mapValueKey, value)
@@ -59,6 +59,17 @@ func (d *DoubleMap) GetValue(key interface{}) interface{} {
 
 func (d *DoubleMap) Len() int {
 	d.mutex.RLock()
-	d.mutex.RUnlock()
+	defer d.mutex.RUnlock()
 	return len(d.mapKeyValue)
+}
+
+// Rang 千万不要在这里面修改值，会形成死锁
+func (d *DoubleMap) Rang(fun func(k, v interface{}) bool) {
+	d.mutex.RLock()
+	defer d.mutex.RUnlock()
+	for k, v := range d.mapKeyValue {
+		if !fun(k, v) {
+			break
+		}
+	}
 }
