@@ -73,3 +73,10 @@ func (d *DoubleMap) Rang(fun func(k, v interface{}) bool) {
 		}
 	}
 }
+
+func (d *DoubleMap) Reset() {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+	d.mapKeyValue = map[interface{}]interface{}{}
+	d.mapValueKey = map[interface{}]interface{}{}
+}
