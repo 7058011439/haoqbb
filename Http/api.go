@@ -8,6 +8,8 @@ import (
 const (
 	TypePost = "post"
 	TypeGet  = "get"
+	TypePut  = "put"
+	TypeDelete = "delete"
 )
 
 type IApi interface {
@@ -25,6 +27,10 @@ func (a *Api) RegeditApi(reType string, uri string, fun func(c *gin.Context), mi
 		a.RouterGroup.POST(uri, middleware...)
 	case TypeGet:
 		a.RouterGroup.GET(uri, middleware...)
+	case TypePut:
+		a.RouterGroup.PUT(uri, middleware...)
+	case TypeDelete:
+		a.RouterGroup.DELETE(uri, middleware...)
 	default:
 		return fmt.Errorf("unknown type error")
 	}

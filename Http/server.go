@@ -43,6 +43,10 @@ func (s *Server) RegeditApi(reType string, uri string, fun func(c *gin.Context),
 		s.POST(uri, middleware...)
 	case TypeGet:
 		s.GET(uri, middleware...)
+	case TypePut:
+		s.PUT(uri, middleware...)
+	case TypeDelete:
+		s.DELETE(uri, middleware...)
 	default:
 		return fmt.Errorf("unknown type error")
 	}
@@ -145,11 +149,12 @@ func options(c *gin.Context) {
 	method := c.Request.Method
 	c.Header("Access-Control-Allow-Origin", "*")
 	c.Header("Access-Control-Allow-Headers", "Content-Type,AccessToken,X-CSRF-Token, Authorization, Token")
-	c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-	c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type")
+	c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	c.Header("Access-Control-Expose-Headers", "Content-Length")
 	c.Header("Access-Control-Allow-Credentials", "true")
 	if method == "OPTIONS" {
 		c.AbortWithStatus(http.StatusNoContent)
+	} else {
+		c.Next()
 	}
-	c.Next()
 }
