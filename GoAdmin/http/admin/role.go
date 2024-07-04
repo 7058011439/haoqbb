@@ -64,6 +64,9 @@ func (a *apiRole) updateInfo(c *gin.Context) {
 
 func (a *apiRole) addInfo(c *gin.Context) {
 	addItem(c, &dto.InsertReqRole{})
+
+	// 新增角色后，需刷新角色对应权限列表
+	common.RefreshPermission()
 }
 
 func (a *apiRole) delInfo(c *gin.Context) {

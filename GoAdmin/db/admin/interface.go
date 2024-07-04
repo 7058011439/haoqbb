@@ -3,6 +3,7 @@ package admin
 import (
 	"github.com/7058011439/haoqbb/GoAdmin/db/common"
 	"github.com/jinzhu/gorm"
+	"sort"
 )
 
 var dbManager *common.Manager
@@ -68,12 +69,15 @@ func GetRoleMenuId(roleId int64) (ret []int64) {
 
 func GetRoleMenu(roleId int64) (ret []*Menu) {
 	if roleId == common.AdminRoleId {
-		dbManager.MysqlDB().Order("sort").Find(&ret)
+		dbManager.MysqlDB().Find(&ret)
 	} else {
 		var role Role
-		dbManager.MysqlDB().Order("sort").Preload("SysMenu").Find(&role, roleId)
+		dbManager.MysqlDB().Preload("SysMenu").Find(&role, roleId)
 		ret = role.SysMenu
 	}
+	sort.Slice(ret, func(i, j int) bool {
+		return ret[i].Sort < ret[j].Sort
+	})
 	return
 }
 
