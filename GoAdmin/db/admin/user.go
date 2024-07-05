@@ -43,6 +43,17 @@ func (u *User) AfterFind(_ *gorm.DB) error {
 	return nil
 }
 
+// 使用 AfterSave 钩子函数
+func (u *User) AfterSave(tx *gorm.DB) (err error) {
+	if u.Dept == nil {
+		u.DeptIds = []int64{u.DeptId}
+		u.PostIds = []int64{u.PostId}
+		u.RoleIds = []int64{u.RoleId}
+		u.Dept = LoadForumData(&Dept{Model: common.Model{ID: u.DeptId}}).(*Dept)
+	}
+	return
+}
+
 func (u *User) BeforeDelete(tx *gorm.DB) (err error) {
 	if u.ID == common.AdminUserId {
 		return fmt.Errorf("不能删除[超级管理员]")
