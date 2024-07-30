@@ -1,7 +1,11 @@
 package goAdmin
 
 import (
+	"fmt"
 	"github.com/7058011439/haoqbb/GoAdmin/config"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
 	// "github.com/7058011439/haoqbb/GoAdmin/docs"
 	_ "github.com/7058011439/haoqbb/GoAdmin/http/admin"
 	"github.com/7058011439/haoqbb/GoAdmin/http/common"
@@ -16,9 +20,9 @@ import (
 // @license.name  Apache 2.0
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 func init() {
-	//common.ServerAdmin.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	common.ServerAdmin.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	common.ServerAdmin.Start(config.HttpPort())
-	//url := fmt.Sprintf("http://localhost:%v/swagger/index.html#", config.HttpPort())
-	//Log.Debug(fmt.Sprintf("打开:%v,可进入API调试", url))
+	url := fmt.Sprintf("http://localhost:%v/swagger/index.html#", config.HttpPort())
+	Log.Debug(fmt.Sprintf("打开:%v,可进入API调试", url))
 	Log.Log("基础服务启动完成")
 }
