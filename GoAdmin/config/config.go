@@ -18,7 +18,7 @@ type mysql struct {
 }
 
 type http struct {
-	Port    int    `json:"port""`
+	Port    int    `json:"port"`
 	Version string `json:"version"`
 	JWTKey  []byte `json:"jwtKey"`
 }

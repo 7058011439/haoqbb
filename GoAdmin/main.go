@@ -1,4 +1,4 @@
-package goAdmin
+package GoAdmin
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	// "github.com/7058011439/haoqbb/GoAdmin/docs"
 	_ "github.com/7058011439/haoqbb/GoAdmin/http/admin"
 	"github.com/7058011439/haoqbb/GoAdmin/http/common"
 	"github.com/7058011439/haoqbb/Log"
