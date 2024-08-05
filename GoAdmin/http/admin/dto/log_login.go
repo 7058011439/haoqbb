@@ -6,9 +6,9 @@ import (
 )
 
 type QueryReqLoginLog struct {
-	UserName string `form:"userName" json:"userName"`
-	Ip       string `form:"ip" json:"ip"`
-	Status   string `form:"status" json:"status"`
+	UserName string `form:"userName" json:"userName"` // 账号
+	Ip       string `form:"ip" json:"ip"`             // 登录ip
+	Status   string `form:"status" json:"status"`     // 登录结果
 	commonHttp.QueryParam
 }
 

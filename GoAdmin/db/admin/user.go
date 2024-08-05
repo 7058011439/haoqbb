@@ -1,8 +1,8 @@
 package admin
 
 import (
-	"github.com/7058011439/haoqbb/GoAdmin/db/common"
 	"fmt"
+	"github.com/7058011439/haoqbb/GoAdmin/db/common"
 	"github.com/jinzhu/gorm"
 )
 
@@ -19,7 +19,7 @@ type User struct {
 	DeptId   int64   `json:"deptId" gorm:"comment:'部门'"`                // 部门
 	PostId   int64   `json:"postId" gorm:"comment:'岗位'"`                // 岗位
 	Remark   string  `json:"remark" gorm:"comment:'备注'"`                // 备注
-	Status   string  `json:"status" gorm:"size:4;comment:'状态'"`         // 状态
+	Status   string  `json:"status" gorm:"size:4;comment:'状态'"`         // 状态(1-禁止;2-启用)
 	DeptIds  []int64 `json:"deptIds" gorm:"-"`
 	PostIds  []int64 `json:"postIds" gorm:"-"`
 	RoleIds  []int64 `json:"roleIds" gorm:"-"`

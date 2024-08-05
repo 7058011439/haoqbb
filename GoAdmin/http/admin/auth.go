@@ -42,13 +42,28 @@ func (a apiAuth) loginRet(c *gin.Context, userName string, msg string, data inte
 	})
 }
 
-// @Tags     MiniGame 后台相关
+type loginRet struct {
+	Token string `json:"token"`
+}
+
+func newToken(id int64, roleId int64, userName string) string {
+	token, _ := common.NewToken(map[string]interface{}{
+		common.TokenKeyId:            id,
+		common.TokenKeyRoleId:        roleId,
+		common.TokenKeyAdminUserName: userName,
+	}, 24*7)
+	return token
+}
+
+// @Tags     好奇宝宝后台-鉴权相关
 // @Summary  管理员登录
 // @Param    username  formData  string  true  "账号"
 // @Param    password  formData  string  true  "密码"
-// @Success  200       {object}  util.WebResult
-// @Failure  500       {object}  util.WebResult
-// @Router   /api/admin/login [post]
+// @Param    code      formData  string  true  "验证码"
+// @Param    uuid      formData  string  true  "验证码id"
+// @Success  200          {object}  Http.WebResult{data=loginRet}
+// @Failure  500          {object}  Http.WebResult
+// @Router   /api/auth/login [post]
 func (a *apiAuth) login(c *gin.Context) {
 	requestData := struct {
 		UserName string `form:"username" json:"username" binding:"required"`
@@ -61,12 +76,8 @@ func (a *apiAuth) login(c *gin.Context) {
 			if manager := admin.GetAdminByUserName(requestData.UserName); manager.IsValid() && manager.PassWord == requestData.PassWord {
 				if manager.Status != common2.StatusForbid {
 					if role := admin.GetRole(manager.RoleId); role.IsValid() && role.Status != common2.StatusForbid {
-						token, _ := common.NewToken(map[string]interface{}{
-							common.TokenKeyId:            manager.ID,
-							common.TokenKeyRoleId:        manager.RoleId,
-							common.TokenKeyAdminUserName: requestData.UserName,
-						}, 24*7)
-						a.loginRet(c, requestData.UserName, common.ResponseSuccess, map[string]interface{}{"token": token})
+						token := newToken(manager.ID, manager.RoleId, requestData.UserName)
+						a.loginRet(c, requestData.UserName, common.ResponseSuccess, &loginRet{Token: token})
 						common.UpdateToken(common.UserTypeAdmin, manager.ID, token)
 					} else {
 						a.loginRet(c, requestData.UserName, "角色状态错误", nil)
@@ -98,6 +109,24 @@ func (a *apiAuth) getPermissions(c *gin.Context) (ret []string) {
 	return ret
 }
 
+type adminInfo struct {
+	UserId       int64    `json:"userId"`       // 用户id
+	UserName     string   `json:"userName"`     // 用户名
+	Name         string   `json:"name"`         // 昵称
+	Buttons      []string `json:"buttons"`      // 权限
+	Roles        []string `json:"roles"`        // 角色
+	Avatar       string   `json:"avatar"`       // 头像
+	Introduction string   `json:"introduction"` // 介绍
+	DeptId       int64    `json:"deptId"`       // 部门id
+	Permissions  []string `json:"permissions"`  // 权限
+}
+
+// @Tags     好奇宝宝后台-鉴权相关
+// @Summary  获取用户信息
+// @Param    token  header    string  true  "token"
+// @Success  200    {object}  Http.WebResult{data=adminInfo}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/auth/info [get]
 func (a *apiAuth) info(c *gin.Context) {
 	ret := Http.NewResult(c)
 	currAdmin := common.GetCurrAdmin(c)
@@ -108,42 +137,56 @@ func (a *apiAuth) info(c *gin.Context) {
 		roles = append(roles, admin.LoadForumData(role).(*admin.Role).RoleKey)
 	}
 	permissions := a.getPermissions(c)
-	ret.Success(common.ResponseSuccess, map[string]interface{}{
-		"userId":       currAdmin.ID,
-		"userName":     currAdmin.UserName,
-		"name":         currAdmin.NickName,
-		"buttons":      permissions,
-		"roles":        roles,
-		"avatar":       currAdmin.Avatar,
-		"introduction": "I'm superman",
-		"deptId":       currAdmin.DeptId,
-		"permissions":  permissions,
+	ret.Success(common.ResponseSuccess, &adminInfo{
+		UserId:       currAdmin.ID,
+		UserName:     currAdmin.UserName,
+		Name:         currAdmin.NickName,
+		Buttons:      permissions,
+		Roles:        roles,
+		Avatar:       currAdmin.Avatar,
+		Introduction: "I'm superman",
+		DeptId:       currAdmin.DeptId,
+		Permissions:  permissions,
 	})
 }
 
+// @Tags     好奇宝宝后台-鉴权相关
+// @Summary  刷新token
+// @Param    token  header    string  true  "token"
+// @Success  200    {object}  Http.WebResult{data=loginRet}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/auth/refresh_token [post]
 func (a *apiAuth) refreshToken(c *gin.Context) {
 	ret := Http.NewResult(c)
 	admin := common.GetCurrAdmin(c)
-	// todo
-	ret.Success(common.ResponseSuccess, map[string]interface{}{
-		"userId":       admin.ID,
-		"userName":     admin.UserName,
-		"name":         admin.NickName,
-		"buttons":      []string{"*:*:*"},
-		"roles":        []string{"admin"},
-		"avatar":       "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif",
-		"introduction": "妈卖麻花儿",
-		"deptId":       1,
-		"permissions":  []string{"*:*:*"},
-	})
+	token := newToken(admin.ID, admin.RoleId, admin.UserName)
+	ret.Success(common.ResponseSuccess, &loginRet{Token: token})
+	common.UpdateToken(common.UserTypeAdmin, admin.ID, token)
 }
 
+// @Tags     好奇宝宝后台-鉴权相关
+// @Summary  管理员登出
+// @Param    token  header    string  true  "token"
+// @Success  200    {object}  Http.WebResult
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/auth/logout [post]
 func (a *apiAuth) logout(c *gin.Context) {
 	common.UpdateToken(common.UserTypeAdmin, common.GetAdminId(c), "")
 	Http.NewResult(c).Success("success", nil)
 }
 
-// 个人中心
+type profileInfo struct {
+	Posts []*admin.Post `json:"posts"` // 职位列表
+	Roles []*admin.Role `json:"roles"` // 角色列表
+	User  *admin.User   `json:"user"`  // 用户详情
+}
+
+// @Tags     好奇宝宝后台-鉴权相关
+// @Summary  个人中心
+// @Param    token  header    string  true  "token"
+// @Success  200    {object}  Http.WebResult{data=profileInfo}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/auth/profile [get]
 func (a *apiAuth) profile(c *gin.Context) {
 	ret := Http.NewResult(c)
 	currAdmin := common.GetCurrAdmin(c)
@@ -162,14 +205,21 @@ func (a *apiAuth) profile(c *gin.Context) {
 		posts = append(posts, admin.LoadForumData(post).(*admin.Post))
 	}
 
-	ret.Success(common.ResponseSuccess, map[string]interface{}{
-		"posts": posts,
-		"roles": roles,
-		"user":  currAdmin,
+	ret.Success(common.ResponseSuccess, &profileInfo{
+		Posts: posts,
+		Roles: roles,
+		User:  currAdmin,
 	})
 }
 
-// 重置密码
+// @Tags     好奇宝宝后台-鉴权相关
+// @Summary  管理员重置密码
+// @Param    token        header    string  true  "token"
+// @Param    oldPassword  formData  string  true  "旧密码"
+// @Param    newPassword  formData  string  true  "新密码"
+// @Success  200       {object}  Http.WebResult
+// @Failure  500       {object}  Http.WebResult
+// @Router   /api/auth/setpwd [put]
 func (a *apiAuth) setPwd(c *gin.Context) {
 	ret := Http.NewResult(c)
 	requestData := struct {

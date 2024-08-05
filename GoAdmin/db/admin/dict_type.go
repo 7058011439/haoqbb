@@ -7,10 +7,10 @@ import (
 
 type DictType struct {
 	common.Model
-	DictName string `json:"dictName" gorm:"unique;"`          //字典名称
-	DictType string `json:"dictType" gorm:"unique;"`          //字典类型
-	Status   string `json:"status" gorm:"size:4;default:'2'"` //状态
-	Remark   string `json:"remark"`                           //备注
+	DictName string `json:"dictName" gorm:"unique;"`          // 字典名称
+	DictType string `json:"dictType" gorm:"unique;"`          // 字典类型
+	Status   string `json:"status" gorm:"size:4;default:'2'"` // 状态(1-禁止;2-启用)
+	Remark   string `json:"remark"`                           // 备注
 	common.ControlBy
 }
 

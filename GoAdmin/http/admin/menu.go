@@ -62,6 +62,12 @@ func (a *apiMenu) findFamilyMenu(menu *admin.Menu, allMenu map[int64]*admin.Menu
 	}
 }
 
+// @Tags     好奇宝宝后台-菜单管理
+// @Summary  获取角色菜单列表
+// @Param    token  header    string             true  "token"
+// @Success  200    {object}  Http.WebResult{data=[]admin.Menu}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/menu/menurole [get]
 func (a *apiMenu) menuRole(c *gin.Context) {
 	ret := Http.NewResult(c)
 	menuList := admin.GetRoleMenu(common.GetAdminRoleId(c))
@@ -83,6 +89,13 @@ func (a *apiMenu) menuRole(c *gin.Context) {
 	}))
 }
 
+// @Tags     好奇宝宝后台-菜单管理
+// @Summary  获取菜单列表
+// @Param    token  header    string  true  "token"
+// @Param    data   query     dto.QueryReqMenu  true  "查询条件"
+// @Success  200    {object}  Http.WebResult{data=[]admin.Menu}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/menu [get]
 func (a *apiMenu) list(c *gin.Context) {
 	var requestData dto.QueryReqMenu
 	if Http.Bind(c, &requestData) {
@@ -94,6 +107,12 @@ func (a *apiMenu) list(c *gin.Context) {
 	}
 }
 
+// @Tags     好奇宝宝后台-菜单管理
+// @Summary  获取菜单树列表
+// @Param    token  header    string  true  "token"
+// @Success  200    {object}  Http.WebResult{data=[]admin.Menu}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/menu//menuTree/:id [get]
 func (a *apiMenu) menuTree(c *gin.Context) {
 	ret := Http.NewResult(c)
 	var retData []map[string]interface{}
@@ -113,6 +132,13 @@ func (a *apiMenu) menuTree(c *gin.Context) {
 	})
 }
 
+// @Tags     好奇宝宝后台-菜单管理
+// @Summary  获取菜单详情
+// @Param    token  header    string  true  "token"
+// @Param    id     path      int     true  "菜单id"
+// @Success  200    {object}  Http.WebResult{data=admin.Menu}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/menu/{id} [get]
 func (a *apiMenu) info(c *gin.Context) {
 	getItemById(c, &admin.Menu{}, func(data commondb.IDataDB) {
 		menu := data.(*admin.Menu)
@@ -124,6 +150,13 @@ func (a *apiMenu) info(c *gin.Context) {
 	})
 }
 
+// @Tags     好奇宝宝后台-菜单管理
+// @Summary  修改菜单
+// @Param    token  header    string             true  "token"
+// @Param    data   formData  dto.UpdateReqMenu  true  "菜单信息"
+// @Success  200    {object}  Http.WebResult{data=int64}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/menu [put]
 func (a *apiMenu) updateInfo(c *gin.Context) {
 	updateItem(c, &dto.UpdateReqMenu{}, func(data commondb.IDataDB) {
 		menu := data.(*admin.Menu)
@@ -139,10 +172,24 @@ func (a *apiMenu) updateInfo(c *gin.Context) {
 	})
 }
 
+// @Tags     好奇宝宝后台-菜单管理
+// @Summary  新增菜单
+// @Param    token  header    string             true  "token"
+// @Param    data   formData  dto.InsertReqMenu  true  "菜单信息"
+// @Success  200    {object}  Http.WebResult{data=int64}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/menu [post]
 func (a *apiMenu) addInfo(c *gin.Context) {
 	addItem(c, &dto.InsertReqMenu{})
 }
 
+// @Tags     好奇宝宝后台-菜单管理
+// @Summary  删除菜单
+// @Param    token  header    string            true  "token"
+// @Param    data   body      dto.DeleteReqMenu  true  "菜单id"
+// @Success  200    {object}  Http.WebResult
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/menu [delete]
 func (a *apiMenu) deleteInfo(c *gin.Context) {
 	deleteItem(c, &dto.DeleteReqMenu{}, func(ids []int64) {
 		// 删除菜单可能权限变更，需刷新角色对应权限列表

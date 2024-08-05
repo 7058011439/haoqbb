@@ -2,6 +2,7 @@ package common
 
 import (
 	"github.com/7058011439/haoqbb/GoAdmin/db/common"
+	"github.com/7058011439/haoqbb/GoAdmin/util"
 	"github.com/7058011439/haoqbb/Http"
 	"github.com/gin-gonic/gin"
 	"strconv"
@@ -19,13 +20,12 @@ func GetList[T any](dbManager *common.Manager, c *gin.Context, model T, requestC
 	if Http.Bind(c, requestCondition) {
 		ret := Http.NewResult(c)
 		count, list := GetDBList(dbManager, model, requestCondition)
-		ret.Success(ResponseSuccess,
-			map[string]interface{}{
-				"count":     count,
-				"list":      list,
-				"pageIndex": requestCondition.GetPageIndex(),
-				"pageSize":  requestCondition.GetPageSize(),
-			})
+		ret.Success(ResponseSuccess, &util.WebResultCommonList{
+			Count:     count,
+			List:      list,
+			PageIndex: requestCondition.GetPageIndex(),
+			PageSize:  requestCondition.GetPageSize(),
+		})
 	}
 }
 

@@ -22,6 +22,12 @@ func init() {
 	a.RegeditApi(Http.TypeDelete, "", a.delInfo)
 }
 
+// @Tags     好奇宝宝后台-字典数据管理
+// @Summary  获取字典数据(下拉)列表
+// @Param    token  header    string                true  "token"
+// @Param    data   query     dto.QueryReqDictData  true  "字典类型"
+// @Success  200    {object}  Http.WebResult
+// @Router   /api/dict-data/option-select [get]
 func (a *apiDictData) optionSelect(c *gin.Context) {
 	ret := Http.NewResult(c)
 	var requestData dto.QueryReqDictData
@@ -38,22 +44,57 @@ func (a *apiDictData) optionSelect(c *gin.Context) {
 	}
 }
 
+// @Tags     好奇宝宝后台-字典数据管理
+// @Summary  获取字典数据列表
+// @Param    token  header    string                true  "token"
+// @Param    data   query     dto.QueryReqDictData  true  "查询条件"
+// @Success  200    {object}  Http.WebResult{data=[]admin.DictData}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/dict-data [get]
 func (a *apiDictData) list(c *gin.Context) {
 	getList(c, &admin.DictData{}, &dto.QueryReqDictData{})
 }
 
+// @Tags     好奇宝宝后台-字典数据管理
+// @Summary  获取字典数据详情
+// @Param    token  header    string  true  "token"
+// @Param    id     path      int     true  "字典数据id"
+// @Success  200    {object}  Http.WebResult{data=admin.DictData}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/dict-data/{id} [get]
 func (a *apiDictData) info(c *gin.Context) {
 	getItemById(c, &admin.DictData{}, nil)
 }
 
+// @Tags     好奇宝宝后台-字典数据管理
+// @Summary  修改字典数据
+// @Param    token  header    string                 true  "token"
+// @Param    data   formData  dto.UpdateReqDictData  true  "字典数据信息"
+// @Success  200    {object}  Http.WebResult{data=int64}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/dict-data [put]
 func (a *apiDictData) updateInfo(c *gin.Context) {
 	updateItem(c, &dto.UpdateReqDictData{}, nil)
 }
 
+// @Tags     好奇宝宝后台-字典数据管理
+// @Summary  新增字典数据
+// @Param    token  header    string                 true  "token"
+// @Param    data   formData  dto.InsertReqDictData  true  "字典数据信息"
+// @Success  200    {object}  Http.WebResult{data=int64}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/dict-data [post]
 func (a *apiDictData) addInfo(c *gin.Context) {
 	addItem(c, &dto.InsertReqDictData{})
 }
 
+// @Tags     好奇宝宝后台-字典数据管理
+// @Summary  删除字典数据
+// @Param    token  header    string                 true  "token"
+// @Param    data   body      dto.DeleteReqDictData  true  "字典数据id"
+// @Success  200    {object}  Http.WebResult
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/dict-data [delete]
 func (a *apiDictData) delInfo(c *gin.Context) {
 	deleteItem(c, &dto.DeleteReqDictData{}, nil)
 }

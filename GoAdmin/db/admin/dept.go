@@ -1,8 +1,8 @@
 package admin
 
 import (
-	"github.com/7058011439/haoqbb/GoAdmin/db/common"
 	"fmt"
+	"github.com/7058011439/haoqbb/GoAdmin/db/common"
 	"github.com/jinzhu/gorm"
 )
 
@@ -14,7 +14,7 @@ type Dept struct {
 	Leader   string `json:"leader"`                           // 负责人
 	Phone    string `json:"phone" gorm:"size:11;"`            // 手机
 	Email    string `json:"email"`                            // 邮箱
-	Status   string `json:"status" gorm:"size:4;default:'2'"` // 状态
+	Status   string `json:"status" gorm:"size:4;default:'2'"` // 状态(1-禁止;2-启用)
 	common.ControlBy
 	Children []*Dept `json:"children" gorm:"-"`
 }

@@ -14,7 +14,7 @@ type OperateLog struct {
 	Param            string  `json:"param" gorm:"type:longtext"`         // 操作参数
 	LatencyTime      float64 `json:"latencyTime"`                        // 操作耗时
 	Result           string  `json:"result" gorm:"type:longtext"`        // 返回参数
-	Status           string  `json:"status" gorm:"size:4;default:'2'"`   // 状态
+	Status           string  `json:"status" gorm:"size:4;default:'2'"`   // 状态(1-禁止;2-启用)
 	common.ControlBy `json:"-" gorm:"-"`
 }
 

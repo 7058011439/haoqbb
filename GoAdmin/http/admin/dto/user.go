@@ -7,10 +7,10 @@ import (
 )
 
 type QueryReqUser struct {
-	UserName string `form:"username" json:"username"`
-	Phone    string `form:"phone" json:"phone"`
-	Status   string `form:"status" json:"status"`
-	DeptId   int64  `form:"deptId" json:"deptId"`
+	UserName string `form:"username" json:"username"` // 用户名
+	Phone    string `form:"phone" json:"phone"`       // 电话
+	Status   string `form:"status" json:"status"`     // 状态(1-禁止;2-启用)
+	DeptId   int64  `form:"deptId" json:"deptId"`     // 部门id
 	commonHttp.QueryParam
 }
 
@@ -25,17 +25,17 @@ func (q *QueryReqUser) Condition() interface{} {
 
 type UpdateReqUser struct {
 	commonHttp.UpdateId
-	UserName string `json:"username" form:"username"`
-	NickName string `json:"nickName" form:"nickName"`
-	Phone    string `json:"phone" form:"phone"`
-	RoleId   int    `json:"roleId" form:"roleId"`
-	Avatar   string `json:"avatar" form:"avatar"`
-	Sex      string `json:"sex" form:"sex"`
-	Email    string `json:"email" form:"email"`
-	DeptId   int    `json:"deptId" form:"deptId"`
-	PostId   int    `json:"postId" form:"postId"`
-	Remark   string `json:"remark" form:"remark"`
-	Status   string `json:"status" form:"status" default:"1"`
+	UserName string `json:"username" form:"username"`         // 用户名
+	NickName string `json:"nickName" form:"nickName"`         // 用户昵称
+	Phone    string `json:"phone" form:"phone"`               // 电话
+	RoleId   int    `json:"roleId" form:"roleId"`             // 所属角色id
+	Avatar   string `json:"avatar" form:"avatar"`             // 头像
+	Sex      string `json:"sex" form:"sex"`                   // 性别
+	Email    string `json:"email" form:"email"`               // 邮箱
+	DeptId   int    `json:"deptId" form:"deptId"`             // 部门id
+	PostId   int    `json:"postId" form:"postId"`             // 职位id
+	Remark   string `json:"remark" form:"remark"`             // 备注
+	Status   string `json:"status" form:"status" default:"1"` // 状态(1-禁止;2-启用)
 }
 
 func (u *UpdateReqUser) Model() common.IUpdateData {
@@ -46,7 +46,7 @@ func (u *UpdateReqUser) Model() common.IUpdateData {
 
 type UpdateReqUserStatus struct {
 	commonHttp.UpdateId
-	Status string `json:"status" form:"status" default:"1"`
+	Status string `json:"status" form:"status" default:"1"` // 状态(1-禁止;2-启用)
 }
 
 func (u *UpdateReqUserStatus) Model() common.IUpdateData {
@@ -69,18 +69,18 @@ func (u *UpdateReqUserPassword) Model() common.IUpdateData {
 }
 
 type InsertReqUser struct {
-	UserName string `json:"username" form:"username"`
-	Password string `json:"password" form:"password"`
-	NickName string `json:"nickName" form:"nickName"`
-	Phone    string `json:"phone" form:"phone"`
-	RoleId   int    `json:"roleId" form:"roleId"`
-	Avatar   string `json:"avatar" form:"avatar"`
-	Sex      string `json:"sex" form:"sex"`
-	Email    string `json:"email" form:"email"`
-	DeptId   int    `json:"deptId" form:"deptId"`
-	PostId   int    `json:"postId" form:"postId"`
-	Remark   string `json:"remark" form:"remark"`
-	Status   string `json:"status" form:"status" default:"1"`
+	UserName string `json:"username" form:"username"`         // 用户名
+	Password string `json:"password" form:"password"`         // 密码
+	NickName string `json:"nickName" form:"nickName"`         // 用户昵称
+	Phone    string `json:"phone" form:"phone"`               // 电话
+	RoleId   int    `json:"roleId" form:"roleId"`             // 所属角色id
+	Avatar   string `json:"avatar" form:"avatar"`             // 头像
+	Sex      string `json:"sex" form:"sex"`                   // 性别
+	Email    string `json:"email" form:"email"`               // 邮箱
+	DeptId   int    `json:"deptId" form:"deptId"`             // 部门id
+	PostId   int    `json:"postId" form:"postId"`             // 职位id
+	Remark   string `json:"remark" form:"remark"`             // 备注
+	Status   string `json:"status" form:"status" default:"1"` // 状态(1-禁止;2-启用)
 }
 
 func (i *InsertReqUser) Model() common.IUpdateData {

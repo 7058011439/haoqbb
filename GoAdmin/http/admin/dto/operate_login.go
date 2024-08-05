@@ -6,9 +6,9 @@ import (
 )
 
 type QueryReqOperateLog struct {
-	UserName string `form:"userName" json:"userName"`
-	FullPath string `form:"fullPath" json:"fullPath"`
-	Method   string `form:"method" json:"method"`
+	UserName string `form:"userName" json:"userName"` // 执行api用户名
+	FullPath string `form:"fullPath" json:"fullPath"` // 访问api路径
+	Method   string `form:"method" json:"method"`     // 请求方式(GET, PUT, DELETE, POST)
 	commonHttp.QueryParam
 }
 

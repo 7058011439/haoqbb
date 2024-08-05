@@ -29,10 +29,10 @@ type IDeleteData interface {
 }
 
 type QueryParam struct {
-	PageIndex int    `form:"pageIndex" json:"pageIndex"`
-	PageSize  int    `form:"pageSize" json:"pageSize"`
-	BeginTime string `form:"beginTime" json:"beginTime"`
-	EndTime   string `form:"endTime" json:"endTime"`
+	PageIndex int    `form:"pageIndex" json:"pageIndex"` // 第几页(从1开始)
+	PageSize  int    `form:"pageSize" json:"pageSize"`   // 每页大小
+	BeginTime string `form:"beginTime" json:"beginTime"` // 开始时间(YYYY-MM-DD hh:mm:ss)
+	EndTime   string `form:"endTime" json:"endTime"`     // 截止时间(YYYY-MM-DD hh:mm:ss)
 }
 
 func (q *QueryParam) GetPageIndex() int {
@@ -70,7 +70,7 @@ func (q *QueryParam) Order() string {
 }
 
 type UpdateId struct {
-	ID int64 `json:"id" form:"id"` // 用户ID
+	ID int64 `json:"id" form:"id"` // 各种id
 }
 
 func (u *UpdateId) GetId() int64 {

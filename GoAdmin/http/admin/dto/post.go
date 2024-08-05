@@ -7,9 +7,9 @@ import (
 )
 
 type QueryReqPost struct {
-	PostCode string `form:"postCode" json:"postCode"`
-	PostName string `form:"postName" json:"postName"`
-	Status   string `form:"status" json:"status"`
+	PostCode string `form:"postCode" json:"postCode"` // 职位编号
+	PostName string `form:"postName" json:"postName"` // 职位名称
+	Status   string `form:"status" json:"status"`     // 状态(1-禁止;2-启用)
 	commonHttp.QueryParam
 }
 
@@ -35,11 +35,11 @@ func (u *UpdateReqPost) Model() common.IUpdateData {
 }
 
 type InsertReqPost struct {
-	PostCode string `json:"postCode" form:"postCode"`
-	PostName string `json:"postName" form:"postName"`
-	Sort     int    `json:"sort" form:"sort"`
-	Status   string `json:"status" form:"status"`
-	Remark   string `json:"remark" form:"remark"`
+	PostCode string `json:"postCode" form:"postCode"` // 职位编号
+	PostName string `json:"postName" form:"postName"` // 职位名称
+	Sort     int    `json:"sort" form:"sort"`         // 显示序号
+	Status   string `json:"status" form:"status"`     // 状态(1-禁止;2-启用)
+	Remark   string `json:"remark" form:"remark"`     // 备注
 }
 
 func (i *InsertReqPost) Model() common.IUpdateData {

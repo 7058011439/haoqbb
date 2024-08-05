@@ -5,6 +5,7 @@ import (
 	commondb "github.com/7058011439/haoqbb/GoAdmin/db/common"
 	"github.com/7058011439/haoqbb/GoAdmin/http/admin/dto"
 	"github.com/7058011439/haoqbb/GoAdmin/http/common"
+	_ "github.com/7058011439/haoqbb/GoAdmin/util"
 	"github.com/7058011439/haoqbb/Http"
 	"github.com/gin-gonic/gin"
 )
@@ -24,10 +25,24 @@ func init() {
 	a.RegeditApi(Http.TypePut, "/status", a.updateStatus)
 }
 
+// @Tags     好奇宝宝后台-角色管理
+// @Summary  获取角色列表
+// @Param    token  header    string            true  "token"
+// @Param    data   query     dto.QueryReqRole  true  "查询条件"
+// @Success  200    {object}  Http.WebResult{data=util.WebResultCommonList{list=[]admin.Role}}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/role [get]
 func (a *apiRole) list(c *gin.Context) {
 	getList(c, &admin.Role{}, &dto.QueryReqRole{})
 }
 
+// @Tags     好奇宝宝后台-角色管理
+// @Summary  获取角色详情
+// @Param    token  header    string  true  "token"
+// @Param    id     path      int     true  "角色id"
+// @Success  200    {object}  Http.WebResult{data=admin.Role}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/role/{id} [get]
 func (a *apiRole) info(c *gin.Context) {
 	getItemById(c, &admin.Role{}, func(data commondb.IDataDB) {
 		role := data.(*admin.Role)
@@ -44,6 +59,13 @@ func (a *apiRole) clearToken(roleId int64) {
 	}
 }
 
+// @Tags     好奇宝宝后台-角色管理
+// @Summary  修改角色
+// @Param    token  header    string             true  "token"
+// @Param    data   formData  dto.UpdateReqRole  true  "角色信息"
+// @Success  200    {object}  Http.WebResult{data=int64}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/role [put]
 func (a *apiRole) updateInfo(c *gin.Context) {
 	updateItem(c, &dto.UpdateReqRole{}, func(data commondb.IDataDB) {
 		role := data.(*admin.Role)
@@ -62,6 +84,13 @@ func (a *apiRole) updateInfo(c *gin.Context) {
 	})
 }
 
+// @Tags     好奇宝宝后台-角色管理
+// @Summary  新增角色
+// @Param    token  header    string             true  "token"
+// @Param    data   formData  dto.InsertReqRole  true  "角色信息"
+// @Success  200    {object}  Http.WebResult{data=int64}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/role [Post]
 func (a *apiRole) addInfo(c *gin.Context) {
 	addItem(c, &dto.InsertReqRole{})
 
@@ -69,6 +98,13 @@ func (a *apiRole) addInfo(c *gin.Context) {
 	common.RefreshPermission()
 }
 
+// @Tags     好奇宝宝后台-角色管理
+// @Summary  删除角色
+// @Param    token  header    string             true  "token"
+// @Param    data   body      dto.DeleteReqRole  true  "角色id"
+// @Success  200    {object}  Http.WebResult
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/role [delete]
 func (a *apiRole) delInfo(c *gin.Context) {
 	deleteItem(c, &dto.DeleteReqRole{}, func(ids []int64) {
 		for _, id := range ids {
@@ -81,6 +117,13 @@ func (a *apiRole) delInfo(c *gin.Context) {
 	})
 }
 
+// @Tags     好奇宝宝后台-角色管理
+// @Summary  修改角色状态
+// @Param    token  header    string                   true  "token"
+// @Param    data   formData  dto.UpdateReqRoleStatus  true  "角色状态"
+// @Success  200    {object}  Http.WebResult{data=int64}
+// @Failure  500    {object}  Http.WebResult
+// @Router   /api/role/status [put]
 func (a *apiRole) updateStatus(c *gin.Context) {
 	updateItem(c, &dto.UpdateReqRoleStatus{}, func(data commondb.IDataDB) {
 		role := data.(*admin.Role)

@@ -1,8 +1,8 @@
 package admin
 
 import (
-	"github.com/7058011439/haoqbb/GoAdmin/db/common"
 	"fmt"
+	"github.com/7058011439/haoqbb/GoAdmin/db/common"
 	"github.com/jinzhu/gorm"
 )
 
@@ -16,7 +16,7 @@ type Menu struct {
 	Action     string  `json:"action"`     // todo
 	Permission string  `json:"permission"` // 权限
 	ParentId   int64   `json:"parentId"`   // 父节点id
-	NoCache    bool    `json:"noCache"`    // todo
+	NoCache    bool    `json:"noCache"`    // 是否缓存
 	Breadcrumb string  `json:"breadcrumb"` // todo
 	Component  string  `json:"component"`  // 对应客户端代码(.vue)文件
 	Sort       int     `json:"sort"`       // 排序

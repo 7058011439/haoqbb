@@ -7,8 +7,8 @@ import (
 )
 
 type QueryReqDept struct {
-	DeptName string `form:"deptName" json:"deptName"`
-	Status   string `form:"status" json:"status"`
+	DeptName string `form:"deptName" json:"deptName"` // 部门名
+	Status   string `form:"status" json:"status"`     // 状态(1-禁止;2-启用)
 	commonHttp.QueryParam
 }
 
@@ -34,13 +34,13 @@ func (u *UpdateReqDept) Model() common.IUpdateData {
 }
 
 type InsertReqDept struct {
-	ParentId int64  `json:"parentId"` //上级部门
-	DeptName string `json:"deptName"` //部门名称
-	Sort     int    `json:"sort"`     //排序
-	Leader   string `json:"leader"`   //负责人
-	Phone    string `json:"phone"`    //手机
-	Email    string `json:"email"`    //邮箱
-	Status   string `json:"status"`   //状态
+	ParentId int64  `json:"parentId"` // 上级部门
+	DeptName string `json:"deptName"` // 部门名称
+	Sort     int    `json:"sort"`     // 排序
+	Leader   string `json:"leader"`   // 负责人
+	Phone    string `json:"phone"`    // 手机
+	Email    string `json:"email"`    // 邮箱
+	Status   string `json:"status"`   // 状态(1-禁止;2-启用)
 }
 
 func (u *InsertReqDept) Model() common.IUpdateData {

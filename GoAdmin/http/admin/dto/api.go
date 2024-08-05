@@ -7,11 +7,7 @@ import (
 )
 
 type QueryReqApi struct {
-	Type   string `form:"type" json:"type"`
-	Title  string `form:"title" json:"title"`
-	Path   string `form:"path" json:"path"`
-	Method string `form:"method" json:"method"`
-	Log    string `form:"log" json:"log"`
+	InsertReqApi
 	commonHttp.QueryParam
 }
 
@@ -33,11 +29,11 @@ func (u *UpdateReqApi) Model() common.IUpdateData {
 }
 
 type InsertReqApi struct {
-	Title  string `json:"title" form:"title"`
-	Path   string `json:"path" form:"path"`
-	Type   string `json:"type" form:"type"`
-	Method string `json:"method" form:"method"`
-	Log    string `json:"log" form:"log"`
+	Title  string `json:"title" form:"title"`   // 标题
+	Path   string `json:"path" form:"path"`     // api路径
+	Type   string `json:"type" form:"type"`     // 类型(BUS, SYS)
+	Method string `json:"method" form:"method"` // 请求方式(GET, PUT, DELETE, POST)
+	Log    string `json:"log" form:"log"`       // 是否记录日志(Y-记录日志;N-不记录日志)
 }
 
 func (i *InsertReqApi) Model() common.IUpdateData {

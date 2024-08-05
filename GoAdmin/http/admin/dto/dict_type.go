@@ -7,9 +7,9 @@ import (
 )
 
 type QueryReqDictType struct {
-	DictName string `form:"dictName" json:"dictName"`
-	DictType string `form:"dictType" json:"dictType"`
-	Status   string `form:"status" json:"status"`
+	DictName string `form:"dictName" json:"dictName"` // 字典名称
+	DictType string `form:"dictType" json:"dictType"` // 字典类型
+	Status   string `form:"status" json:"status"`     // 状态(1-禁止;2-启用)
 	commonHttp.QueryParam
 }
 
@@ -31,10 +31,10 @@ func (u *UpdateReqDictType) Model() common.IUpdateData {
 }
 
 type InsertReqDictType struct {
-	DictName string `json:"dictName" form:"dictName"`
-	DictType string `json:"dictType" form:"dictType"`
-	Status   string `json:"status" form:"status"`
-	Remark   string `json:"remark" form:"remark"`
+	DictName string `json:"dictName" form:"dictName"` // 字典名称
+	DictType string `json:"dictType" form:"dictType"` // 字典类型
+	Status   string `json:"status" form:"status"`     // 状态(1-禁止;2-启用)
+	Remark   string `json:"remark" form:"remark"`     // 备注
 }
 
 func (i *InsertReqDictType) Model() common.IUpdateData {

@@ -7,9 +7,9 @@ import (
 )
 
 type QueryReqRole struct {
-	RoleName string `form:"roleName" json:"roleName"`
-	RoleKey  string `form:"roleKey" json:"roleKey"`
-	Status   string `form:"status" json:"status"`
+	RoleName string `form:"roleName" json:"roleName"` // 角色名
+	RoleKey  string `form:"roleKey" json:"roleKey"`   // 角色关键字
+	Status   string `form:"status" json:"status"`     // 状态(1-禁止;2-启用)
 	commonHttp.QueryParam
 }
 
@@ -36,7 +36,7 @@ func (u *UpdateReqRole) Model() common.IUpdateData {
 
 type UpdateReqRoleStatus struct {
 	commonHttp.UpdateId
-	Status string `json:"status" form:"status" default:"1"`
+	Status string `json:"status" form:"status" default:"1"` // 状态(1-禁止;2-启用)
 }
 
 func (u *UpdateReqRoleStatus) Model() common.IUpdateData {
@@ -47,12 +47,12 @@ func (u *UpdateReqRoleStatus) Model() common.IUpdateData {
 }
 
 type InsertReqRole struct {
-	RoleName string  `form:"roleName" json:"roleName"`
-	RoleKey  string  `form:"roleKey" json:"roleKey"`
-	Status   string  `form:"status" json:"status"`
-	Sort     int     `form:"sort" json:"sort"`
-	Remark   string  `form:"remark" json:"remark"`
-	MenuIds  []int64 `form:"menuIds" json:"menuIds"`
+	RoleName string  `form:"roleName" json:"roleName"` // 角色名
+	RoleKey  string  `form:"roleKey" json:"roleKey"`   // 角色关键字
+	Status   string  `form:"status" json:"status"`     // 状态(1-禁止;2-启用)
+	Sort     int     `form:"sort" json:"sort"`         // 排序
+	Remark   string  `form:"remark" json:"remark"`     // 备注
+	MenuIds  []int64 `form:"menuIds" json:"menuIds"`   // 角色对应菜单列表id
 }
 
 func (i *InsertReqRole) Model() common.IUpdateData {

@@ -8,7 +8,7 @@ type Config struct {
 	ConfigKey   string `json:"configKey" gorm:"unique;"`             // 配置key
 	ConfigValue string `json:"configValue"`                          // 配置value
 	ConfigType  string `json:"configType"`                           // 配置类型(系统内置(Y,N))
-	IsFrontend  string `json:"isFrontend" gorm:"size:4;default:'1'"` // 是否前端配置(2,1)
+	IsFrontend  string `json:"isFrontend" gorm:"size:4;default:'1'"` // 是否前端配置(2-否,1-是)
 	Remark      string `json:"remark"`                               // 备注
 	common.ControlBy
 }

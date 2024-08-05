@@ -7,7 +7,7 @@ import (
 type LoginLog struct {
 	common.Model
 	UserName         string `json:"userName" gorm:"Index:idx_userName"`                // 登录用户名(账号)
-	Status           string `json:"status" gorm:"size:4;default:'2';Index:idx_status"` // 状态
+	Status           string `json:"status" gorm:"size:4;default:'2';Index:idx_status"` // 状态(1-失败;2-成功)
 	Remark           string `json:"remark""`                                           // 备注
 	Ip               string `json:"ip" gorm:"Index:idx_ip"`                            // 登录ip
 	common.ControlBy `json:"-" gorm:"-"`
