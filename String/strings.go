@@ -31,7 +31,7 @@ func HaveMathStr(msg string, bStr string, eStr string) (bool, string) {
 
 func HaveBeginEnd(msg string, bStr string, eStr string) (bool, string) {
 	beginPos := strings.Index(msg, bStr)
-	endPos := strings.Index(msg, eStr)
+	endPos := strings.LastIndex(msg, eStr)
 	if beginPos == 0 && endPos == len(msg)-len(eStr) {
 		return true, msg[beginPos+len(bStr) : endPos]
 	}
