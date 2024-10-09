@@ -58,7 +58,7 @@ func writeData1(key int64, value string) {
 }
 
 func writeData2(key int64, value string) {
-	testData2.Store(key, strData)
+	testData2.Store(key, string(sliceData))
 }
 
 func accessData1(key int64) string {

@@ -7,14 +7,12 @@ import (
 
 func NewBuffer(size int) *Buffer {
 	ret := &Buffer{
-		bs: make([]byte, 0, size),
+		cs: make([]byte, 0, size),
 	}
-	ret.cs = ret.bs
 	return ret
 }
 
 type Buffer struct {
-	bs []byte
 	cs []byte
 }
 
@@ -92,21 +90,23 @@ func (b *Buffer) OffSize(os int) error {
 	if os > len(b.cs) {
 		return errors.Errorf("Failed to OffSize, os larger than size")
 	}
-	buff := b.cs[os:]
-	// 这里很绕，既要让cs 不重新分配内存空间，又要让cs有足够容量存放保留内容
-	b.cs = b.bs[0 : len(b.cs)-os]
-	copy(b.cs, buff)
+	b.cs = b.cs[:copy(b.cs, b.cs[os:])]
 	return nil
 }
 
 func (b *Buffer) Reset() {
-	b.cs = b.bs
+	b.cs = b.cs[:0]
 }
 
 func (b *Buffer) checkCap(size int) {
-	// 这个地方写成 size+len(b.cs)>cap(b.cs) 也可以
-	if size+len(b.cs) > cap(b.bs) {
-		b.bs = make([]byte, 0, (size+len(b.cs))*2)
-		b.OffSize(0)
+	required := size + len(b.cs)
+	if required > cap(b.cs) {
+		if required < 1024 {
+			required *= 2
+		} else {
+			required = int(float64(required) * 1.2)
+		}
+		// 直接在扩容后的新切片中赋值
+		b.cs = append(make([]byte, 0, required), b.cs...)
 	}
 }

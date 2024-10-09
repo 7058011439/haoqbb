@@ -99,9 +99,7 @@ func (c *Client) revMsg() {
 			i := 0
 			for i = 0; i < len(buff); {
 				if data, offSize := c.onParseProtocol(buff[i:]); offSize > 0 {
-					msg := make([]byte, len(data))
-					copy(msg, data)
-					c.onHandleMsg(c, msg)
+					c.onHandleMsg(c, append(make([]byte, 0, len(data)), data...))
 					i += offSize
 				} else {
 					break

@@ -178,3 +178,13 @@ func GetFileSize(fileName string) int64 {
 	}
 	return 0
 }
+
+// extName: 是否包含扩展名
+func GetFileName(path string, extName bool) string {
+	fileNameWithExt := filepath.Base(path)
+	if extName {
+		return fileNameWithExt
+	} else {
+		return strings.TrimSuffix(fileNameWithExt, filepath.Ext(path))
+	}
+}

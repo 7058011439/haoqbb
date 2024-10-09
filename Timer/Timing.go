@@ -67,7 +67,7 @@ func (t *Timing) GetCost() float64 {
 }
 
 func (t *Timing) String() string {
-	return fmt.Sprintf("%v %v", t.GetCost(), mapDesc[t.eType])
+	return fmt.Sprintf("%.5f %v", t.GetCost(), mapDesc[t.eType])
 }
 
 func (t *Timing) PrintCost(condition float64, restart bool, format string, args ...interface{}) {
