@@ -55,11 +55,11 @@ type logData struct {
 }
 
 var mapLogInfo = map[int]*logInfo{
-	LevelDebug: {desc: "Debug", color: color.Blue},
+	LevelDebug: {desc: "Debug", color: color.FgCyan},
 	LevelLog:   {desc: "Log", color: color.Green},
 	LevelWarn:  {desc: "Warn", color: color.Yellow},
 	LevelError: {desc: "Error", color: color.Red},
-	LevelFatal: {desc: "Fatal", color: color.Red},
+	LevelFatal: {desc: "Fatal", color: color.BgHiRed},
 }
 
 var queue = Stl.NewQueue()
