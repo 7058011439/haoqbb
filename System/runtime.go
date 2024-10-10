@@ -12,7 +12,7 @@ import (
 
 func DropErr(e error, funName string) {
 	if e != nil {
-		Log.ErrorLog("[%s]:%s", funName, e)
+		Log.Error("[%s]:%s", funName, e)
 		panic(e)
 	}
 }
@@ -27,7 +27,7 @@ func RunFuncName() string {
 func StartExe(exeName string, params ...string) {
 	cmd := exec.Command("cmd.exe", "/C", "start", exeName)
 	if err := cmd.Run(); err != nil {
-		Log.ErrorLog("启动进程失败, err = %v", err)
+		Log.Error("启动进程失败, err = %v", err)
 	}
 }
 

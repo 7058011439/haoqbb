@@ -37,7 +37,7 @@ func (c *Client) GetIp() string {
 	if c.conn != nil {
 		return strings.Split(c.GetAddr(), ":")[0]
 	} else {
-		Log.ErrorLog("Failed to GetIp, tcpConn is nil")
+		Log.Error("Failed to GetIp, tcpConn is nil")
 		return "0.0.0.0"
 	}
 }
@@ -46,7 +46,7 @@ func (c *Client) GetAddr() string {
 	if c.conn != nil {
 		return c.conn.RemoteAddr().String()
 	} else {
-		Log.ErrorLog("Failed to GetIp, tcpConn is nil")
+		Log.Error("Failed to GetIp, tcpConn is nil")
 		return "0.0.0.0:0"
 	}
 }
@@ -77,7 +77,7 @@ func (c *Client) send(timerId Timer.TimerID, _ ...interface{}) {
 		return
 	}
 	if _, err := c.conn.Write(c.sendBuff.Bytes()); err != nil {
-		Log.ErrorLog("Failed to conn.write, err = %v, data = %v, clientId = %v", err, c.sendBuff.Bytes(), c.GetId())
+		Log.Error("Failed to conn.write, err = %v, data = %v, clientId = %v", err, c.sendBuff.Bytes(), c.GetId())
 	}
 	c.sendBuff.Reset()
 	if timerId == 0 && atomic.LoadInt64(&c.timerId) != 0 {
@@ -109,11 +109,11 @@ func (c *Client) revMsg() {
 				c.recvBuff.OffSize(i)
 			}
 			if c.recvBuff.Len() > c.getRecvPackageLimit() {
-				Log.ErrorLog("rev buff to long, size = %v", c.recvBuff.Len())
+				Log.Error("rev buff to long, size = %v", c.recvBuff.Len())
 				return
 			}
 		} else {
-			//Log.ErrorLog("Failed to read from client, err = %v, clientId = %v", err, c.GetId())
+			//Log.Error("Failed to read from client, err = %v, clientId = %v", err, c.GetId())
 			return
 		}
 	}

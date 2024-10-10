@@ -32,7 +32,7 @@ func (a *apiApp) captcha(c *gin.Context) {
 			"uuid":    ids,
 		})
 	} else {
-		Log.ErrorLog("DriverDigitFunc error, %s", err.Error())
+		Log.Error("DriverDigitFunc error, %s", err.Error())
 		ret.Fail("验证码获取失败", err)
 	}
 }
@@ -50,7 +50,7 @@ func (a *apiApp) captchaTest(c *gin.Context) {
 			"answer":  answer,
 		})
 	} else {
-		Log.ErrorLog("DriverDigitFunc error, %s", err.Error())
+		Log.Error("DriverDigitFunc error, %s", err.Error())
 		ret.Fail("验证码获取失败", err)
 	}
 }

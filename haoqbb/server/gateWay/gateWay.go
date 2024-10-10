@@ -33,7 +33,7 @@ type GateWay struct {
 
 func (g *GateWay) Init() error {
 	if err := mapstructure.Decode(g.ServiceCfg.Other, &g.Config); err != nil {
-		Log.ErrorLog("Failed to parse gateway Config, err = %v", err)
+		Log.Error("Failed to parse gateway Config, err = %v", err)
 	}
 	g.ClientList = make(map[int]map[uint64]bool, 2)
 	if g.IOnConnect == nil {
@@ -138,7 +138,7 @@ func (g *GateWay) ParseProtocol(data []byte) (rdata []byte, offset int) {
 */
 func (g *GateWay) HandleMsg(clientId uint64, data []byte) {
 	if len(data) < 6 {
-		Log.ErrorLog("failed to handleMsg, data too shoot, data = %v", data)
+		Log.Error("failed to handleMsg, data too shoot, data = %v", data)
 		return
 	}
 

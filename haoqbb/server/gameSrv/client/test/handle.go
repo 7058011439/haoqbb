@@ -40,7 +40,7 @@ func InitOver(q int) {
 		}
 		for v, w := range module.nextModule {
 			if _, ok := mapTestModule[v]; !ok && v != randModuleId {
-				Log.WarningLog("Failed to init the test module, next module not exist, id = %v", id)
+				Log.Warn("Failed to init the test module, next module not exist, id = %v", id)
 			} else {
 				weight.AddWeight(id, v, w)
 			}
@@ -60,10 +60,10 @@ func InsertTestModule(id int, entrance int, nextModule map[int]int) {
 				weight.AddWeight(randModuleId, id, entrance)
 			}
 		} else {
-			Log.ErrorLog("Failed to InsertTestModule, no exec func", id)
+			Log.Error("Failed to InsertTestModule, no exec func", id)
 		}
 	} else {
-		Log.ErrorLog("Failed to InsertTestModule, id repeated = %v", id)
+		Log.Error("Failed to InsertTestModule, id repeated = %v", id)
 	}
 }
 
@@ -85,7 +85,7 @@ func Run(_ Timer.TimerID, args ...interface{}) {
 			}
 			player.SetTestModule(nextModuleId)
 		} else {
-			Log.ErrorLog("Failed to Run, test module is nil, id = %v", player.TestModule())
+			Log.Error("Failed to Run, test module is nil, id = %v", player.TestModule())
 		}
 	}
 }

@@ -38,7 +38,7 @@ func init() {
 	fileData, _ := ioutil.ReadFile("cfg/Cluster.json")
 	err := json.Unmarshal(fileData, &clusterConfig)
 	if err != nil {
-		Log.ErrorLog("Failed to init nodeConfig, err = %v, fileDate = %v", err, fileData)
+		Log.Error("Failed to init nodeConfig, err = %v, fileDate = %v", err, fileData)
 		return
 	}
 	clusterConfig.Init()

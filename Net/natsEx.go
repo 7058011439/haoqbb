@@ -27,7 +27,7 @@ type NatsEx struct {
 func NewNats(url string, showLog bool) *NatsEx {
 	nc, err := nats.Connect(url)
 	if err != nil {
-		Log.ErrorLog("Failed to NewNats, url = %v, err = %v", url, err)
+		Log.Error("Failed to NewNats, url = %v, err = %v", url, err)
 		return nil
 	}
 	ret := &NatsEx{nc: nc, showLog: showLog}
@@ -70,7 +70,7 @@ func (n *NatsEx) handleRpc(mType *methodType, m *nats.Msg, needReply bool) {
 			err = tmp[0].Interface().(error)
 		}
 	} else {
-		Log.ErrorLog("Failed to handleRpc, argv err, err = %v", err)
+		Log.Error("Failed to handleRpc, argv err, err = %v", err)
 	}
 
 	if needReply {
@@ -149,7 +149,7 @@ func (n *NatsEx) RegeditEvent(eventType int, fn interface{}) error {
 			argv = reflect.ValueOf(m.Data)
 		} else {
 			if err := json.Unmarshal(m.Data, argv.Interface()); err != nil {
-				Log.ErrorLog("Failed to RegeditEvent, argv err, err = %v", err)
+				Log.Error("Failed to RegeditEvent, argv err, err = %v", err)
 				return
 			}
 			if valueType {

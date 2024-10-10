@@ -49,13 +49,13 @@ func NewMongoDB(ip string, port int, dbName string, username string, password st
 	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%d", ip, port))
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
-		Log.ErrorLog("Failed to NewMongoDB, connect error, ip = %v, port = %v, err = %v", ip, port, err)
+		Log.Error("Failed to NewMongoDB, connect error, ip = %v, port = %v, err = %v", ip, port, err)
 		return nil
 	}
 
 	database := client.Database(dbName)
 	if database == nil {
-		Log.ErrorLog("Failed to NewMongoDB, db is nil, dbName = %v", dbName)
+		Log.Error("Failed to NewMongoDB, db is nil, dbName = %v", dbName)
 		return nil
 	}
 	if queueCount < 1 {
@@ -83,10 +83,10 @@ func (m *MongoDB) HeartBeat() {
 		if m.client != nil {
 			err := m.client.Ping(context.TODO(), nil)
 			if err != nil {
-				Log.ErrorLog("Failed to HeartBeat, err = %v", err)
+				Log.Error("Failed to HeartBeat, err = %v", err)
 			}
 		} else {
-			Log.ErrorLog("Failed to HeartBeat, client is nil")
+			Log.Error("Failed to HeartBeat, client is nil")
 			break
 		}
 	}
@@ -120,7 +120,7 @@ func (m *MongoDB) exec(queue *Stl.Queue) {
 			}
 		}
 	} else {
-		Log.ErrorLog("Failed to Exec, client is nil")
+		Log.Error("Failed to Exec, client is nil")
 	}
 }
 
@@ -128,7 +128,7 @@ func (m *MongoDB) CloseConnect() {
 	if m.client != nil {
 		err := m.client.Disconnect(context.TODO())
 		if err != nil {
-			Log.ErrorLog("Failed to CloseConnect, err = %v", err)
+			Log.Error("Failed to CloseConnect, err = %v", err)
 		}
 	}
 }
@@ -178,7 +178,7 @@ func (m *MongoDB) insertOne(tabName string, newData interface{}, callBackData []
 
 	_, err := collection.InsertOne(context.TODO(), newData)
 	if err != nil {
-		Log.ErrorLog("insertOne error, collection.InsertOne, err = %v", err)
+		Log.Error("insertOne error, collection.InsertOne, err = %v", err)
 		return
 	}
 
@@ -192,13 +192,13 @@ func (m *MongoDB) updateOne(tabName string, condition interface{}, newData inter
 
 	filter, err := bson.Marshal(&condition)
 	if err != nil {
-		Log.ErrorLog("updateOne error, bson.Marshal, err = %v", err)
+		Log.Error("updateOne error, bson.Marshal, err = %v", err)
 		return
 	}
 
 	maps := bson.M{}
 	if err := bson.Unmarshal(filter, maps); err != nil {
-		Log.ErrorLog("updateOne error, bson.Unmarshal, err = %v", err)
+		Log.Error("updateOne error, bson.Unmarshal, err = %v", err)
 		return
 	}
 
@@ -207,7 +207,7 @@ func (m *MongoDB) updateOne(tabName string, condition interface{}, newData inter
 	}
 
 	if _, err := collection.UpdateOne(context.TODO(), maps, update); err != nil {
-		Log.ErrorLog("updateOne error, collection.UpdateOne, err = %v", err)
+		Log.Error("updateOne error, collection.UpdateOne, err = %v", err)
 		return
 	}
 
@@ -221,18 +221,18 @@ func (m *MongoDB) deleteOne(tabName string, condition interface{}, callbackData 
 
 	filter, err := bson.Marshal(&condition)
 	if err != nil {
-		Log.ErrorLog("deleteOne error, bson.Marshal, err = %v", err)
+		Log.Error("deleteOne error, bson.Marshal, err = %v", err)
 		return
 	}
 
 	maps := bson.M{}
 	if err := bson.Unmarshal(filter, maps); err != nil {
-		Log.ErrorLog("deleteOne error, bson.Unmarshal, err = %v", err)
+		Log.Error("deleteOne error, bson.Unmarshal, err = %v", err)
 		return
 	}
 
 	if _, err := collection.DeleteOne(context.TODO(), maps); err != nil {
-		Log.ErrorLog("deleteOne error, collection.DeleteOne, err = %v", err)
+		Log.Error("deleteOne error, collection.DeleteOne, err = %v", err)
 		return
 	}
 
@@ -250,7 +250,7 @@ func (m *MongoDB) findOneBack(tabName string, condition map[string]interface{}, 
 	}
 
 	if err := collection.FindOne(context.TODO(), filter).Decode(getData); err != nil {
-		Log.ErrorLog("findOneBack error, collection.find, err = %v", err)
+		Log.Error("findOneBack error, collection.find, err = %v", err)
 		return
 	}
 
@@ -264,19 +264,19 @@ func (m *MongoDB) findOne(tabName string, condition interface{}, getData interfa
 
 	filter, err := bson.Marshal(&condition)
 	if err != nil {
-		Log.ErrorLog("findOne error, bson.Marshal, err = %v", err)
+		Log.Error("findOne error, bson.Marshal, err = %v", err)
 		return
 	}
 
 	maps := bson.M{}
 	if err := bson.Unmarshal(filter, maps); err != nil {
-		Log.ErrorLog("findOne error, bson.Unmarshal, err = %v", err)
+		Log.Error("findOne error, bson.Unmarshal, err = %v", err)
 		return
 	}
 
 	if err := collection.FindOne(context.TODO(), maps).Decode(getData); err != nil {
 		if !strings.Contains(err.Error(), "no documents in result") {
-			Log.ErrorLog("findOne error, collection.find, err = %v", err)
+			Log.Error("findOne error, collection.find, err = %v", err)
 			return
 		}
 	}
@@ -291,7 +291,7 @@ func (m *MongoDB) insertMany(tabName string, newData interface{}, callBackData [
 
 	_, err := collection.InsertMany(context.TODO(), newData.([]interface{}))
 	if err != nil {
-		Log.ErrorLog("insertMany error, collection.InsertMany, err = %v", err)
+		Log.Error("insertMany error, collection.InsertMany, err = %v", err)
 		return
 	}
 
@@ -305,13 +305,13 @@ func (m *MongoDB) updateMany(tabName string, condition interface{}, newData inte
 
 	filter, err := bson.Marshal(&condition)
 	if err != nil {
-		Log.ErrorLog("updateMany error, bson.Marshal, err = %v", err)
+		Log.Error("updateMany error, bson.Marshal, err = %v", err)
 		return
 	}
 
 	maps := bson.M{}
 	if err := bson.Unmarshal(filter, maps); err != nil {
-		Log.ErrorLog("updateMany error, bson.Unmarshal, err = %v", err)
+		Log.Error("updateMany error, bson.Unmarshal, err = %v", err)
 		return
 	}
 
@@ -320,7 +320,7 @@ func (m *MongoDB) updateMany(tabName string, condition interface{}, newData inte
 	}
 
 	if _, err := collection.UpdateMany(context.TODO(), maps, update); err != nil {
-		Log.ErrorLog("updateMany error, collection.updateOne, err = %v", err)
+		Log.Error("updateMany error, collection.updateOne, err = %v", err)
 		return
 	}
 
@@ -334,18 +334,18 @@ func (m *MongoDB) deleteMany(tabName string, condition interface{}, callbackData
 
 	filter, err := bson.Marshal(&condition)
 	if err != nil {
-		Log.ErrorLog("deleteMany error, bson.Marshal, err = %v", err)
+		Log.Error("deleteMany error, bson.Marshal, err = %v", err)
 		return
 	}
 
 	maps := bson.M{}
 	if err := bson.Unmarshal(filter, maps); err != nil {
-		Log.ErrorLog("deleteMany error, bson.Unmarshal, err = %v", err)
+		Log.Error("deleteMany error, bson.Unmarshal, err = %v", err)
 		return
 	}
 
 	if _, err := collection.DeleteMany(context.TODO(), maps); err != nil {
-		Log.ErrorLog("deleteMany error, collection.DeleteMany, err = %v", err)
+		Log.Error("deleteMany error, collection.DeleteMany, err = %v", err)
 		return
 	}
 
@@ -359,28 +359,28 @@ func (m *MongoDB) findMany(tabName string, condition interface{}, getData interf
 
 	filter, err := bson.Marshal(&condition)
 	if err != nil {
-		Log.ErrorLog("findMany error, bson.Marshal, err = %v", err)
+		Log.Error("findMany error, bson.Marshal, err = %v", err)
 		return
 	}
 
 	maps := bson.M{}
 	if err := bson.Unmarshal(filter, maps); err != nil {
-		Log.ErrorLog("findMany error, bson.Unmarshal, err = %v", err)
+		Log.Error("findMany error, bson.Unmarshal, err = %v", err)
 		return
 	}
 
 	if cursor, err := collection.Find(context.TODO(), maps); err != nil {
-		Log.ErrorLog("findMany error, collection.FindOne, err = %v", err)
+		Log.Error("findMany error, collection.FindOne, err = %v", err)
 	} else {
 		//延迟关闭游标
 		defer func() {
 			if err := cursor.Close(context.TODO()); err != nil {
-				Log.ErrorLog("findMany error, cursor.Close, err = %v", err)
+				Log.Error("findMany error, cursor.Close, err = %v", err)
 			}
 		}()
 
 		if err := cursor.All(context.TODO(), &getData); err != nil {
-			Log.ErrorLog("findMany error, cursor.All, err = %v", err)
+			Log.Error("findMany error, cursor.All, err = %v", err)
 			return
 		}
 

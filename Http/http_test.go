@@ -20,7 +20,7 @@ func TestGetHttpSync(t *testing.T) {
 		go func() {
 			for index := 0; index < 100000; index++ {
 				if _, err := GetHttpSync("http://39.101.212.11:8888/api/forum/card/card-info?id=2", nil, NewHead(nil).Add("token", "xE.YHURaksbUuoJ.9qxlWDMhtChAtuO0HqyKUISr3s.GqvmfNlZt0dOpnoAS62oH")); err != nil {
-					Log.ErrorLog("http 访问失败, err = %v", err.Error())
+					Log.Error("http 访问失败, err = %v", err.Error())
 					break
 				}
 				timer.PrintCost(1000, "")

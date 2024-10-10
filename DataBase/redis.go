@@ -22,11 +22,11 @@ func NewRedisDB(ip string, port int, passWord string, dbIndex int) *RedisDB {
 		}),
 	}
 	if ret.Client == nil {
-		Log.ErrorLog("Failed to NewRedisDB, client is nil")
+		Log.Error("Failed to NewRedisDB, client is nil")
 		return nil
 	}
 	if _, err := ret.Client.Ping().Result(); err != nil {
-		Log.ErrorLog("Failed to redis ping, err = %v", err)
+		Log.Error("Failed to redis ping, err = %v", err)
 		return nil
 	}
 	return ret

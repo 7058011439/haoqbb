@@ -32,7 +32,7 @@ func (m *Manager) loadMemData(db IDataDB) IDataDB {
 
 func (m *Manager) loadMysqlData(db IDataDB) {
 	if err := m.mysql.Where(db).Find(db).Error; err != nil && err.Error() != "record not found" {
-		Log.WarningLog("查询[%v]失败, err = %v, data = %v", db.TableName(), err, db)
+		Log.Warn("查询[%v]失败, err = %v, data = %v", db.TableName(), err, db)
 	}
 }
 
@@ -67,7 +67,7 @@ func (m *Manager) insertDataToMem(db IDataDB) error {
 
 func (m *Manager) InsertData(db IDataDB) error {
 	if err := m.insertDataToMysql(db); err != nil {
-		Log.WarningLog("插入[%v]失败, err = %v, data = %v", db.TableName(), err, db)
+		Log.Warn("插入[%v]失败, err = %v, data = %v", db.TableName(), err, db)
 		return err
 	} else {
 		m.insertDataToMem(db)
@@ -81,7 +81,7 @@ func (m *Manager) updateMysql(db IDataDB) error {
 
 func (m *Manager) UpdateData(db IDataDB) error {
 	if err := m.updateMysql(db); err != nil {
-		Log.WarningLog("更新[%v]失败, err = %v, data = %v", db.TableName(), err, db)
+		Log.Warn("更新[%v]失败, err = %v, data = %v", db.TableName(), err, db)
 		return err
 	} else {
 		return m.deleteMemData(db)
@@ -119,7 +119,7 @@ func (m *Manager) deleteMemData(db IDataDB, ids ...int64) error {
 
 func (m *Manager) DeleteData(db IDataDB, ids ...int64) error {
 	if err := m.deleteMysqlData(db, ids...); err != nil {
-		Log.WarningLog("删除[%v]失败, err = %v, db = %v, ids = %v", db.TableName(), err, db, ids)
+		Log.Warn("删除[%v]失败, err = %v, db = %v, ids = %v", db.TableName(), err, db, ids)
 		// 这个地方的err有值，可能只是因为部分记录删除失败(还有部分成功了)，因为一些原因，不好筛选，所以干脆直接清理内存
 		m.deleteMemData(db, ids...)
 		return err

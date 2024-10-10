@@ -55,7 +55,7 @@ func (g *GameSrv) revMsgFromGateWay(_ int, data []byte) {
 	if userId := iPlayer.GetUserId(msg.ClientId); userId != 0 || msg.CmdId == cProtocol.SCmd_C2S_Login {
 		g.DispatchMsg(msg.ClientId, userId, int32(msg.CmdId), msg.Data)
 	} else {
-		Log.WarningLog("没有找到对应的userId, clientId = %v", msg.ClientId)
+		Log.Warn("没有找到对应的userId, clientId = %v", msg.ClientId)
 		net.PublicEventByName(common.GateWay, common.SrvPlayerOffLine, &common.Uint64{Data: msg.ClientId})
 	}
 }
@@ -82,7 +82,7 @@ func (g *GameSrv) BroadCastMsgToClient(clientIds []uint64, cmdId int32, data []b
 		if serverId, ok := g.mapClientSenderId[clientId]; ok {
 			serverIds[serverId] = append(serverIds[serverId], clientId)
 		} else {
-			Log.ErrorLog("Failed to SendMsgToClient, not find serverId, clientId = %v", clientId)
+			Log.Error("Failed to SendMsgToClient, not find serverId, clientId = %v", clientId)
 		}
 	}
 	for serverId, clientIds := range serverIds {

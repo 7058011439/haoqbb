@@ -31,7 +31,7 @@ func S2CRT(msg *msgHandle.ClientMsg) {
 	allCost += cost
 	// Log.Debug("Recv rt index = %v, time = %v", data.Index, time.Now().UnixNano() / int64(time.Millisecond))
 	if cost > 30 {
-		Log.WarningLog("rt index = %v, argCost = %vms, currCost = %vms", data.Index, allCost/count, cost)
+		Log.Warn("rt index = %v, argCost = %vms, currCost = %vms", data.Index, allCost/count, cost)
 	} else {
 		Log.Debug("rt index = %v, argCost = %vms, currCost = %vms", data.Index, allCost/count, cost)
 	}

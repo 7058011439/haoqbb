@@ -20,7 +20,7 @@ func Bind(c *gin.Context, data interface{}) bool {
 			Msg:  err.Error(),
 			Code: http.StatusInternalServerError,
 		})
-		Log.ErrorLog(err.Error())
+		Log.Error(err.Error())
 		return false
 	}
 }

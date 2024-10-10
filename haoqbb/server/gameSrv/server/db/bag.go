@@ -32,13 +32,13 @@ func (b *Bag) TakeItem(itemId int, itemCount int) {
 	if count, ok := b.ItemList[itemId]; ok {
 		if count < itemCount {
 			b.ItemList[itemId] = 0
-			Log.ErrorLog("减少物品失败, 物品数量不足, userId = %v, itemId = %v, 现有 = %v, 扣除 = %v", b.GetUserId(), itemId, count, itemCount)
+			Log.Error("减少物品失败, 物品数量不足, userId = %v, itemId = %v, 现有 = %v, 扣除 = %v", b.GetUserId(), itemId, count, itemCount)
 		} else {
 			b.ItemList[itemId] -= itemCount
 		}
 		b.Update()
 	} else {
-		Log.ErrorLog("减少物品失败, 物品id不存在, userId = %v, itemId = %v, 现有 = %v, 扣除 = %v", b.GetUserId(), itemId, count, itemCount)
+		Log.Error("减少物品失败, 物品id不存在, userId = %v, itemId = %v, 现有 = %v, 扣除 = %v", b.GetUserId(), itemId, count, itemCount)
 	}
 }
 

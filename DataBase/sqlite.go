@@ -20,7 +20,7 @@ func CloseSqlLite() {
 func InitSqlLite(fileName string) {
 	db, err := sqlx.Open("sqlite3", fileName)
 	if err != nil {
-		Log.ErrorLog("Failed to InitSqlLite, err = %v, fileName = %v", err, fileName)
+		Log.Error("Failed to InitSqlLite, err = %v, fileName = %v", err, fileName)
 		return
 	}
 	sqliteDB = db
@@ -47,7 +47,7 @@ func SqliteGetData(tabName string, condition map[string]interface{}, data interf
 	sql := selectToString(tabName, condition, fields...)
 	err := sqliteDB.Select(data, sql)
 	if err != nil {
-		Log.ErrorLog("数据库查询失败: err = %v, sql = %v", err, sql)
+		Log.Error("数据库查询失败: err = %v, sql = %v", err, sql)
 	}
 }
 
@@ -82,7 +82,7 @@ func sqliteExec() {
 
 func sqliteIntoQueue(sql string) {
 	if len(sql) < 1 {
-		Log.ErrorLog("Failed to sqliteIntoQueue, sql is empty")
+		Log.Error("Failed to sqliteIntoQueue, sql is empty")
 		return
 	}
 	sqliteQueue.Enqueue(sql)
@@ -91,6 +91,6 @@ func sqliteIntoQueue(sql string) {
 func sqliteexec(sql string) {
 	_, err := sqliteDB.Exec(sql)
 	if err != nil {
-		Log.ErrorLog("Failed to sqliteExec, err = %v, sql = %v", err, sql)
+		Log.Error("Failed to sqliteExec, err = %v, sql = %v", err, sql)
 	}
 }

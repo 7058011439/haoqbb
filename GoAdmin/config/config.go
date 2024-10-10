@@ -36,7 +36,7 @@ func init() {
 
 func Init() {
 	if fileData, err := ioutil.ReadFile("config_core.json"); err != nil {
-		Log.ErrorLog("加载配置文件失败, err = %v", err)
+		Log.Error("加载配置文件失败, err = %v", err)
 	} else {
 		json.Unmarshal(fileData, &stConfig)
 	}

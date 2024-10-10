@@ -127,7 +127,7 @@ func GetInt64(c *gin.Context, key string) int64 {
 	if data, ok := getClaim(c).(map[string]interface{}); ok {
 		return int64(data[key].(float64))
 	} else {
-		Log.ErrorLog("当前请求token解析异常")
+		Log.Error("当前请求token解析异常")
 		return 0
 	}
 }
@@ -136,7 +136,7 @@ func GetString(c *gin.Context, key string) string {
 	if data, ok := getClaim(c).(map[string]interface{}); ok {
 		return data[key].(string)
 	} else {
-		Log.ErrorLog("当前请求token解析异常")
+		Log.Error("当前请求token解析异常")
 		return ""
 	}
 }

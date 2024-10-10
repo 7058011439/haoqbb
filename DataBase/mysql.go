@@ -35,7 +35,7 @@ func MysqlInit(userName string, passWord string, ip string, port int, dbName str
 	// 打开连接失败
 	mysqlDb, mysqlDbErr = sqlx.Open("mysql", dbDSN)
 	if mysqlDbErr != nil {
-		Log.ErrorLog("数据源配置不正确: " + mysqlDbErr.Error())
+		Log.Error("数据源配置不正确: " + mysqlDbErr.Error())
 		return
 	}
 
@@ -47,7 +47,7 @@ func MysqlInit(userName string, passWord string, ip string, port int, dbName str
 	mysqlDb.SetConnMaxLifetime(200 * time.Second)
 
 	if mysqlDbErr = mysqlDb.Ping(); nil != mysqlDbErr {
-		Log.ErrorLog("数据库链接失败: " + mysqlDbErr.Error())
+		Log.Error("数据库链接失败: " + mysqlDbErr.Error())
 		return
 	}
 	for i := 0; i < maxConn; i++ {
@@ -66,7 +66,7 @@ func mysqlExec(queue *Stl.Queue) {
 						data.fun(data.sql, err, data.args...)
 					}
 				} else {
-					Log.ErrorLog("Failed to mysqlExec, err = %v, sql = %v", err, data.sql)
+					Log.Error("Failed to mysqlExec, err = %v, sql = %v", err, data.sql)
 				}
 			}
 		}
@@ -76,7 +76,7 @@ func mysqlExec(queue *Stl.Queue) {
 
 func mysqlIntoQueue(sql string, back callBack, param ...interface{}) {
 	if len(sql) < 1 {
-		Log.ErrorLog("Failed to mysqlIntoQueue, sql is empty")
+		Log.Error("Failed to mysqlIntoQueue, sql is empty")
 		return
 	}
 	mysqlQueue[connIndex%maxConn].Enqueue(&mysqlCallBack{
@@ -105,12 +105,12 @@ func MysqlInsertSyn(tabName string, data map[string]interface{}) (int64, error) 
 
 	r, err := mysqlDb.Exec(sql)
 	if err != nil {
-		Log.ErrorLog("Failed to MysqlInsertSyn, err = %v, sql = %v", err, sql)
+		Log.Error("Failed to MysqlInsertSyn, err = %v, sql = %v", err, sql)
 		return 0, err
 	}
 	id, err := r.LastInsertId()
 	if err != nil {
-		Log.ErrorLog("Failed to MysqlInsertSyn LastInsertId, err = %v", err)
+		Log.Error("Failed to MysqlInsertSyn LastInsertId, err = %v", err)
 		return 0, err
 	}
 	return id, nil
@@ -167,6 +167,6 @@ func MySqlGetData(tableName string, condition map[string]interface{}, data inter
 	sql := selectToString(tableName, condition, fields...)
 	err := mysqlDb.Select(data, sql)
 	if err != nil {
-		Log.ErrorLog("数据库查询失败: err = %v, sql = %v", err, sql)
+		Log.Error("数据库查询失败: err = %v, sql = %v", err, sql)
 	}
 }

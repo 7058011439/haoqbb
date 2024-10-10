@@ -39,7 +39,7 @@ type Dispatcher struct {
 
 func (d *Dispatcher) Init() error {
 	if err := mapstructure.Decode(d.ServiceCfg.Other, &d.config); err != nil {
-		Log.ErrorLog("Failed to parse dispatcher Config, err = %v", err)
+		Log.Error("Failed to parse dispatcher Config, err = %v", err)
 	}
 	//d.INetPool = Net.NewTcpServer(d.config.Port, d.connect, nil, nil, nil, Net.WithPoolId(d.GetId()))
 	d.Server = Http.NewHttpServer("release", true)
@@ -64,7 +64,7 @@ func (d *Dispatcher) connect(client Net.IClient) {
 	if gate, ok := d.mapOptimalGate[d.config.HitType]; ok {
 		data = gate.Addr
 	} else {
-		Log.ErrorLog("Failed to Dispatcher connect, d.mapOptimalGate = %v", d.mapOptimalGate)
+		Log.Error("Failed to Dispatcher connect, d.mapOptimalGate = %v", d.mapOptimalGate)
 	}
 	client.SendMsg([]byte(data))
 	client.Close()

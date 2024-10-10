@@ -38,7 +38,7 @@ func (c *CountAddUp) PrintCost(condition float64, format string, args ...interfa
 	mutex.Lock()
 	if c.GetCost() >= condition {
 		title := fmt.Sprintf(format, args...)
-		Log.ErrorLog("%v : %v cost = %v, totalCount = %v, currCount = %v, currRate = %0.3f", c.name, title, c.GetCost(), c.totalCount, c.currCount, float64(c.currCount)/c.GetCost())
+		Log.Error("%v : %v cost = %v, totalCount = %v, currCount = %v, currRate = %0.3f", c.name, title, c.GetCost(), c.totalCount, c.currCount, float64(c.currCount)/c.GetCost())
 		c.Timing.ReStart()
 		atomic.StoreInt64(&c.currCount, 0)
 	}

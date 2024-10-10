@@ -26,7 +26,7 @@ func StartClient() {
 	if conn, err := net.DialTimeout("tcp", config.GetCenterAddr(), time.Second*5); err == nil {
 		nodeConnPoolCenterClient.NewConnect(conn, nil)
 	} else {
-		Log.ErrorLog("连接到中心节点错误, err = %v", err)
+		Log.Error("连接到中心节点错误, err = %v", err)
 	}
 }
 
@@ -95,7 +95,7 @@ func msgHandleCenterClient(client Net.IClient, data []byte) {
 		if conn, err := net.DialTimeout("tcp", info.Addr, time.Second*5); err == nil {
 			nodeConnPool.NewConnect(conn, info.NodeId)
 		} else {
-			Log.ErrorLog("连接到新节点失败, err = %v", err)
+			Log.Error("连接到新节点失败, err = %v", err)
 		}
 	}
 }

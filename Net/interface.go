@@ -68,14 +68,14 @@ type TcpService struct {
 func (s *TcpService) StartServer() bool {
 	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%v", s.listenPort))
 	if err != nil {
-		Log.ErrorLog("listen error : %v", err)
+		Log.Error("listen error : %v", err)
 		return false
 	}
 	Log.Log("listen server, port: %v", s.listenPort)
 	go func() {
 		for {
 			if c, err := l.Accept(); err != nil {
-				Log.ErrorLog("accept error : %v", err)
+				Log.Error("accept error : %v", err)
 				break
 			} else {
 				s.NewConnect(c, nil)

@@ -254,7 +254,7 @@ func (q *queue) NewServiceMsg(srcServiceId int, msgType int, data []byte) {
 		return
 	}
 	if len(q.chanAll) == cap(q.chanAll) {
-		Log.ErrorLog("%v Failed to insert chan, chan full", q.name)
+		Log.Error("%v Failed to insert chan, chan full", q.name)
 		return
 	}
 	q.chanAll <- &queueData{
@@ -273,7 +273,7 @@ func (q *queue) DiscoverService(serviceName string, serviceId int) {
 		return
 	}
 	if len(q.chanAll) == cap(q.chanAll) {
-		Log.ErrorLog("%v Failed to insert chan, chan full", q.name)
+		Log.Error("%v Failed to insert chan, chan full", q.name)
 		return
 	}
 	q.chanAll <- &queueData{
@@ -291,7 +291,7 @@ func (q *queue) LoseService(serviceName string, serviceId int) {
 		return
 	}
 	if len(q.chanAll) == cap(q.chanAll) {
-		Log.ErrorLog("%v Failed to insert chan, chan full", q.name)
+		Log.Error("%v Failed to insert chan, chan full", q.name)
 		return
 	}
 	q.chanAll <- &queueData{
@@ -311,7 +311,7 @@ func (q *queue) RegeditHandleTcpMsg(fun func(clientId uint64, data []byte)) {
 // NewTcpMsg 收到tcp包处理(目前就网关和客户端)
 func (q *queue) NewTcpMsg(client Net.IClient, data []byte) {
 	if len(q.chanAll) == cap(q.chanAll) {
-		Log.ErrorLog("%v Failed to insert chan, chan full", q.name)
+		Log.Error("%v Failed to insert chan, chan full", q.name)
 		return
 	}
 	q.chanAll <- &queueData{
@@ -327,7 +327,7 @@ func (q *queue) NewTcpMsg(client Net.IClient, data []byte) {
 func (q *queue) SetRepeatTimer(duration Timer.TimeWheel, funcName Timer.TimerFun, args ...interface{}) Timer.TimerID {
 	return Timer.AddRepeatTimer(duration, func(timerId Timer.TimerID, args ...interface{}) {
 		if len(q.chanAll) == cap(q.chanAll) {
-			Log.ErrorLog("%v Failed to insert chan, chan full", q.name)
+			Log.Error("%v Failed to insert chan, chan full", q.name)
 			return
 		}
 		q.chanAll <- &queueData{
@@ -345,7 +345,7 @@ func (q *queue) SetRepeatTimer(duration Timer.TimeWheel, funcName Timer.TimerFun
 func (q *queue) SetOnceTimer(duration Timer.TimeWheel, funcName Timer.TimerFun, args ...interface{}) Timer.TimerID {
 	return Timer.AddOnceTimer(duration, func(timerId Timer.TimerID, args ...interface{}) {
 		if len(q.chanAll) == cap(q.chanAll) {
-			Log.ErrorLog("%v Failed to insert chan, chan full", q.name)
+			Log.Error("%v Failed to insert chan, chan full", q.name)
 			return
 		}
 		q.chanAll <- &queueData{
@@ -376,7 +376,7 @@ func (q *queue) GetMongoAsync(tabName string, condition interface{}, getData int
 	cost := Timer.NewTiming(Timer.Millisecond)
 	q.MongoDB.FindOne(tabName, condition, getData, index, func(getData interface{}, callbackData ...interface{}) {
 		if len(q.chanAll) == cap(q.chanAll) {
-			Log.ErrorLog("%v Failed to insert chan, chan full", q.name)
+			Log.Error("%v Failed to insert chan, chan full", q.name)
 			return
 		}
 		q.chanAll <- &queueData{
@@ -395,7 +395,7 @@ func (q *queue) InsertMongoAsync(tabName string, data interface{}, index int, fu
 	if fun != nil {
 		q.MongoDB.InsertOne(tabName, data, index, func(data ...interface{}) {
 			if len(q.chanAll) == cap(q.chanAll) {
-				Log.ErrorLog("%v Failed to insert chan, chan full", q.name)
+				Log.Error("%v Failed to insert chan, chan full", q.name)
 				return
 			}
 			q.chanAll <- &queueData{
@@ -415,7 +415,7 @@ func (q *queue) UpdateMongoAsync(tabName string, condition interface{}, data int
 	if callBack != nil {
 		q.MongoDB.UpdateOne(tabName, condition, data, index, func(data ...interface{}) {
 			if len(q.chanAll) == cap(q.chanAll) {
-				Log.ErrorLog("%v Failed to insert chan, chan full", q.name)
+				Log.Error("%v Failed to insert chan, chan full", q.name)
 				return
 			}
 			q.chanAll <- &queueData{
@@ -434,7 +434,7 @@ func (q *queue) UpdateMongoAsync(tabName string, condition interface{}, data int
 func (q *queue) GetHttpAsync(url string, header map[string]string, callback func(getData map[string]interface{}, backData ...interface{}), backData ...interface{}) {
 	Http.GetHttpAsync(url, nil, Http.NewHead(header), func(getData map[string]interface{}, _ error, backData ...interface{}) {
 		if len(q.chanAll) == cap(q.chanAll) {
-			Log.ErrorLog("%v Failed to insert chan, chan full", q.name)
+			Log.Error("%v Failed to insert chan, chan full", q.name)
 			return
 		}
 		q.chanAll <- &queueData{
@@ -451,7 +451,7 @@ func (q *queue) GetHttpAsync(url string, header map[string]string, callback func
 func (q *queue) PostHttpAsync(url string, header map[string]string, body map[string]interface{}, callback func(map[string]interface{}, ...interface{}), backData ...interface{}) {
 	Http.PostHttpAsync(url, Http.NewHead(header), Http.NewBody(body), func(getData map[string]interface{}, _ error, backData ...interface{}) {
 		if len(q.chanAll) == cap(q.chanAll) {
-			Log.ErrorLog("%v Failed to insert chan, chan full", q.name)
+			Log.Error("%v Failed to insert chan, chan full", q.name)
 			return
 		}
 		q.chanAll <- &queueData{

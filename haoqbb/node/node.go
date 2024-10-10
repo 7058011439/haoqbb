@@ -63,14 +63,14 @@ func Start() {
 					localNodeService[s.GetId()] = s
 					localNodeServiceName.Add(s.GetId(), s.GetName())
 				} else {
-					Log.ErrorLog("Failed to start service, service not setup, service name = %v", startServerName)
+					Log.Error("Failed to start service, service not setup, service name = %v", startServerName)
 				}
 			}
 			startNodeService()
 			StartServer()
 			StartClient()
 		} else {
-			Log.ErrorLog("未找到节点id配置, nodeId = %v", config.GetNodeID())
+			Log.Error("未找到节点id配置, nodeId = %v", config.GetNodeID())
 		}
 	}
 	for {
@@ -89,7 +89,7 @@ func Start() {
 						localNodeService[s.GetId()] = s
 						localNodeServiceName.Add(s.GetId(), s.GetName())
 					} else {
-						Log.ErrorLog("Failed to start service, service not setup, service name = %v", startServerName)
+						Log.Error("Failed to start service, service not setup, service name = %v", startServerName)
 					}
 				}
 				break

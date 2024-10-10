@@ -14,7 +14,7 @@ func init() {
 	dbName := config.MysqlDBName()
 	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=Local", config.MysqlUserName(), config.MysqlPassWord(), config.MysqlHost(), config.MysqlPort(), dbName)
 	if mysql, err := gorm.Open("mysql", connStr); err != nil {
-		hLog.ErrorLog("连接mysql数据库错误, err = %v", err)
+		hLog.Error("连接mysql数据库错误, err = %v", err)
 	} else {
 		mysql.LogMode(config.MysqlLog())
 		mysql.DB().SetMaxOpenConns(20)
@@ -47,6 +47,6 @@ func initModel(mysql *gorm.DB) {
 	tabList = append(tabList, &Post{})
 	tabList = append(tabList, &Role{})
 	if err := mysql.AutoMigrate(tabList...).Error; err != nil {
-		hLog.ErrorLog("初始化表失败，err = %v", err)
+		hLog.Error("初始化表失败，err = %v", err)
 	}
 }

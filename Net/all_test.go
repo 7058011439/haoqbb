@@ -74,7 +74,7 @@ func TestClient_SendMsg(t *testing.T) {
 			}()
 			time.Sleep(time.Millisecond)
 		} else {
-			Log.ErrorLog("连接到新节点失败, err = %v", err)
+			Log.Error("连接到新节点失败, err = %v", err)
 			break
 		}
 	}
@@ -109,7 +109,7 @@ func TestClient_Close(t *testing.T) {
 			if conn, err := net.DialTimeout("tcp", "127.0.0.1:6666", time.Second*5); err == nil {
 				tcpClient.NewConnect(conn, nil)
 			} else {
-				Log.ErrorLog("连接到新节点失败, err = %v", err)
+				Log.Error("连接到新节点失败, err = %v", err)
 				//break
 			}
 		}
@@ -121,7 +121,7 @@ func TestClient_Close(t *testing.T) {
 var ch chan []byte
 
 func msgHandleOther(client IClient, data []byte) {
-	Log.WarningLog("接受消息 = %v", string(data))
+	Log.Warn("接受消息 = %v", string(data))
 	// msgHandleOtherA(data[5:])
 	ch <- data
 }
@@ -144,7 +144,7 @@ func TestOther(t *testing.T) {
 		}()
 		time.Sleep(time.Millisecond)
 	} else {
-		Log.ErrorLog("连接到新节点失败, err = %v", err)
+		Log.Error("连接到新节点失败, err = %v", err)
 	}
 	time.Sleep(time.Second * 5)
 	for {

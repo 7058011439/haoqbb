@@ -102,7 +102,7 @@ func (s *Service) GetId() int {
 
 func (s *Service) Regedit(serviceCfg string) {
 	if err := json.Unmarshal([]byte(serviceCfg), &s.ServiceCfg); err != nil {
-		Log.ErrorLog("Failed to json.Unmarshal on RegeditApi, err = %v", err)
+		Log.Error("Failed to json.Unmarshal on RegeditApi, err = %v", err)
 	}
 	s.queue = NewQueue(s.GetName(), s.GetId())
 	s.setAgent()

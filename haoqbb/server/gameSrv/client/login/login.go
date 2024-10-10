@@ -50,7 +50,7 @@ func LoginWithToken(data map[string]interface{}, _ error, callBack ...interface{
 	clientId := callBack[0].(uint64)
 	currPhone := callBack[1].(string)
 	if data["code"].(float64) != 200 {
-		Log.ErrorLog("Failed to get token, ret = %v", data)
+		Log.Error("Failed to get token, ret = %v", data)
 		return
 	} else {
 		sendMsg := protocol.C2S_LoginWithToken{
@@ -72,7 +72,7 @@ func S2CLogin(msg *msgHandle.ClientMsg) {
 		p.SetTestModule(test.GetRandomModule())
 		Log.Log("Login success total player = %v", player.Count())
 	} else {
-		Log.ErrorLog("Login Failed, err = %v", data.Err)
+		Log.Error("Login Failed, err = %v", data.Err)
 	}
 }
 

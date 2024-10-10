@@ -10,12 +10,12 @@ func NewXmlHandle(fileName string, rootName string) *Xml {
 	// 初始化根节点
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(fileName); err != nil {
-		Log.ErrorLog("初始化xml文件失败,err = %v, fileName = %v, rootName = %v", err, fileName, rootName)
+		Log.Error("初始化xml文件失败,err = %v, fileName = %v, rootName = %v", err, fileName, rootName)
 		return nil
 	}
 	root := doc.SelectElement(rootName)
 	if root == nil {
-		Log.ErrorLog("初始化xml文件失败, 根节点为空fileName = %v, rootName = %v", fileName, rootName)
+		Log.Error("初始化xml文件失败, 根节点为空fileName = %v, rootName = %v", fileName, rootName)
 		return nil
 	}
 	return &Xml{

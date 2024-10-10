@@ -15,7 +15,7 @@ func GetOutBoundIP() string {
 	/*
 		conn, err := net.Dial("udp", "8.8.8.8:53")
 		if err != nil {
-			Log.ErrorLog("Failed to GetOutBoundIP, err = %v", err)
+			Log.Error("Failed to GetOutBoundIP, err = %v", err)
 			return ""
 		}
 		localAddr := conn.LocalAddr().(*net.UDPAddr)
@@ -24,7 +24,7 @@ func GetOutBoundIP() string {
 	// 使用一个公共的IP查询API（例如：httpbin.org）来获取公网IP
 	resp, err := http.Get("https://httpbin.org/ip")
 	if err != nil {
-		Log.ErrorLog("无法获取公网IP, err = %v", err)
+		Log.Error("无法获取公网IP, err = %v", err)
 		return ""
 	}
 	defer resp.Body.Close()
@@ -32,7 +32,7 @@ func GetOutBoundIP() string {
 	// 读取响应内容
 	ipData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		Log.ErrorLog("无法读取IP数据, err = %v", err)
+		Log.Error("无法读取IP数据, err = %v", err)
 		return ""
 	}
 
@@ -50,7 +50,7 @@ func GetInputBoundIP() string {
 	/*
 		conn, err := net.Dial("udp", "8.8.8.8:53")
 		if err != nil {
-			Log.ErrorLog("Failed to GetOutBoundIP, err = %v", err)
+			Log.Error("Failed to GetOutBoundIP, err = %v", err)
 			return ""
 		}
 		localAddr := conn.LocalAddr().(*net.UDPAddr)
@@ -59,7 +59,7 @@ func GetInputBoundIP() string {
 	// 获取所有网络接口
 	interfaces, err := net.Interfaces()
 	if err != nil {
-		Log.ErrorLog("获取网络接口出错:%v", err)
+		Log.Error("获取网络接口出错:%v", err)
 		return ""
 	}
 
@@ -71,7 +71,7 @@ func GetInputBoundIP() string {
 
 		addrs, err := iface.Addrs()
 		if err != nil {
-			Log.ErrorLog("获取地址出错:%v", err)
+			Log.Error("获取地址出错:%v", err)
 			continue
 		}
 

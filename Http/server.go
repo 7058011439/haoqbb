@@ -136,7 +136,7 @@ func status(c *gin.Context) {
 			Msg:  err.Error(),
 			Code: http.StatusInternalServerError,
 		})
-		Log.ErrorLog(err.Error())
+		Log.Error(err.Error())
 	}
 }
 

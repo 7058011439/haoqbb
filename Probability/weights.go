@@ -46,7 +46,7 @@ func (w *Weights) AddWeight(eType int, value int, weight int) {
 
 func (w *Weights) AddWeights(eType int, value []int, weight []int) {
 	if len(value) != len(weight) {
-		Log.ErrorLog("Failed to AddWeights, value len not equal weight len")
+		Log.Error("Failed to AddWeights, value len not equal weight len")
 		return
 	}
 	for i, v := range value {
@@ -63,7 +63,7 @@ func (w *Weights) Value(eType int) int {
 			}
 		}
 	} else {
-		Log.ErrorLog("Failed to get value type error, type = %v", eType)
+		Log.Error("Failed to get value type error, type = %v", eType)
 	}
 	return 0
 }

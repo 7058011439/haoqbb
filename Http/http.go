@@ -149,7 +149,7 @@ func GetHttpAsync(url string, param *Params, head *Head, callback func(map[strin
 		if resBytes != nil {
 			err := json.Unmarshal(resBytes, &result)
 			if err != nil {
-				Log.ErrorLog(err.Error())
+				Log.Error(err.Error())
 			}
 		}
 		if callback != nil {
@@ -183,14 +183,14 @@ func GetHttpSync(url string, param *Params, head *Head) ([]byte, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		Log.ErrorLog("http get error %s %s", err, url)
+		Log.Error("http get error %s %s", err, url)
 		return nil, err
 	}
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		Log.ErrorLog("http get io.ReadAll error %s", err)
+		Log.Error("http get io.ReadAll error %s", err)
 		return nil, err
 	}
 
@@ -219,7 +219,7 @@ func PostHttpSync(url string, head *Head, body *Body) (map[string]interface{}, e
 	}
 	req, err := http.NewRequest("POST", url, strings.NewReader(bodyData.Encode()))
 	if err != nil {
-		Log.ErrorLog("Failed to http.NewRequest on PostHttpAsync, err = %v", err)
+		Log.Error("Failed to http.NewRequest on PostHttpAsync, err = %v", err)
 		return nil, err
 	}
 	for k, v := range head.data { //解析header
@@ -228,20 +228,20 @@ func PostHttpSync(url string, head *Head, body *Body) (map[string]interface{}, e
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		Log.ErrorLog(err.Error())
+		Log.Error(err.Error())
 		return nil, err
 	}
 	defer func() {
 		err := resp.Body.Close()
 		if err != nil {
-			Log.ErrorLog(err.Error())
+			Log.Error(err.Error())
 		}
 	}()
 	replyBody, _ := ioutil.ReadAll(resp.Body)
 	result := make(map[string]interface{})
 	err = json.Unmarshal(replyBody, &result)
 	if err != nil {
-		Log.ErrorLog(err.Error())
+		Log.Error(err.Error())
 		return nil, err
 	}
 	return result, nil

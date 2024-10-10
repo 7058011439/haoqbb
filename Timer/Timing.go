@@ -77,7 +77,7 @@ func (t *Timing) PrintCost(condition float64, restart bool, format string, args 
 		if t.print != nil {
 			t.print(msg)
 		} else {
-			Log.WarningLog("%v", msg)
+			Log.Warn("%v", msg)
 		}
 	}
 	if restart {

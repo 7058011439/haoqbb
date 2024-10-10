@@ -24,7 +24,7 @@ func StartCenterServer() {
 	if tcpAddr != "" {
 		params := strings.Split(tcpAddr, ":")
 		if len(params) != 2 {
-			Log.ErrorLog("Failed to Start node server, ListenAddr error, try ***.***.***.***:****")
+			Log.Error("Failed to Start node server, ListenAddr error, try ***.***.***.***:****")
 			return
 		}
 		tcpServer := Net.NewTcpServer(Util.StrToInt(params[1]), newConnectCenterServer, disConnectCenterServer, parseProtocol, msgHandleCenterServer)
@@ -39,7 +39,7 @@ func newConnectCenterServer(client Net.IClient) {
 	if info, ok := signInfo.Load(ip); ok {
 		// 该节点多次连接中心节点, 而且都认证失败, 认为该节点有问题, 需要关闭连接
 		if info.(int) >= errorTimes {
-			Log.ErrorLog("黑名单连接, ip = %v", ip)
+			Log.Error("黑名单连接, ip = %v", ip)
 			client.Close()
 		}
 	} else {
@@ -90,7 +90,7 @@ func msgHandleCenterServer(client Net.IClient, data []byte) {
 			signInfo.Store(client.GetIp(), signOK)
 		} else {
 			signInfo.Store(client.GetIp(), info.(int)+1)
-			Log.ErrorLog("签名失败, ip = %v", client.GetIp())
+			Log.Error("签名失败, ip = %v", client.GetIp())
 			client.Close()
 		}
 		return
@@ -102,7 +102,7 @@ func msgHandleCenterServer(client Net.IClient, data []byte) {
 	bExist := false
 	nodeInfo.Range(func(key, value interface{}) bool {
 		if value.(*NodeInfo).NodeId == nInfo.NodeId {
-			Log.ErrorLog("发现重复节点, id = %v", nInfo.NodeId)
+			Log.Error("发现重复节点, id = %v", nInfo.NodeId)
 			bExist = true
 			return false
 		}

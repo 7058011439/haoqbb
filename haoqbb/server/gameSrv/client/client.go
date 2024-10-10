@@ -90,16 +90,16 @@ func (g *GameClient) NewClient(Timer.TimerID, ...interface{}) {
 			if mapData["code"].(float64) == 200 {
 				gateWayAddr = mapData["data"].(string)
 			} else {
-				Log.ErrorLog("获取网关信息失败, err = %v", mapData["msg"].(string))
+				Log.Error("获取网关信息失败, err = %v", mapData["msg"].(string))
 			}
 		} else {
-			Log.ErrorLog("获取网关信息失败, err = %v", err)
+			Log.Error("获取网关信息失败, err = %v", err)
 			return
 		}
 	}
 
 	if newConn, err := net.Dial("tcp", gateWayAddr); err != nil {
-		Log.ErrorLog("连接网关失败, err = %v", err)
+		Log.Error("连接网关失败, err = %v", err)
 		return
 	} else {
 		Interface.NewClient(newConn)

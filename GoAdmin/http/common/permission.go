@@ -92,7 +92,7 @@ func checkPermission(c *gin.Context, path string) error {
 		if _, ok := apiList[path]; ok {
 			return nil
 		} else {
-			Log.ErrorLog("%v: 用户没有该权限, path = %v", ResponsePermissionError, path)
+			Log.Error("%v: 用户没有该权限, path = %v", ResponsePermissionError, path)
 			return fmt.Errorf("%v: 用户没有该权限", ResponsePermissionError)
 		}
 	} else {
