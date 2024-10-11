@@ -3,12 +3,12 @@ package Panic
 import (
 	"fmt"
 	"math/rand"
-	"os"
 	"testing"
 	"time"
 )
 
-func init() {
+func TestRedirectStderr(t *testing.T) {
+	RedirectStderr("./Logs/Panic.log")
 	go func() {
 		arrInt := []int{0, 1}
 		index := 0
@@ -21,10 +21,6 @@ func init() {
 			}
 		}
 	}()
-}
-
-func TestRedirectStderr(t *testing.T) {
-	RedirectStderr("./Logs/Panic.log")
 	go func() {
 		tick := time.NewTicker(time.Second)
 		for {
@@ -34,7 +30,6 @@ func TestRedirectStderr(t *testing.T) {
 			}
 		}
 	}()
-	chStop := make(chan os.Signal)
-	<-chStop
+	select {}
 	fmt.Println(111)
 }

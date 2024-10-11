@@ -188,3 +188,26 @@ func GetFileName(path string, extName bool) string {
 		return strings.TrimSuffix(fileNameWithExt, filepath.Ext(path))
 	}
 }
+
+// CreateDir 根据文件名(也有可能是目录)创建目录，如果目录存在，不创建
+// 如
+// fileName             类型     文件/目录是否存在         处理结果
+// F:\Haoqbb\Logs     	目录     是                      不处理
+// F:\Haoqbb\Logs     	目录     否                      创建目录:F:\Haoqbb\Logs
+// F:\Haoqbb\Logs\1.log	文件     是                      不处理
+// F:\Haoqbb\Logs\2.log	文件     否                      创建目录:F:\Haoqbb\Logs
+func CreateDir(fileName string) error {
+	if !PathExists(fileName) {
+		// 获取目录部分
+		dir := fileName
+		if fileInfo, err := os.Stat(fileName); err == nil && !fileInfo.IsDir() {
+			// 如果路径存在且是文件，则使用文件的目录部分
+			dir = filepath.Dir(fileName)
+		} else if filepath.Ext(fileName) != "" {
+			// 如果路径有扩展名，但不存在，则假设是文件，获取目录部分
+			dir = filepath.Dir(fileName)
+		}
+		return os.MkdirAll(dir, os.ModePerm) // 创建目录
+	}
+	return nil
+}

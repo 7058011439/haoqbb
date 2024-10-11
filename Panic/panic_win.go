@@ -4,6 +4,7 @@
 package Panic
 
 import (
+	"github.com/7058011439/haoqbb/File"
 	"os"
 	"syscall"
 )
@@ -26,6 +27,7 @@ func setStdHandle(stdhandle int32, handle syscall.Handle) error {
 
 // RedirectStderr to the file passed in
 func RedirectStderr(fileName string) (err error) {
+	File.CreateDir(fileName)
 	logFile, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_APPEND, 0644)
 	if err != nil {
 		return
