@@ -125,7 +125,7 @@ func (n *NatsEx) RegeditRecvMsg(messageType int, fun func(int, []byte)) error {
 	return nil
 }
 
-// 事件可以触发多个模块
+// RegeditEvent 事件可以触发多个模块
 func (n *NatsEx) RegeditEvent(eventType int, fn interface{}) error {
 	value := reflect.ValueOf(fn)
 	if value.Kind() != reflect.Func {

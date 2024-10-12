@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package rpc;
+
+option go_package = "../rpc";
+
+service CalcService {
+  rpc Multiply (CalcRequest) returns (CalcResponse);
+  rpc Divide (CalcRequest) returns (CalcResponse);
+}
+
+message CalcRequest {
+  int32 a = 1;
+  int32 b = 2;
+}
+
+message CalcResponse {
+  int32 result = 1;
+}

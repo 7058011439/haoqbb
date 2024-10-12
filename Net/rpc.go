@@ -38,7 +38,7 @@ func suitableMethods(typ reflect.Type, reportErr bool) map[string]*methodType {
 		// Method needs three ins: receiver, *args, *Reply.
 		if mtype.NumIn() != 3 {
 			if reportErr {
-				fmt.Printf("rpc.Register: method %q has %d input parameters; needs exactly three\n", mname, mtype.NumIn())
+				fmt.Printf("rpc.RegisterService: method %q has %d input parameters; needs exactly three\n", mname, mtype.NumIn())
 			}
 			continue
 		}
@@ -46,7 +46,7 @@ func suitableMethods(typ reflect.Type, reportErr bool) map[string]*methodType {
 		argType := mtype.In(1)
 		if !isExportedOrBuiltinType(argType) {
 			if reportErr {
-				fmt.Printf("rpc.Register: argument type of method %q is not exported: %q\n", mname, argType)
+				fmt.Printf("rpc.RegisterService: argument type of method %q is not exported: %q\n", mname, argType)
 			}
 			continue
 		}
@@ -54,27 +54,27 @@ func suitableMethods(typ reflect.Type, reportErr bool) map[string]*methodType {
 		replyType := mtype.In(2)
 		if replyType.Kind() != reflect.Ptr {
 			if reportErr {
-				fmt.Printf("rpc.Register: Reply type of method %q is not a pointer: %q\n", mname, replyType)
+				fmt.Printf("rpc.RegisterService: Reply type of method %q is not a pointer: %q\n", mname, replyType)
 			}
 			continue
 		}
 		// Reply type must be exported.
 		if !isExportedOrBuiltinType(replyType) {
 			if reportErr {
-				fmt.Printf("rpc.Register: Reply type of method %q is not exported: %q\n", mname, replyType)
+				fmt.Printf("rpc.RegisterService: Reply type of method %q is not exported: %q\n", mname, replyType)
 			}
 			continue
 		}
 		// Method needs one out.
 		if mtype.NumOut() != 1 {
 			if reportErr {
-				fmt.Printf("rpc.Register: method %q has %d output parameters; needs exactly one\n", mname, mtype.NumOut())
+				fmt.Printf("rpc.RegisterService: method %q has %d output parameters; needs exactly one\n", mname, mtype.NumOut())
 			}
 			continue
 		}
 		if mtype.Out(0).String() != "error" {
 			if reportErr {
-				fmt.Printf("rpc.Register: return type of method %v is %v, must be error\n", mname, typ.Out(0).String())
+				fmt.Printf("rpc.RegisterService: return type of method %v is %v, must be error\n", mname, typ.Out(0).String())
 			}
 		}
 		methods[mname] = &methodType{method: method, argType: argType, replyType: replyType}
