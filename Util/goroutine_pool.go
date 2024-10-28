@@ -2,7 +2,6 @@ package Util
 
 import (
 	"container/list"
-	"math/rand"
 	"runtime"
 	"sync"
 	"sync/atomic"
@@ -49,7 +48,7 @@ func (c *Coroutine) dispatch() bool {
 		select {
 		// 新任务需要执行
 		case newTask := <-c.chNewTask:
-			// 如果执行协程空闲，则直接通知执行协程执行任务，否则放入队列中。
+			// 如果执行协程空闲，则直接通知执行协程执行任务；否则放入队列中。
 			if atomic.LoadInt32(&c.status) == 0 {
 				atomic.StoreInt32(&c.status, 1)
 				c.chDoTask <- newTask
@@ -70,9 +69,9 @@ func (c *Coroutine) dispatch() bool {
 }
 
 type CoroutinePool struct {
-	pool           []*Coroutine
-	idxCoroutineId map[int64]*Coroutine // idx 对应的队列, 保证有序执行(RunOrder)是, 同一个idx由同一个协程执行, 保证执行顺序
-	sync.Mutex
+	pool           []*Coroutine // 协程列表
+	idxCoroutineId sync.Map     // map[idx]*Coroutine idx 对应的协程, 保证有序执行(RunOrder)是, 同一个idx由同一个协程执行, 保证执行顺序
+	next           uint64       // 用于实现轮询的 atomic 自增索引
 }
 
 func NewCoroutinePool() *CoroutinePool {
@@ -81,20 +80,50 @@ func NewCoroutinePool() *CoroutinePool {
 	for i := 0; i < count; i++ {
 		ret.pool = append(ret.pool, NewCoroutine())
 	}
-	ret.idxCoroutineId = make(map[int64]*Coroutine, 1024)
 	return ret
 }
 
 // RunOrder 有序执行任务, 根据idx确定任务队列，然后队列有序
+/*
+pool := NewCoroutinePool()
+pool.RunOrder(10000, func(i ...interface{}) {
+	fmt.Println("hello world A")
+})
+pool.RunOrder(10000, func(i ...interface{}) {
+	fmt.Println("hello world B")
+})
+pool.RunOrder(10086, func(i ...interface{}) {
+	fmt.Println("hello world C")
+})
+pool.RunOrder(10086, func(i ...interface{}) {
+	fmt.Println("hello world D")
+})
+可以保证hello world A 比 hello world B 先执行; hello world C 比 hello world D 先执行。但是hello world A 和 hello world C 会随机执行
+*/
 func (c *CoroutinePool) RunOrder(idx int64, fun func(...interface{}), args ...interface{}) {
 	c.getOrderPool(idx).chNewTask <- &task{fun: fun, args: args}
 }
 
-// Run 有序执行任务, 根据idx确定任务队列，然后队列有序
+// Run 无序执行
+/*
+pool := NewCoroutinePool()
+pool.Run(func(i ...interface{}) {
+	fmt.Println("hello world E")
+})
+pool.Run(func(i ...interface{}) {
+	fmt.Println("hello world F")
+})
+pool.Run(func(i ...interface{}) {
+	fmt.Println("hello world G")
+})
+pool.Run(func(i ...interface{}) {
+	fmt.Println("hello world H")
+})
+这里虽然顺序写的E,F,G,H, 但是实际执行顺序不一定, 因为4个任务会被分配到不同的协程,各协程间独立, 不保证顺序
+*/
 func (c *CoroutinePool) Run(fun func(...interface{}), args ...interface{}) {
-	c.Mutex.Lock()
-	defer c.Mutex.Unlock()
-	c.pool[rand.Intn(len(c.pool))].chNewTask <- &task{fun: fun, args: args}
+	idx := atomic.AddUint64(&c.next, 1) % uint64(len(c.pool))
+	c.pool[idx].chNewTask <- &task{fun: fun, args: args}
 }
 
 func (c *CoroutinePool) Empty() bool {
@@ -106,28 +135,24 @@ func (c *CoroutinePool) Empty() bool {
 }
 
 func (c *CoroutinePool) getOrderPool(idx int64) *Coroutine {
-	c.Mutex.Lock()
-	defer c.Mutex.Unlock()
-	if data, ok := c.idxCoroutineId[idx]; ok {
-		return data
-	} else {
-		minCount := 9999999
-		var ret *Coroutine
-		for _, v := range c.pool {
-			if v.idxCount == 0 {
-				ret = v
-				break
-			}
-
-			if v.idxCount < minCount {
-				minCount = v.idxCount
-				ret = v
-			}
-		}
-		if ret != nil {
-			ret.idxCount += 1
-			c.idxCoroutineId[idx] = ret
-		}
-		return ret
+	if v, ok := c.idxCoroutineId.Load(idx); ok {
+		return v.(*Coroutine)
 	}
+	// 新建协程并更新映射
+	minCount := int(^uint(0) >> 1) // 最大整数
+	var ret *Coroutine
+	for _, v := range c.pool {
+		if v.idxCount < minCount {
+			minCount = v.idxCount
+			ret = v
+		}
+		if minCount == 0 {
+			break
+		}
+	}
+	if ret != nil {
+		ret.idxCount += 1
+		c.idxCoroutineId.Store(idx, ret)
+	}
+	return ret
 }
