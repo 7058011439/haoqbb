@@ -1,6 +1,6 @@
-// set_timer_windows.go
 //go:build windows
-// +build windows
+
+// set_timer_windows.go
 
 package Timer
 

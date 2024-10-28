@@ -1,1 +1,0 @@
-protoc --gofast_out=. --go-grpc_out=. example.proto

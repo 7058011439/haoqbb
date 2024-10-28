@@ -1,7 +1,6 @@
 package Net
 
 import (
-	"github.com/7058011439/haoqbb/GoroutinePool"
 	"github.com/7058011439/haoqbb/Log"
 	"github.com/7058011439/haoqbb/Stl"
 	"net"
@@ -46,21 +45,20 @@ func newTcpConnPool(connect ConnectHandle, disconnect ConnectHandle, parse Parse
 }
 
 type tcpConnPool struct {
-	id                int                          // 池Id
-	seed              int                          // 连接Id自增字段
-	mapClient         map[uint64]IClient           // 客户端信息
-	mutexClient       sync.RWMutex                 // 客户端锁
-	connectHandle     ConnectHandle                // 新连接处理函数
-	disconnectHandle  ConnectHandle                // 断开连接处理函数
-	parseProtocol     ParseProtocol                // 消息解析函数
-	msgHandle         MsgHandle                    // 消息处理函数
-	compareData       CompareCustomData            // 自定义数据比较函数
-	heartbeatInterval time.Duration                // 心跳间隔(秒)
-	heartbeatHandle   HeartBeatHandle              // 心跳处理函数
-	recvPackageSize   int                          // 每次读取包大小
-	recvPackageLimit  int                          // 接收包最大长度(防止乱报攻击)
-	sendPackageSize   int                          // 发送包最大长度
-	sendTaskPool      *GoroutinePool.GoRoutinePool // 发送任务协程池
+	id                int                // 池Id
+	seed              int                // 连接Id自增字段
+	mapClient         map[uint64]IClient // 客户端信息
+	mutexClient       sync.RWMutex       // 客户端锁
+	connectHandle     ConnectHandle      // 新连接处理函数
+	disconnectHandle  ConnectHandle      // 断开连接处理函数
+	parseProtocol     ParseProtocol      // 消息解析函数
+	msgHandle         MsgHandle          // 消息处理函数
+	compareData       CompareCustomData  // 自定义数据比较函数
+	heartbeatInterval time.Duration      // 心跳间隔(秒)
+	heartbeatHandle   HeartBeatHandle    // 心跳处理函数
+	recvPackageSize   int                // 每次读取包大小
+	recvPackageLimit  int                // 接收包最大长度(防止乱报攻击)
+	sendPackageSize   int                // 发送包最大长度
 }
 
 func (t *tcpConnPool) getClientId() uint64 {

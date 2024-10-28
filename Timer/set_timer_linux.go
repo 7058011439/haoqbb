@@ -1,6 +1,6 @@
-// set_timer_linux.go
 //go:build linux
-// +build linux
+
+// set_timer_linux.go
 
 package Timer
 
