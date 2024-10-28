@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sync/atomic"
 	"testing"
-	"time"
 )
 
 /*
@@ -54,16 +53,10 @@ func TestCalcSumWithPool(t *testing.T) {
 			atomic.AddInt64(&total, ret)
 		}, i)
 	}
-	tStart := time.Now()
-	for {
-		if pool.Empty() {
-			t.Logf("total = %v, wait cost = %v ms", total, time.Since(tStart).Milliseconds())
-			break
-		}
-		time.Sleep(time.Millisecond)
-	}
-	if !isSortSlice(data) {
-		t.Errorf("非顺序执行 data = %v", data)
+	pool.Wait()
+	t.Logf("total = %v", total)
+	if ok, index := isSortSlice(data); !ok {
+		t.Errorf("非顺序执行 index = %v, data = %v", index, data)
 	}
 }
 
@@ -110,14 +103,7 @@ func TestUnMarshalWithPool(t *testing.T) {
 			}
 		}, d)
 	}
-	tStart := time.Now()
-	for {
-		if pool.Empty() {
-			t.Logf("wait cost = %v ms", time.Since(tStart).Milliseconds())
-			break
-		}
-		time.Sleep(time.Millisecond)
-	}
+	pool.Wait()
 }
 
 func TestUnMarshalWithoutPool(t *testing.T) {
@@ -141,14 +127,7 @@ func TestMarshalWithPool(t *testing.T) {
 			}
 		}, p)
 	}
-	tStart := time.Now()
-	for {
-		if pool.Empty() {
-			t.Logf("wait cost = %v ms", time.Since(tStart).Milliseconds())
-			break
-		}
-		time.Sleep(time.Millisecond)
-	}
+	pool.Wait()
 }
 
 func TestMarshalWithoutPool(t *testing.T) {
@@ -161,16 +140,16 @@ func TestMarshalWithoutPool(t *testing.T) {
 	}
 }
 
-func isSortSlice(arr []int64) bool {
+func isSortSlice(arr []int64) (bool, int) {
 	for i := 0; i < len(arr)-2; i++ {
 		if arr[i] > arr[i+1] {
-			return false
+			return false, i
 		}
 	}
-	return true
+	return true, -1
 }
 
-func ExampleNewCoroutine() {
+func TestNewCoroutinePool(t *testing.T) {
 	pool := NewCoroutinePool()
 	pool.RunOrder(10000, func(i ...interface{}) {
 		fmt.Println("hello world A")
@@ -199,4 +178,5 @@ func ExampleNewCoroutine() {
 		fmt.Println("hello world H")
 	})
 	// 这里虽然顺序写的E,F,G,H, 但是实际执行顺序不一定, 因为4个任务会被分配到不同的协程,各协程间独立, 不保证顺序
+	pool.Wait()
 }
