@@ -10,11 +10,11 @@ protoc --go_out=. example.proto
 ```shell
 protoc --gofast_out=. example.proto
 ```
-3.生成更高效 protobuf go代码
+3.生成标准 gRpc go代码
 ```shell
 protoc --go-grpc_out=. example.proto
 ```
-4.生成更高效 protobuf go代码
+4.生成标准 protobuf 和 gRpc go代码
 ```shell
 protoc --go_out=. --go-grpc_out=. example.proto
 ```
