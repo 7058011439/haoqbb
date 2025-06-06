@@ -1,6 +1,8 @@
 module github.com/7058011439/haoqbb
 
-go 1.18
+go 1.21
+
+toolchain go1.23.8
 
 require (
 	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef

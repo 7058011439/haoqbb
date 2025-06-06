@@ -6,7 +6,7 @@ import (
 )
 
 type TimerID = int64
-type TimeWheel = int64
+type Timestamp = int64
 
 type TimerFun func(timerId TimerID, args ...interface{})
 
@@ -15,78 +15,105 @@ const (
 	Once   int = 1
 )
 
-var mutex sync.Mutex
-
-var newTimerId = TimerID(100000)
-var mapTimerWheel = make(map[TimeWheel][]*timer) // map[nextTick]list(Timer)
-var mapTimerId = make(map[TimerID]TimeWheel)     // map[timeId]nextTick
-var currTick = time.Now().UnixNano() / TimeWheel(time.Millisecond)
+var (
+	mutex                sync.Mutex
+	newTimerId           = TimerID(100000)
+	mapTimers            = make(map[Timestamp][]*timer) // 精确的时间戳触发队列
+	mapTimerId           = make(map[TimerID]Timestamp)
+	checkInterval        = int64(1) // 每隔10ms 检查一次
+	lastExecuteTimeStamp int64      // 上一次执行的时间戳+1
+)
 
 type timer struct {
-	timeId   TimerID
-	duration TimeWheel
-	funcName TimerFun
-	args     []interface{}
-	eType    int
+	timeId     TimerID
+	expireTime Timestamp
+	duration   Timestamp // 持续时间，用于 Repeat 模式
+	callback   TimerFun
+	args       []interface{}
+	eType      int
 }
 
 func init() {
 	setTimerResolution(1)
-	go doSomething()
+	go scheduler()
 }
 
-func addTime(time *timer) {
-	nextTick := currTick + time.duration
-	mapTimerWheel[nextTick] = append(mapTimerWheel[nextTick], time)
-	mapTimerId[time.timeId] = nextTick
+func now() int64 {
+	return time.Now().UnixMilli()
 }
 
-func doSomething() {
-	tick := time.NewTicker(time.Millisecond)
+func addTimer(t *timer) {
+	t.expireTime = now() + t.duration
+	mapTimers[t.expireTime] = append(mapTimers[t.expireTime], t)
+	mapTimerId[t.timeId] = t.expireTime
+}
+
+// 高精度调度器
+func scheduler() {
+	ticker := time.NewTicker(time.Duration(checkInterval) * time.Millisecond)
+	lastExecuteTimeStamp = now()
 	for {
-		<-tick.C
-		mutex.Lock()
-		if times, ok := mapTimerWheel[currTick]; ok {
-			for i := 0; i < len(times); i++ {
-				currTimer := times[i]
-				go currTimer.funcName(currTimer.timeId, currTimer.args...)
-				if currTimer.eType == Repeat {
-					addTime(currTimer)
-				} else {
-					delete(mapTimerId, currTimer.timeId)
-				}
-			}
-			delete(mapTimerWheel, currTick)
-		}
-		currTick++
-		mutex.Unlock()
+		<-ticker.C
+		executeDueTimers()
 	}
 }
 
-// AddRepeatTimer
-// 添加一次循环定时器
-// duration-时间间隔(毫秒)
-// funcName-回调函数
-// args-回调参数
-func AddRepeatTimer(duration TimeWheel, funcName TimerFun, args ...interface{}) TimerID {
+func executeDueTimers() {
 	mutex.Lock()
 	defer mutex.Unlock()
+
+	current := now()
+	for lastExecuteTimeStamp <= current {
+		for _, t := range mapTimers[lastExecuteTimeStamp] {
+			go t.callback(t.timeId, t.args...)
+			if t.eType == Repeat {
+				t.expireTime = current + t.duration
+				addTimer(t)
+			} else {
+				delete(mapTimerId, t.timeId)
+			}
+		}
+
+		delete(mapTimers, lastExecuteTimeStamp)
+		lastExecuteTimeStamp++
+	}
+}
+
+func AddRepeatTimer(duration int64, callback TimerFun, args ...interface{}) TimerID {
 	if duration < 1 {
 		return -1
 	}
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	newTimerId++
-	addTime(&timer{timeId: newTimerId, duration: duration, funcName: funcName, args: args, eType: Repeat})
+	t := &timer{
+		timeId:   newTimerId,
+		duration: duration,
+		callback: callback,
+		args:     args,
+		eType:    Repeat,
+	}
+	addTimer(t)
 	return newTimerId
 }
 
-func AddOnceTimer(duration TimeWheel, funcName TimerFun, args ...interface{}) TimerID {
-	mutex.Lock()
-	defer mutex.Unlock()
+func AddOnceTimer(duration int64, callback TimerFun, args ...interface{}) TimerID {
 	if duration < 1 {
 		return -1
 	}
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	newTimerId++
-	addTime(&timer{timeId: newTimerId, duration: duration, funcName: funcName, args: args, eType: Once})
+	t := &timer{
+		timeId:   newTimerId,
+		duration: duration,
+		callback: callback,
+		args:     args,
+		eType:    Once,
+	}
+	addTimer(t)
 	return newTimerId
 }
 
@@ -94,19 +121,27 @@ func CloseTimer(id TimerID) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	nextTick := mapTimerId[id]
-	if times, ok := mapTimerWheel[nextTick]; ok {
-		for i := 0; i < len(times); i++ {
-			if times[i].timeId == id {
-				times = append(times[:i], times[i+1:]...)
-				break
-			}
+	expireTs, ok := mapTimerId[id]
+	if !ok {
+		return
+	}
+	timers := mapTimers[expireTs]
+	for i, t := range timers {
+		if t.timeId == id {
+			timers = append(timers[:i], timers[i+1:]...)
+			break
 		}
-		mapTimerWheel[nextTick] = times
+	}
+	if len(timers) == 0 {
+		delete(mapTimers, expireTs)
+	} else {
+		mapTimers[expireTs] = timers
 	}
 	delete(mapTimerId, id)
 }
 
 func Count() int {
+	mutex.Lock()
+	defer mutex.Unlock()
 	return len(mapTimerId)
 }
