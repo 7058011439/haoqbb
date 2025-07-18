@@ -15,7 +15,7 @@ type CountAddUp struct {
 	mutex      sync.Mutex
 }
 
-func NewCountAddUp(eType timingType, name string) *CountAddUp {
+func NewCountAddUp(eType TimingType, name string) *CountAddUp {
 	return &CountAddUp{
 		Timing: NewTiming(eType),
 		name:   name,

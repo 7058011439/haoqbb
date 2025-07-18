@@ -6,29 +6,29 @@ import (
 	"time"
 )
 
-type timingType = int
+type TimingType = int
 
 const (
-	Second      timingType = 0
-	Millisecond timingType = 1
-	Microsecond timingType = 2
-	Nanosecond  timingType = 3
+	Second      TimingType = 0
+	Millisecond TimingType = 1
+	Microsecond TimingType = 2
+	Nanosecond  TimingType = 3
 )
 
 type Timing struct {
 	startTime time.Time
-	eType     timingType
+	eType     TimingType
 	print     func(string)
 }
 
-var mapDesc = map[timingType]string{
+var mapDesc = map[TimingType]string{
 	Second:      "s",
 	Millisecond: "ms",
 	Microsecond: "us",
 	Nanosecond:  "ns",
 }
 
-func NewTiming(eType timingType) *Timing {
+func NewTiming(eType TimingType) *Timing {
 	ret := Timing{
 		eType:     eType,
 		startTime: time.Now(),
@@ -41,7 +41,7 @@ func (t *Timing) SetPrint(print func(string)) {
 	t.print = print
 }
 
-func (t *Timing) getDesc() string {
+func (t *Timing) GetDesc() string {
 	return mapDesc[t.eType]
 }
 
