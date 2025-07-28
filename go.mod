@@ -10,7 +10,6 @@ require (
 	github.com/beevik/etree v1.1.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.9.0
-	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang/protobuf v1.5.2
 	github.com/gookit/color v1.5.4
@@ -22,8 +21,6 @@ require (
 	github.com/mojocn/base64Captcha v1.3.6
 	github.com/nats-io/nats-server/v2 v2.7.1 // indirect
 	github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d
-	github.com/onsi/ginkgo v1.16.5 // indirect
-	github.com/onsi/gomega v1.18.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca
 	github.com/shirou/gopsutil v3.21.11+incompatible
@@ -36,6 +33,7 @@ require (
 )
 
 require (
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gogo/protobuf v1.3.2
 	google.golang.org/grpc v1.49.0
 )
@@ -45,8 +43,10 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/bytedance/sonic v1.8.0 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect

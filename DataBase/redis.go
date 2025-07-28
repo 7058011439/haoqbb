@@ -1,12 +1,14 @@
 package DataBase
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/7058011439/haoqbb/Log"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	"reflect"
+	"time"
 )
 
 type RedisDB struct {
@@ -25,7 +27,7 @@ func NewRedisDB(ip string, port int, passWord string, dbIndex int) *RedisDB {
 		Log.Error("Failed to NewRedisDB, client is nil")
 		return nil
 	}
-	if _, err := ret.Client.Ping().Result(); err != nil {
+	if _, err := ret.Client.Ping(context.Background()).Result(); err != nil {
 		Log.Error("Failed to redis ping, err = %v", err)
 		return nil
 	}
@@ -33,7 +35,7 @@ func NewRedisDB(ip string, port int, passWord string, dbIndex int) *RedisDB {
 }
 
 func (r *RedisDB) HGetString(key string, field string) string {
-	if ret, err := r.Client.HGet(key, field).Result(); err == nil {
+	if ret, err := r.Client.HGet(context.Background(), key, field).Result(); err == nil {
 		return ret
 	}
 	return ""
@@ -48,7 +50,7 @@ func (r *RedisDB) HGetValue(key string, field string, data interface{}) error {
 }
 
 func (r *RedisDB) HGetAll(key string) map[string]string {
-	if ret, err := r.Client.HGetAll(key).Result(); err == nil {
+	if ret, err := r.Client.HGetAll(context.Background(), key).Result(); err == nil {
 		return ret
 	}
 	return nil
@@ -59,25 +61,25 @@ func (r *RedisDB) HSetValue(key string, field string, value interface{}) error {
 	case reflect.Map, reflect.Struct, reflect.Slice, reflect.Ptr:
 		value, _ = json.Marshal(value)
 	}
-	return r.Client.HSet(key, field, value).Err()
+	return r.Client.HSet(context.Background(), key, field, value).Err()
 }
 
 func (r *RedisDB) HIncBy(key string, field string, value int64) int64 {
-	if ret, err := r.Client.HIncrBy(key, field, value).Result(); err == nil {
+	if ret, err := r.Client.HIncrBy(context.Background(), key, field, value).Result(); err == nil {
 		return ret
 	}
 	return 0
 }
 
 func (r *RedisDB) IncBy(key string, value int64) int64 {
-	if ret, err := r.Client.IncrBy(key, value).Result(); err == nil {
+	if ret, err := r.Client.IncrBy(context.Background(), key, value).Result(); err == nil {
 		return ret
 	}
 	return 0
 }
 
 func (r *RedisDB) IsKeyExist(key string) bool {
-	if ret, err := r.Client.Exists(key).Result(); err != nil {
+	if ret, err := r.Client.Exists(context.Background(), key).Result(); err != nil {
 		return false
 	} else {
 		return ret > 0
@@ -85,5 +87,13 @@ func (r *RedisDB) IsKeyExist(key string) bool {
 }
 
 func (r *RedisDB) IsFieldExist(key string, field string) bool {
-	return r.Client.HExists(key, field).Val()
+	return r.Client.HExists(context.Background(), key, field).Val()
+}
+
+func (r *RedisDB) Set(key string, value interface{}, expiration time.Duration) error {
+	switch reflect.TypeOf(value).Kind() {
+	case reflect.Map, reflect.Struct, reflect.Slice, reflect.Ptr:
+		value, _ = json.Marshal(value)
+	}
+	return r.Client.Set(context.Background(), key, value, expiration).Err()
 }
