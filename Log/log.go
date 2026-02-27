@@ -19,6 +19,7 @@ var showFileLine bool
 var maxFileSize int64
 var dir string
 var mutex sync.Mutex
+var timeFormatStr = "2006-01-02 15:04:05"
 
 type logLevel = int
 
@@ -89,6 +90,10 @@ func SetFileSize(iMaxFileSize int64) {
 	} else {
 		maxFileSize = iMaxFileSize
 	}
+}
+
+func SetTimeFormat(format string) {
+	timeFormatStr = format
 }
 
 func SetLogDir(logDir string) {
@@ -209,7 +214,7 @@ func Fatal(format string, args ...interface{}) {
 
 func getNowTimeStr(format string) string {
 	if format == "" {
-		format = "2006-01-02 15:04:05"
+		format = timeFormatStr
 	}
 	timeObj := time.Now()
 	return timeObj.Format(format)
