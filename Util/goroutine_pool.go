@@ -17,7 +17,7 @@ type Coroutine struct {
 	chDoTask     chan *task
 	chTaskFinish chan struct{}
 	taskList     *list.List
-	status       int32 // 状态: 0-空闲, 1-正在执行任务
+	status       int32 // 状态: 0-空闲, 1-正在执行任务；仅 dispatch goroutine 访问
 	idxCount     int   // 有序执行的时候, 表示有多少标志的任务由他执行
 }
 
@@ -35,12 +35,10 @@ func newCoroutine(group *sync.WaitGroup) *Coroutine {
 
 func (c *Coroutine) doTask(group *sync.WaitGroup) {
 	for {
-		select {
-		case task := <-c.chDoTask:
-			task.fun(task.args...)
-			group.Done()
-			c.chTaskFinish <- struct{}{}
-		}
+		task := <-c.chDoTask
+		task.fun(task.args...)
+		group.Done()
+		c.chTaskFinish <- struct{}{}
 	}
 }
 
@@ -71,10 +69,10 @@ func (c *Coroutine) dispatch() bool {
 
 type CoroutinePool struct {
 	pool           []*Coroutine // 协程列表
-	idxCoroutineId sync.Map     // map[idx]*Coroutine idx 对应的协程, 保证有序执行(RunOrder)是, 同一个idx由同一个协程执行, 保证执行顺序
+	idxCoroutineId sync.Map     // map[idx]*Coroutine idx 对应的协程, 保证有序执行(RunOrder)时, 同一个idx由同一个协程执行, 保证执行顺序
 	next           uint64       // 用于实现轮询的 atomic 自增索引
 	wait           sync.WaitGroup
-	mutex          sync.Mutex
+	mutex          sync.Mutex // 保护 getOrderPool 中 idxCoroutineId / idxCount 的并发访问
 }
 
 func NewCoroutinePool() *CoroutinePool {
@@ -136,6 +134,9 @@ func (c *CoroutinePool) Wait() {
 }
 
 func (c *CoroutinePool) getOrderPool(idx int64) *Coroutine {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	if v, ok := c.idxCoroutineId.Load(idx); ok {
 		return v.(*Coroutine)
 	}
