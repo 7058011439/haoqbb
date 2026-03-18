@@ -171,6 +171,10 @@ func (c *CoroutinePool) getBestPool() (ret *Coroutine) {
 		if taskCount := p.pending.Load(); taskCount < minTaskCount {
 			minTaskCount = taskCount
 			ret = p
+			// 当前协程池完全空闲, 直接返回
+			if taskCount == 0 {
+				break
+			}
 		}
 	}
 	return ret
