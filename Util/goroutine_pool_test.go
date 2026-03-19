@@ -3,8 +3,10 @@ package Util
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 )
 
 /*
@@ -33,38 +35,89 @@ func TestCalcSumWithPool(t *testing.T) {
 	times := 1024000
 	coroutineCount := 16
 	pool := NewCoroutinePool()
-	total := int64(0)
-	data := make([]int64, 0, times/coroutineCount)
+	var totalOrder atomic.Int64
+	var totalDisorder atomic.Int64
+	orderData := map[int][]int64{}
+	var orderDataMutex sync.Mutex
+	for i := 0; i < coroutineCount; i++ {
+		orderData[i] = make([]int64, 0, times/coroutineCount)
+	}
+	var group sync.WaitGroup
+	group.Add(times * 2)
 	for i := 0; i < times; i++ {
 		// 有序执行, 通过取余算法, 确保平均间隔N个单位是同一协程执行, 然后通过isSortSlice 验证是否顺序执行
 		pool.RunOrder(int64(i%coroutineCount), func(i ...interface{}) {
 			value := i[0].(int)
 			ret := calcSum(value)
-			atomic.AddInt64(&total, ret)
-			if value%coroutineCount == 0 {
-				data = append(data, ret)
-			}
+			totalOrder.Add(ret)
+			idx := value % coroutineCount
+			orderDataMutex.Lock()
+			orderData[idx] = append(orderData[idx], ret)
+			orderDataMutex.Unlock()
+			group.Done()
 		}, i)
 
 		// 随机(协程)执行,不保证顺序
 		pool.Run(func(i ...interface{}) {
 			value := i[0].(int)
 			ret := calcSum(value)
-			atomic.AddInt64(&total, ret)
+			totalDisorder.Add(ret)
+			group.Done()
 		}, i)
 	}
-	pool.Wait()
-	t.Logf("total = %v", total)
-	if ok, index := isSortSlice(data); !ok {
-		t.Errorf("非顺序执行 index = %v, data = %v", index, data)
+	group.Wait()
+	t.Logf("totalOrder = %v, toalDisorder = %v", totalOrder.Load(), totalDisorder.Load())
+	for idx, data := range orderData {
+		if ok, _ := isSortSlice(data); !ok {
+			t.Errorf("非顺序执行 idx = %v, data = %v", idx, data)
+		}
 	}
+}
+
+func TestCalcSumWithPoolOrder(t *testing.T) {
+	times := 1024000
+	coroutineCount := 12
+	pool := NewCoroutinePool()
+	var totalOrder atomic.Int64
+	var group sync.WaitGroup
+	group.Add(times)
+	for i := 0; i < times; i++ {
+		// 有序执行, 通过取余算法, 确保平均间隔N个单位是同一协程执行, 然后通过isSortSlice 验证是否顺序执行
+		pool.RunOrder(int64(i%coroutineCount), func(i ...interface{}) {
+			value := i[0].(int)
+			ret := calcSum(value)
+			totalOrder.Add(ret)
+			group.Done()
+		}, i)
+	}
+	group.Wait()
+	t.Logf("total = %v", totalOrder.Load())
+}
+
+func TestCalcSumWithPoolDisOrder(t *testing.T) {
+	times := 1024000
+	pool := NewCoroutinePool()
+	var totalDisorder atomic.Int64
+	var group sync.WaitGroup
+	group.Add(times)
+	for i := 0; i < times; i++ {
+		// 随机(协程)执行,不保证顺序
+		pool.Run(func(i ...interface{}) {
+			value := i[0].(int)
+			ret := calcSum(value)
+			totalDisorder.Add(ret)
+			group.Done()
+		}, i)
+	}
+	group.Wait()
+	t.Logf("total = %v", totalDisorder.Load())
 }
 
 func TestCalcSumWithoutPool(t *testing.T) {
 	total := int64(0)
 	for i := 0; i < 1024000; i++ {
 		total += calcSum(i)
-		total += calcSum(i)
+		// total += calcSum(i)
 	}
 
 	t.Logf("total = %v", total)
@@ -96,14 +149,17 @@ func TestUnMarshalWithPool(t *testing.T) {
 	times := 10240000
 	pool := NewCoroutinePool()
 	p, d := initTestPlayer()
+	var group sync.WaitGroup
+	group.Add(times)
 	for i := 0; i < times; i++ {
 		pool.Run(func(i ...interface{}) {
 			if err := json.Unmarshal(i[0].([]byte), p); err != nil {
 				t.Errorf("反序列化错误, err = %v", err)
 			}
+			group.Done()
 		}, d)
 	}
-	pool.Wait()
+	group.Wait()
 }
 
 func TestUnMarshalWithoutPool(t *testing.T) {
@@ -120,14 +176,17 @@ func TestMarshalWithPool(t *testing.T) {
 	times := 10240000
 	pool := NewCoroutinePool()
 	p, _ := initTestPlayer()
+	var group sync.WaitGroup
+	group.Add(times)
 	for i := 0; i < times; i++ {
 		pool.Run(func(i ...interface{}) {
 			if _, err := json.Marshal(i[0].(*testPlayer)); err != nil {
 				t.Errorf("反序列化错误, err = %v", err)
 			}
+			group.Done()
 		}, p)
 	}
-	pool.Wait()
+	group.Wait()
 }
 
 func TestMarshalWithoutPool(t *testing.T) {
@@ -141,7 +200,7 @@ func TestMarshalWithoutPool(t *testing.T) {
 }
 
 func isSortSlice(arr []int64) (bool, int) {
-	for i := 0; i < len(arr)-2; i++ {
+	for i := 0; i < len(arr)-1; i++ {
 		if arr[i] > arr[i+1] {
 			return false, i
 		}
@@ -177,6 +236,6 @@ func TestNewCoroutinePool(t *testing.T) {
 	pool.Run(func(i ...interface{}) {
 		fmt.Println("hello world H")
 	})
+	time.Sleep(time.Second * 5)
 	// 这里虽然顺序写的E,F,G,H, 但是实际执行顺序不一定, 因为4个任务会被分配到不同的协程,各协程间独立, 不保证顺序
-	pool.Wait()
 }

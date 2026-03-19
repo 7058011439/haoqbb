@@ -83,7 +83,7 @@ type CoroutinePool struct {
 }
 
 func NewCoroutinePool() *CoroutinePool {
-	count := runtime.NumCPU()
+	count := runtime.GOMAXPROCS(0)
 	ret := &CoroutinePool{}
 	for i := 0; i < count; i++ {
 		ret.pool = append(ret.pool, newCoroutine())
